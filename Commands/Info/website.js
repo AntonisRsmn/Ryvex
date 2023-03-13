@@ -11,7 +11,7 @@ module.exports = {
         .setTitle(`***Roumy™ Support***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Need some help join [Here](https://discord.gg/Sh7HMQj2P)")
+        .setDescription("Check out our [Website](https://roumy.glitch.me)")
 
         interaction.reply({ embeds: [embed]})
     }
