@@ -27,7 +27,7 @@ module.exports = {
         });
 
         const res = new EmbedBuilder()
-        .setColor("fffffe")
+        .setColor("#fffffe")
 
         if (target) {
             let i = 0;
