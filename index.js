@@ -1,5 +1,3 @@
-const KeepAlive = require("./server");
-
 const { Client, GatewayIntentBits, Partials, Collection, EmbedBuilder } = require("discord.js");
 
 const { Guilds, GuildMembers, GuildMessages } = GatewayIntentBits;
@@ -30,7 +28,6 @@ client.on("messageCreate", (message) => {
     }
 });
 
-KeepAlive();
 client.login(client.config.token).then(() => {
     loadEvents(client);
     loadCommands(client);
