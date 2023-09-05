@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
   .setName("8ball")
-  .setDescription("Answer a yes or no question.")
+  .setDescription("Answers a yes or no question.")
   .addStringOption(option => option.setName('question')
   .setDescription("Question to answer.")
   .setRequired(true)

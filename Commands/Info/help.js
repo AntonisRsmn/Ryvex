@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ComponentType, ActionRowBuilder, Stri
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("help")
-    .setDescription("Get a list of all the commands from Roumy."),
+    .setDescription("Get a list of all the commands from Zepp."),
     async execute(interaction) {
         const emojis = {
             info:"📝",

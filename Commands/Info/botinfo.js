@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("botinfo")
-    .setDescription("Information of the bot."),
+    .setDescription("Zepp Information."),
 
     async execute(interaction, client) {
         const days = Math.floor(client.uptime / 86400000)

@@ -3,12 +3,12 @@ const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("support")
-    .setDescription("Roumy™ Support."),
+    .setDescription("Zepp™ Support Server."),
 
     async execute(interaction, client) {
 
         const embed = new EmbedBuilder()
-        .setTitle(`***Roumy™ Support***`)
+        .setTitle(`***Zepp™ Support***`)
         .setColor("#fffffe")
         .setTimestamp()
         .setDescription("Need some help join [Here](https://discord.gg/Sh7HMQj2P)")

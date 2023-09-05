@@ -11,7 +11,7 @@ module.exports = {
       
       const embed = new EmbedBuilder()
         .setTitle('PPmeter')
-        .setDescription('Your pp is: ' + response)
+        .setDescription('Your pp size is: ' + response)
         .setColor(0xFFFFFE)
         .setTimestamp();
         

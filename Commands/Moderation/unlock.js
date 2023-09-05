@@ -32,6 +32,6 @@ module.exports = {
         .setDescription(`The channel ***${channel}*** has been unlocked`)
         .setColor("#FFFFFE")
 
-        await interaction.reply({ embeds: [embed] })
+        await interaction.reply({ embeds: [embed] });
     }
 }

@@ -37,6 +37,6 @@ module.exports = {
         .setDescription(`The channel ***${channel}*** has been locked with reson ***${reason}***`)
         .setColor("#FFFFFE")
 
-        await interaction.reply({ embeds: [embed] })
+        await interaction.reply({ embeds: [embed]  })
     }
 }

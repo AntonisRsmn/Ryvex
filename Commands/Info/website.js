@@ -3,15 +3,15 @@ const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("website")
-    .setDescription("Roumy's Website."),
+    .setDescription("Zepp Website."),
 
     async execute(interaction, client) {
 
         const embed = new EmbedBuilder()
-        .setTitle(`***Roumy Website***`)
+        .setTitle(`***Zepp Website***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Check out our [Website](https://roumy.glitch.me)")
+        .setDescription("Check out our [Website](https://zepp.glitch.me)")
 
         interaction.reply({ embeds: [embed]})
     }
