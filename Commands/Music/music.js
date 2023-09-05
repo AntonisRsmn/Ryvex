@@ -58,7 +58,7 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        if (!member.voice.channelId == guild.members.me.voice.channelId) {
+        if (member.voice.channelId != guild.members.me.voice.channelId) {
             embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
