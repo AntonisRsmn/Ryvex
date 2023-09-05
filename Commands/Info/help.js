@@ -9,6 +9,7 @@ module.exports = {
             info:"📝",
             moderation: "🛠",
             fun: "🎮",
+            music:"🎶",
             owner: "👑"
         };
 
