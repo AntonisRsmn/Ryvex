@@ -85,7 +85,7 @@ module.exports = {
                     switch(option) {
                         case "skip":
                             await queue.skip(voiceChannel);
-                            embed.setColor("Blue").setDescription("⏩ The song has been skipped.");
+                            embed.setColor("fffffe").setDescription("⏩ The song has been skipped.");
                             return interaction.reply({ embeds: [embed], ephemeral: true});
                         case "stop":
                             await queue.stop(voiceChannel);
