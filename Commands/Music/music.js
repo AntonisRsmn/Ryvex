@@ -58,9 +58,11 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        if (member.voice.channelId != guild.members.me.voice.channelId) {
-            embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
-            return interaction.reply({ embeds: [embed], ephemeral: true });
+        if (guild.members.me.voice.channelId !== null) {
+            if (member.voice.channelId !== guild.members.me.voice.channelId) {
+                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
         }
 
         try {
@@ -68,7 +70,6 @@ module.exports = {
                 case "play":
                     client.distube.play(voiceChannel, query, { textChannel: channel, member: member});
                     return interaction.reply({ content: "🎶 Request received." });
-
                 case "volume":
                     client.distube.setVolume(voiceChannel, volume);
                     embed.setColor("fffffe").setDescription(`🔉 Volume has been set to ${volume}%.`);
