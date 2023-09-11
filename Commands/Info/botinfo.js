@@ -20,11 +20,11 @@ module.exports = {
 		    { name: 'ID:', value: `${client.user.id}`, inline: true },
 		    { name: 'Joined Discord:', value: `${client.user.createdAt}`, inline: true },
             { name: "Servers: ", value: `${client.guilds.cache.size}`, inline: true},
-            { name: "Commands: ", value: "26", inline: true},
+            { name: "Commands: ", value: "27", inline: true},
             { name: "Language: ", value: "JavaScript", inline: true},
             { name: "Uptime", value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`, inline: true},
         )
 
-        interaction.reply({ embeds: [embed]})
+        interaction.reply({ embeds: [embed], ephemeral: true})
     }
 }
