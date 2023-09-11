@@ -11,8 +11,12 @@ module.exports = {
         }
 
         console.log(`${client.user.username} is now online.`);
-        client.user.setPresence({
-            activities: [{ name : `@${client.user.username}`, type: ActivityType.Listening }]
-          })
+
+        setInterval(() => {
+            client.user.setPresence({
+                activities: [{ name : `@${client.user.username} | Servers: ${client.guilds.cache.size}`, type: ActivityType.Listening }]
+              })
+        }, 1000 * 10);
+        
     },
 };
