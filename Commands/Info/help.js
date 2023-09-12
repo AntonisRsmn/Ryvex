@@ -10,7 +10,6 @@ module.exports = {
             moderation: "🛠",
             fun: "🎮",
             music:"🎶",
-            owner: "👑"
         };
 
         const directories = [

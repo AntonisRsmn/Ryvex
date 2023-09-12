@@ -4,6 +4,7 @@
     "@distube/spotify": "^1.5.1",
     "@distube/ytdl-core": "^4.13.0",
     "ascii-table": "^0.0.9",
+    "cpu-stat": "^2.0.1",
     "discord.js": "^14.7.1",
     "distube": "^4.1.0",
     "ffmpeg-static": "^5.2.0",

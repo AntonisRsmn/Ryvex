@@ -1,9 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
+const cpuStat = require("cpu-stat");
 
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("botinfo")
-    .setDescription("Zepp Information."),
+    .setDescription("Get information about the bot."),
 
     async execute(interaction, client) {
         const days = Math.floor(client.uptime / 86400000)
@@ -11,20 +12,40 @@ module.exports = {
         const minutes = Math.floor(client.uptime / 600000) % 60
         const seconds = Math.floor(client.uptime / 1000) % 60
 
-        const embed = new EmbedBuilder()
-        .setTitle(`***${client.user.username}'s Information***`)
-        .setColor("#fffffe")
-        .setTimestamp()
-        .addFields(
-            { name: 'User Tag:', value: `${client.user.tag}`, inline: true },
-		    { name: 'ID:', value: `${client.user.id}`, inline: true },
-		    { name: 'Joined Discord:', value: `${client.user.createdAt}`, inline: true },
-            { name: "Servers: ", value: `${client.guilds.cache.size}`, inline: true},
-            { name: "Commands: ", value: "27", inline: true},
-            { name: "Language: ", value: "JavaScript", inline: true},
-            { name: "Uptime", value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`, inline: true},
-        )
+        cpuStat.usagePercent(function (error, percent) {
+            if(error) return interaction.reply({ context: `${error}`})
 
-        interaction.reply({ embeds: [embed], ephemeral: true})
+            const memoryUsage = formatBytes(process.memoryUsage().heapUsed)
+            const node = process.version
+            const cpu = percent.toFixed(2)
+
+            const embed = new EmbedBuilder()
+            .setTitle(`***${client.user.username} Inforation***`)
+            .setColor("#fffffe")
+            .setTimestamp()
+            .addFields(
+                { name: "Developer: ",value: "Rusman", inline: true},
+                { name: "Username: ",value: `${client.user.username}`, inline: true},
+                { name: "ID: ",value: `${client.user.id}`, inline: true},
+                { name: "Creation date: ",value: "01/09/2022", inline: true},
+                { name: "Help Command: ",value: "/help", inline: true},
+                { name: "Node version: ",value: `${node}`, inline: true},
+                { name: "Bot-ping: ",value: `${client.ws.ping} ms`, inline: true},
+                { name: "CPU usage: ",value: `${cpu}`, inline: true},
+                { name: "Memory usage: ",value: `${memoryUsage}`, inline: true},
+                { name: "Uptime", value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`, inline: true},
+            )
+
+            interaction.reply({ embeds: [embed] })
+        })
+
+        function formatBytes(a, b) {
+            let c = 1024
+            d = b || 2
+            e = ["B", "KB", "MB", "GB", "TB"]
+            f = Math.floor(Math.log(a) / Math.log(c))
+
+            return parseFloat((a / Math.pow(c, f)).toFixed(d)) + "" + e[f]
+        }
     }
 }
