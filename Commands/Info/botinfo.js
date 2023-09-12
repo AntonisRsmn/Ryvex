@@ -27,7 +27,7 @@ module.exports = {
                 { name: "Developer: ",value: "Rusman", inline: true},
                 { name: "Username: ",value: `${client.user.username}`, inline: true},
                 { name: "ID: ",value: `${client.user.id}`, inline: true},
-                { name: "Creation date: ",value: "01/09/2022", inline: true},
+                { name: "Active since: ",value: "Sep 1, 2022", inline: true},
                 { name: "Help Command: ",value: "/help", inline: true},
                 { name: "Node version: ",value: `${node}`, inline: true},
                 { name: "Bot-ping: ",value: `${client.ws.ping} ms`, inline: true},
