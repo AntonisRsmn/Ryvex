@@ -11,8 +11,6 @@ const client = new Client({
     partials: [User, Message, GuildMember, ThreadMember, Channel],
 });
 
-module.exports = client
-
 const { DisTube } = require('distube');
 const { SpotifyPlugin } = require("@distube/spotify");
 
@@ -39,6 +37,8 @@ client.on("messageCreate", (message) => {
         message.channel.send({embeds: [embed],});
     }
 });
+
+module.exports = client;
 
 client.login(client.config.token).then(() => {
     loadEvents(client);
