@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,6 +8,7 @@ module.exports = {
     .addChannelOption(option =>
         option.setName("channel")
         .setDescription("The channel to unlock.")
+        .addChannelTypes(ChannelType.GuildText)
         .setRequired(true)
     ),
 

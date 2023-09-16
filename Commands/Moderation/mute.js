@@ -8,17 +8,17 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .addUserOption(option => 
             option.setName("target")
-                .setDescription("Select the user you wish to mute.")
+                .setDescription("User to be mute.")
                 .setRequired(true)
         )
         .addStringOption(option => 
             option.setName("time")
-                .setDescription("How long should the mute last ?.")
+                .setDescription("How long should the mute last (Up to 27 days).")
                 .setRequired(true)
         )
         .addStringOption(option => 
             option.setName("reason")
-                .setDescription("What is the reason for the mute ?.")
+                .setDescription("Reason for the mute.")
         ),
 
     async execute(interaction) {

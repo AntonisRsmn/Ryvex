@@ -7,7 +7,7 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .addUserOption(option => 
             option.setName("target")
-                .setDescription("Select the user you wish to mute.")
+                .setDescription("User to be unmute.")
                 .setRequired(true)
         ),
 
