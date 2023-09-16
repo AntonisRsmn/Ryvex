@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, } = require("dis
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("unban")
-    .setDescription("Unban a user from the discord server.")
+    .setDescription("Unban a user from the guild.")
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
     .addStringOption(option =>
         option.setName("userid")
