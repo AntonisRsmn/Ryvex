@@ -1,4 +1,4 @@
-const { VolumeInterface } = require("discord.js");
+const { VolumeInterface, PermissionsBitField } = require("discord.js");
 const { EmbedBuilder, SlashCommandBuilder, PermissioFlagsBits, VoiceChannel, GuildEmoji } = require("discord.js");
 const client = require("../../index");
 
@@ -24,6 +24,11 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
+        if (!interaction.member?.voice.channel?.joinable) {
+            embed.setColor("Red").setDescription("I can't join this voice channel.");
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
         if (guild.members.me.voice.channelId !== null) {
             if (member.voice.channelId !== guild.members.me.voice.channelId) {
                 embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
@@ -34,7 +39,8 @@ module.exports = {
         try {
 
             client.distube.play(voiceChannel, query, { textChannel: channel, member: member});
-            return interaction.reply({ content: "🎶 Request received." });
+            embed.setColor("fffffe").setDescription("🎶 Request received.");
+            return interaction.reply({ embeds: [embed] });
 
         } catch(err) {
             console.log(err);

@@ -41,7 +41,7 @@ module.exports = {
             }
 
             await queue.seek(queue.currentTime - seconds);
-            embed.setColor("fffffe").setDescription(`⏪ Rewinded the song for \` ${seconds}\`.`);
+            embed.setColor("Green").setDescription(`⏪ Rewinded the song for \` ${seconds}\`.`);
             return interaction.reply({ embeds: [embed], ephemeral: true});
 
         } catch(err) {

@@ -35,7 +35,7 @@ module.exports = {
             }
 
             await queue.skip(voiceChannel);
-            embed.setColor("fffffe").setDescription("⏩ The song has been skipped.");
+            embed.setColor("Orange").setDescription("⏩ The song has been skipped.");
             return interaction.reply({ embeds: [embed], ephemeral: true});
 
         } catch(err) {

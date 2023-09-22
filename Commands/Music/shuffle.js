@@ -5,7 +5,7 @@ const client = require("../../index");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("shuffle")
-        .setDescription("Shuffle current playlist."),
+        .setDescription("Shuffle current queue."),
     async execute(interaction) {
         const { member, guild } = interaction;
         const voiceChannel = member.voice.channel;
@@ -34,7 +34,7 @@ module.exports = {
             }
 
             await queue.shuffle();
-            embed.setColor("fffffe").setDescription(`🎶 Shuffled songs in queue.`);
+            embed.setColor("Green").setDescription(`🎶 Shuffled songs in queue.`);
             return interaction.reply({ embeds: [embed], ephemeral: true});
 
         } catch(err) {
