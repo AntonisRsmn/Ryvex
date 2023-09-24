@@ -27,8 +27,8 @@ client.config = require("./config.json");
 client.on("messageCreate", (message) => {
     const embed = new EmbedBuilder()
         .addFields(
-            { name: " ", value: "Need help. Use </help:1084950800398303267>", inline: true },
-            { name: " ", value: "or join the [Support Server](https://discord.gg/Sh7HMQj2P)", inline: true },
+            { name: " ", value: "👀 Need assistance ?", inline: true },
+            { name: " ", value: "🤖 Use </help:1084950800398303267> or join our [Support Server](https://discord.gg/Sh7HMQj2P)", inline: true },
         )
         .setColor(0xFFFFFE)
   
