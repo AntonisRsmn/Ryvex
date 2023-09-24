@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { execute } = require("../Moderation/unlock");
 const fetch= (...args) => import("node-fetch").then(({ default: fetch}) => fetch(...args));
 
 module.exports = {
