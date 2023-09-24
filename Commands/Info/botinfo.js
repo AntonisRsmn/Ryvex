@@ -28,7 +28,7 @@ module.exports = {
                 { name: "Username: ",value: `${client.user.username}`, inline: true},
                 { name: "ID: ",value: `${client.user.id}`, inline: true},
                 { name: "Active since: ",value: "Sep 1, 2022", inline: true},
-                { name: "Help Command: ",value: "/help", inline: true},
+                { name: "Help Command: ",value: "</help:1084950800398303267>", inline: true},
                 { name: "Node version: ",value: `${node}`, inline: true},
                 { name: "Bot-ping: ",value: `${client.ws.ping} ms`, inline: true},
                 { name: "CPU usage: ",value: `${cpu}`, inline: true},
