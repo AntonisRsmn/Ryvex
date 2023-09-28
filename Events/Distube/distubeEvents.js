@@ -8,7 +8,7 @@ client.distube
     .on('playSong', (queue, song) =>
         queue.textChannel.send({
             embeds: [new EmbedBuilder().setColor("fffffe")
-                .setDescription(`🎶 | Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user
+                .setTimestamp().setThumbnail(song.thumbnail).setDescription(`🎶 | Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user
                     }\n${status(queue)}`)]
         })
     )
@@ -16,7 +16,7 @@ client.distube
         queue.textChannel.send(
             {
                 embeds: [new EmbedBuilder().setColor("fffffe")
-                    .setDescription(`🎶 | Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)]
+                    .setTimestamp().setThumbnail(song.thumbnail).setDescription(`🎶 | Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)]
             }
         )
     )
@@ -24,7 +24,7 @@ client.distube
         queue.textChannel.send(
             {
                 embeds: [new EmbedBuilder().setColor("fffffe")
-                    .setDescription(`🎶 | Added \`${playlist.name}\` playlist (${playlist.songs.length
+                    .setTimestamp().setThumbnail(song.thumbnail).setDescription(`🎶 | Added \`${playlist.name}\` playlist (${playlist.songs.length
                         } songs) to queue\n${status(queue)}`)]
             }
         )
@@ -46,5 +46,5 @@ client.distube
     )
     .on('finish', queue => queue.textChannel.send({
         embeds: [new EmbedBuilder().setColor("fffffe")
-            .setDescription('🏁 | Queue finished!')]
+            .setTimestamp().setDescription('🏁 | Queue finished!')]
     }))

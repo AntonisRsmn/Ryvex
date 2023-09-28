@@ -23,13 +23,13 @@ module.exports = {
         const embed = new EmbedBuilder();
 
         if (!voiceChannel) {
-            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.");
+            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (guild.members.me.voice.channelId !== null) {
             if (member.voice.channelId !== guild.members.me.voice.channelId) {
-                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
+                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`).setTimestamp();
                 return interaction.reply({ embeds: [embed], ephemeral: true });
             }
         }
@@ -38,7 +38,7 @@ module.exports = {
             const queue = await client.distube.getQueue(voiceChannel);
 
             if(!queue) {
-                embed.setColor("Red").setDescription("There is no active queue.");
+                embed.setColor("Red").setDescription("There is no active queue.").setTimestamp();
                 return interaction.reply({ embeds: [embed], ephemeral: true});
             }
 
@@ -60,12 +60,12 @@ module.exports = {
 
             mode = mode ? (mode === 2? "Repeat queue" : "Repeat song") : "Off";
 
-            embed.setColor("Orange").setDescription(`🔁 Set repeat mode to \`${mode}\`.`);
+            embed.setColor("Green").setDescription(`🔁 Set repeat mode to \`${mode}\`.`).setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true});
         } catch (err) {
             console.log(err);
 
-            embed.setColor("Red").setDescription("⛔ | Something went wrong.");
+            embed.setColor("Red").setDescription("⛔ | Something went wrong.").setTimestamp();
 
             return interaction.reply({ embeds: [embed], ephemeral: true});
         }

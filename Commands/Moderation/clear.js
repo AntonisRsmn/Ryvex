@@ -42,7 +42,7 @@ module.exports = {
                 }
             });
 
-            await  channel.bulkDelete(filtered).then(message => {
+            await channel.bulkDelete(filtered).then(message => {
                 res.setDescription(`Succesfully deleted ${message.size} messages from ${target}`);
                 interaction.reply({ embeds: [res], ephemeral: true });
             });

@@ -22,13 +22,13 @@ module.exports = {
         const embed = new EmbedBuilder();
 
         if (!voiceChannel) {
-            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.");
+            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (guild.members.me.voice.channelId !== null) {
             if (member.voice.channelId !== guild.members.me.voice.channelId) {
-                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
+                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`).setTimestamp();
                 return interaction.reply({ embeds: [embed], ephemeral: true });
             }
         }
@@ -36,13 +36,13 @@ module.exports = {
         try {
 
             client.distube.setVolume(voiceChannel, volume);
-            embed.setColor("fffffe").setDescription(`🔉 Volume has been set to ${volume}%.`);
+            embed.setColor("Green").setDescription(`🔉 Volume has been set to ${volume}%.`).setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true});
 
         } catch(err) {
             console.log(err);
 
-            embed.setColor("Red").setDescription("⛔ | Something went wrong.");
+            embed.setColor("Red").setDescription("⛔ | Something went wrong.").setTimestamp();
 
             return interaction.reply({ embeds: [embed], ephemeral: true});
         }

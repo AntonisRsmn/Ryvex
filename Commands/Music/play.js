@@ -20,18 +20,18 @@ module.exports = {
         const embed = new EmbedBuilder();
 
         if (!voiceChannel) {
-            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.");
+            embed.setColor("Red").setDescription("You must be in a voice channel to execute this command.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (!interaction.member?.voice.channel?.joinable) {
-            embed.setColor("Red").setDescription("I can't join this voice channel.");
+            embed.setColor("Red").setDescription("I can't join this voice channel.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (guild.members.me.voice.channelId !== null) {
             if (member.voice.channelId !== guild.members.me.voice.channelId) {
-                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`);
+                embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`).setTimestamp();
                 return interaction.reply({ embeds: [embed], ephemeral: true });
             }
         }
@@ -39,13 +39,19 @@ module.exports = {
         try {
 
             client.distube.play(voiceChannel, query, { textChannel: channel, member: member});
-            embed.setColor("fffffe").setDescription("🎶 Request received.");
-            return interaction.reply({ embeds: [embed] });
+            embed.setColor("fffffe").setDescription("🎶 Request received.").setTimestamp();
+            return interaction.reply({ embeds: [embed] })
+            .then(() =>
+                setTimeout(
+                    () => interaction.deleteReply(),
+                    5000
+                )
+            );
 
         } catch(err) {
             console.log(err);
 
-            embed.setColor("Red").setDescription("⛔ | Something went wrong.");
+            embed.setColor("Red").setDescription("⛔ | Something went wrong.").setTimestamp();
 
             return interaction.reply({ embeds: [embed], ephemeral: true});
         }

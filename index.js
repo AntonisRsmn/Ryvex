@@ -31,6 +31,7 @@ client.on("messageCreate", (message) => {
             { name: " ", value: "🤖 Use </help:1084950800398303267> or join our [Support Server](https://discord.gg/Sh7HMQj2P)", inline: true },
         )
         .setColor(0xFFFFFE)
+        .setTimestamp()
   
     if (message.author.bot) return;
 
