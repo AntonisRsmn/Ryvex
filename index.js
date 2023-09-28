@@ -28,7 +28,7 @@ client.on("messageCreate", (message) => {
     const embed = new EmbedBuilder()
         .addFields(
             { name: " ", value: "👀 Need assistance ?", inline: true },
-            { name: " ", value: "🤖 Use </help:1084950800398303267> or join our [Support Server](https://discord.gg/Sh7HMQj2P)", inline: true },
+            { name: " ", value: "🤖 Use </help:1084950800398303267> or join our [Support Server](https://discord.gg/JDDSbxKDne)", inline: true },
         )
         .setColor(0xFFFFFE)
         .setTimestamp()
