@@ -14,7 +14,7 @@ module.exports = {
     async execute(interaction) {
         const {options, member, guild, channel} = interaction;
 
-        const query = options.getString("test");
+        const query = options.getString("query");
         const voiceChannel = member.voice.channel;
 
         const embed = new EmbedBuilder();
