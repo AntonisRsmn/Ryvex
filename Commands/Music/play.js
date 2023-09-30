@@ -29,6 +29,11 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
+        if (query.includes("https://")) {
+            embed.setColor("Red").setDescription("You can't use links because of an error please try using the name of the song.").setTimestamp();
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
         if (guild.members.me.voice.channelId !== null) {
             if (member.voice.channelId !== guild.members.me.voice.channelId) {
                 embed.setColor("Red").setDescription(`You can't use this music player as it is already active in <#${guild.members.me.voice.channelId}>`).setTimestamp();

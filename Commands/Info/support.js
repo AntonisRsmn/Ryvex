@@ -11,7 +11,7 @@ module.exports = {
         .setTitle(`***Zepp™ Support***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Need some help join [Here](https://discord.gg/Sh7HMQj2P)")
+        .setDescription("Need some help join [Here](https://discord.gg/JDDSbxKDne)")
 
         interaction.reply({ embeds: [embed]})
     }
