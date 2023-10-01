@@ -16,7 +16,7 @@ client.distube
         queue.textChannel.send(
             {
                 embeds: [new EmbedBuilder().setColor("fffffe")
-                    .setTimestamp().setThumbnail(song.thumbnail).setDescription(`🎶 | Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)]
+                    .setTimestamp().setDescription(`🎶 | Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)]
             }
         )
     )
@@ -24,7 +24,7 @@ client.distube
         queue.textChannel.send(
             {
                 embeds: [new EmbedBuilder().setColor("fffffe")
-                    .setTimestamp().setThumbnail(song.thumbnail).setDescription(`🎶 | Added \`${playlist.name}\` playlist (${playlist.songs.length
+                    .setTimestamp().setDescription(`🎶 | Added \`${playlist.name}\` playlist (${playlist.songs.length
                         } songs) to queue\n${status(queue)}`)]
             }
         )
