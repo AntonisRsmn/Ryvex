@@ -44,7 +44,7 @@ client.on("messageCreate", (message) => {
 
 module.exports = client;
 
-client.login(token).then(() => {
+client.login(client.config.token).then(() => {
     loadEvents(client);
     loadCommands(client);
 });
