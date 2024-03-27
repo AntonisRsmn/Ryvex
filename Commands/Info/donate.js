@@ -11,7 +11,7 @@ module.exports = {
         .setTitle(`***Donate***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Consider [Donating](https://www.paypal.me/AntoniosRusman) to help me make Zepp better for everyone Thanks.")
+        .setDescription("Consider [Donating](https://www.paypal.me/RusmanAntonios) to help me make Zepp better for everyone Thanks.")
 
         interaction.reply({ embeds: [embed]})
     }
