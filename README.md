@@ -1,4 +1,3 @@
-# Zepp
 Zepp is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
 
 # Music
@@ -13,6 +12,16 @@ Zepp is a small bot created by Rusman and JavaScript we look forward to add more
 /queue - Check the queue.
 
 /volume - Change the volume.
+
+/forward - Forward seconds in a song.
+
+/rewind - Rewind seconds in a song.
+
+/shuffle - Shuffle the songs in the queue.
+
+/loop - Set the loop of the song or queue.
+
+/nowplaying - Display Info about the currently playing song.
 
 # Mod
 /ban - Ban a user from the discord server.
@@ -38,8 +47,12 @@ Zepp is a small bot created by Rusman and JavaScript we look forward to add more
 
 /ppmeter - PP meter.
 
+/rps - Play rock paper scissors against the bot
+
 # info
-/botinfo - Zepp Information.
+/botinfo - Shows the information of the bot.
+
+/uptime - Shows the uptime of the bot.
 
 /help - Get a list of all the commands.
 
@@ -51,7 +64,4 @@ Zepp is a small bot created by Rusman and JavaScript we look forward to add more
 
 /whois - Get info about a member.
 
-# Owner 
-/reload commands - Reload bot commands (Bot Developer Only).
-
-/reload events - Reload the events ( Bot Developer Only).
+/poll - Create a poll and send it to a certain channel.
