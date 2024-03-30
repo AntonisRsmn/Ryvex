@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
   .setName("compliment")
-  .setDescription("Gives you compliment."),
+  .setDescription("Gives you compliments."),
   
   async execute(interaction) {
     

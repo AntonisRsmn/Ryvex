@@ -3,7 +3,7 @@ const { Client, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, } = requ
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("add-role")
-    .setDescription("Add a role to a user.")
+    .setDescription("Add a role to a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addUserOption(option =>
         option.setName("target")
@@ -12,7 +12,7 @@ module.exports = {
     )
     .addRoleOption(option =>
         option.setName("role")
-        .setDescription("Role to add to the user.")
+        .setDescription("Role to add to the member.")
         .setRequired(true)
     ),
 

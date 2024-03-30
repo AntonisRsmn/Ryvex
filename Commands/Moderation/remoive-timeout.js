@@ -7,7 +7,7 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .addUserOption(option => 
             option.setName("target")
-                .setDescription("User to remove the timeout.")
+                .setDescription("member to remove the timeout.")
                 .setRequired(true)
         ),
 

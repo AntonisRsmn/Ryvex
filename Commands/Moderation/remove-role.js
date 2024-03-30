@@ -3,16 +3,16 @@ const { Client, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, } = requ
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("remove-role")
-    .setDescription("Remove a role from a user.")
+    .setDescription("Remove a role from a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addUserOption(option =>
         option.setName("target")
-        .setDescription("User to remove the role.")
+        .setDescription("member to remove the role.")
         .setRequired(true)
     )
     .addRoleOption(option =>
         option.setName("role")
-        .setDescription("Role to remove from the user.")
+        .setDescription("Role to remove from the member.")
         .setRequired(true)
     ),
 

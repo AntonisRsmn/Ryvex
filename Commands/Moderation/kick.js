@@ -3,11 +3,11 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, } = require("dis
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("kick")
-    .setDescription("Kick a user from the guild.")
+    .setDescription("Kick a member from the guild.")
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
     .addUserOption(option =>
         option.setName("target")
-        .setDescription("User to be kicked.")
+        .setDescription("member to be kicked.")
         .setRequired(true)
         )
     .addStringOption(option =>
