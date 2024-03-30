@@ -1,4 +1,4 @@
-Music, Moderation, Fun, 24/7 and a lot more with Zepp, Give it a try and you will not regret it.
+Music, Moderation, Fun, 24/7 Online/Support and a lot more with Zepp, Give it a try and you will not regret it.
 
 Zepp is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
 
