@@ -1,5 +1,7 @@
 Zepp is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
 
+Also check out our website at zepp.glitch.me
+
 # Music
 /play - Play a song.
 
