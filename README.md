@@ -81,3 +81,5 @@ Also check out our website at zepp.glitch.me
 /userinfo - Get info about a member.
 
 /poll - Create a poll and send it to a certain channel.
+
+/ping - Latency of the bot.
