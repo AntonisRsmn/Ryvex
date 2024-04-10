@@ -25,7 +25,7 @@ module.exports = {
         }
 
         if (!interaction.member?.voice.channel?.joinable) {
-            embed.setColor("Red").setDescription("I can't join this voice channel.").setTimestamp();
+            embed.setColor("Red").setDescription("I can't join private voice channels.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
