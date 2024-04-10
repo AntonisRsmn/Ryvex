@@ -29,8 +29,8 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        if (query.includes("https://spotify.link/")) {
-            embed.setColor("Red").setDescription("You can't use spotify mobile links because of an error please try using the name or the youtube link of the song.").setTimestamp();
+        if (query.includes("https://open.spotify.com/")) {
+            embed.setColor("Red").setDescription("You can't use spotify links at the moment please try using the name or the youtube link of the song.").setTimestamp();
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
