@@ -44,7 +44,11 @@ module.exports = {
         try {
 
             client.distube.play(voiceChannel, query, { textChannel: channel, member: member});
-            embed.setColor("fffffe").setDescription("🎶 Request received.").setTimestamp();
+            embed.setColor("fffffe").setDescription("🎶 Request received.").setTimestamp()
+            .setFooter({
+                text: `By ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL(),
+              });
             return interaction.reply({ embeds: [embed] })
             .then(() =>
                 setTimeout(

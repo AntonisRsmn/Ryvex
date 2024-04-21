@@ -28,6 +28,10 @@ module.exports = {
         .setColor("fffffe")
         .setTitle("Poll")
         .setDescription(description)
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp();
 
         const embedd = new EmbedBuilder()

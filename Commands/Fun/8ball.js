@@ -44,6 +44,10 @@ module.exports = {
         { name: 'Answer: ', value: `${response}`, inline: true},
         )
         .setColor(0xFFFFFE)
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp();
         
       await interaction.reply({

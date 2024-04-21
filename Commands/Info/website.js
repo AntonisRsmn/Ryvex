@@ -11,7 +11,11 @@ module.exports = {
         .setTitle(`***Zepp Website***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Check out our [Website](https://zepp.glitch.me)")
+        .setDescription("Check out our [Website](https://zepp.gr)")
+        .setFooter({
+            text: `By ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          })
 
         interaction.reply({ embeds: [embed]})
     }

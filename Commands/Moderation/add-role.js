@@ -25,11 +25,16 @@ module.exports = {
             const embed = new EmbedBuilder()
             .setColor("fffffe")
             .setDescription(`User ${user} already has the role ${role}.`)
+            /*
             .setAuthor({
                 name: interaction.user.tag,
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
             })
-            .setFooter({ text: `Requested By ${interaction.user.tag}`})
+            */
+            .setFooter({
+                text: `By ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL(),
+              })
             .setTimestamp()
             await interaction.reply({ embeds: [embed], ephemeral: true })
             return;
@@ -39,12 +44,17 @@ module.exports = {
             await interaction.guild.members.cache.get(user.id).roles.add(role)
             const embed = new EmbedBuilder()
             .setColor("fffffe")
+            /*
             .setAuthor({
                 name: interaction.user.tag,
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
             })
+            */
             .setDescription(`Succesfully added role ${role} to ${user}.`)
-            .setFooter({ text: `Requested By ${interaction.user.tag}`})
+            .setFooter({
+                text: `By ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL(),
+              })
             .setTimestamp()
 
             await interaction.reply({ embeds: [embed], ephemeral: true })
@@ -52,11 +62,16 @@ module.exports = {
             console.error(error)
             const embed = new EmbedBuilder()
             .setColor("fffffe")
+            /*
             .setAuthor({
                 name: interaction.user.tag,
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
             })
-            .setFooter({ text: `Requested By ${interaction.user.tag}`})
+            */
+            .setFooter({
+                text: `By ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL(),
+              })
             .setTimestamp()
             .setDescription(`Faild to add role ${role} to user ${user}.`)
 
