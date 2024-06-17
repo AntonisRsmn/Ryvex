@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType } = require("discord.js");
-const { Options } = require("distube");
 
 module.exports = {
   data: new SlashCommandBuilder()
