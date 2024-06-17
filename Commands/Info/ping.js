@@ -11,6 +11,10 @@ module.exports = {
         .setTitle("Pong!")
         .setDescription(`${Math.round(client.ws.ping)}ms.`)
         .setColor(0xFFFFFE)
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp();
         
       await interaction.reply({

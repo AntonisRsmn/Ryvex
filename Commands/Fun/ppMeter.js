@@ -13,6 +13,10 @@ module.exports = {
         .setTitle('PPmeter')
         .setDescription('Your pp size is: ' + response)
         .setColor(0xFFFFFE)
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp();
         
       await interaction.reply({

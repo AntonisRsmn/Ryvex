@@ -20,6 +20,10 @@ module.exports = {
             .setImage(`${url}`)
             .setURL(url)
             .setColor("fffffe")
+            .setFooter({
+                text: `By ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL(),
+              })
 
             return interaction.reply({ embeds: [embed] });
         });

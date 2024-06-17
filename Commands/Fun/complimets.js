@@ -65,6 +65,10 @@ module.exports = {
       .setTitle('Compliment')
       .setDescription(`${compliment}`)
       .setColor(0xFFFFFE)
+      .setFooter({
+        text: `By ${interaction.user.username}`,
+        iconURL: interaction.user.displayAvatarURL(),
+      })
       .setTimestamp();
         
       await interaction.reply({

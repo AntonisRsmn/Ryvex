@@ -18,6 +18,10 @@ module.exports = {
         .addFields(
             { name: "Uptime", value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`, inline: true},
         )
+        .setFooter({
+            text: `By ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          })
 
         interaction.reply({ embeds: [embed] })
     }

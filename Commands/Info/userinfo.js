@@ -23,10 +23,15 @@ module.exports = {
         .addFields(
           { name: "Name: ", value: `${user}`, inline: false },
           { name: "Roles: ", value: `${member.roles.cache.map(r => r).join(` ` )}`, inline: false },
+          { name: "Nickname: ", value: `${member.nickname}`, inline: true },
+          { name: "ID: ", value: `${user.id}`, inline: true },
           { name: "Joined Server: ", value: `<t:${parseInt(member.joinedAt / 1000)}:R>`, inline: true },
           { name: "Joined Discord: ", value: `<t:${parseInt(member.user.createdAt / 1000)}:R>`, inline: true },
         )
-        .setFooter({ text: `User ID: ${user.id}`})
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp()
         
       await interaction.reply({ embeds: [embed] });
