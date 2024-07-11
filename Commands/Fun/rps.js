@@ -30,6 +30,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🗻 Rock", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -42,6 +46,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🗻 Rock", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -54,6 +62,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🗻 Rock", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -68,6 +80,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🧻 Paper", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -80,6 +96,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🧻 Paper", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -92,6 +112,10 @@ module.exports = {
                     { name: "Your choice: ", value: "🧻 Paper", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -106,6 +130,10 @@ module.exports = {
                     { name: "Your choice: ", value: "✂ Scissors", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -118,6 +146,10 @@ module.exports = {
                     { name: "Your choice: ", value: "✂ Scissors", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -130,6 +162,10 @@ module.exports = {
                     { name: "Your choice: ", value: "✂ Scissors", inline: true },
                     { name: "My choice: ", value: `${responce}`, inline: true },
                 )
+                .setFooter({
+                    text: `By ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                  })
                 .setTimestamp();
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });

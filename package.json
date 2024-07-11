@@ -1,7 +1,40 @@
 {
+<<<<<<< HEAD
   "name": "zepp",
   "version": "1.8.5",
   "description": "a small discord bot made to help with everything you need",
+=======
+<<<<<<< HEAD
+  "name": "zepp",
+  "version": "1.8.5",
+  "description": "a small discord bot made to help with everything you need",
+=======
+  "dependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "@distube/spotify": "^1.5.1",
+    "@distube/ytdl-core": "^4.13.3",
+    "@distube/ytsr": "^1.2.5",
+    "ascii-table": "^0.0.9",
+    "cpu-stat": "^2.0.1",
+    "discord.js": "^14.7.1",
+    "distube": "^4.1.0",
+    "ffmpeg-static": "^5.2.0",
+    "fs": "^0.0.1-security",
+    "libsodium-wrappers": "^0.7.11",
+    "mongodb": "^6.0.0",
+    "mongoose": "^6.12.0",
+    "ms": "^2.1.3",
+    "node-fetch": "^3.3.0",
+    "nodemon": "^3.0.1",
+    "npm": "^10.5.2",
+    "npm-check-updates": "^16.14.18",
+    "yt-search": "^2.10.4",
+    "ytdl-core": "^4.11.5"
+  },
+  "name": "discord-bot",
+  "version": "1.0.0",
+>>>>>>> cfa78d127388ff45503db829757bae992c1f04eb
+>>>>>>> 009a04406adff4e59cc8e8fd9b5def4b937074e8
   "main": "index.js",
   "scripts": {
     "test": "/help"

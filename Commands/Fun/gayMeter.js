@@ -14,6 +14,10 @@ module.exports = {
         .setTitle('Gay meter')
         .setDescription('You are: ' + response + ' gay')
         .setColor(0xFFFFFE)
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
         .setTimestamp();
         
       await interaction.reply({

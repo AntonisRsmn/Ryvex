@@ -37,6 +37,10 @@ module.exports = {
         const embed = new EmbedBuilder()
         .setDescription(`The channel ***${channel}*** has been locked with reson ***${reason}***`)
         .setColor("#FFFFFE")
+        .setFooter({
+            text: `By ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          })
 
         await interaction.reply({ embeds: [embed]  })
     }

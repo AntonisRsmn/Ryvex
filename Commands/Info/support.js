@@ -12,6 +12,10 @@ module.exports = {
         .setColor("#fffffe")
         .setTimestamp()
         .setDescription("Need some help join [Here](https://discord.gg/JDDSbxKDne)")
+        .setFooter({
+            text: `By ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          })
 
         interaction.reply({ embeds: [embed]})
     }
