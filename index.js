@@ -11,16 +11,6 @@ const client = new Client({
     partials: [User, Message, GuildMember, ThreadMember, Channel],
 });
 
-const { DisTube } = require('distube');
-const { SpotifyPlugin } = require("@distube/spotify");
-
-client.distube = new DisTube(client, {
-    emitNewSongOnly: true,
-    leaveOnFinish: true,
-    emitAddSongWhenCreatingQueue: false,
-    plugins: [new SpotifyPlugin()]
-});
-
 client.commands = new Collection();
 client.config = require("./config.json");
 

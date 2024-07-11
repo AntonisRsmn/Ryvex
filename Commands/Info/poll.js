@@ -1,11 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType } = require("discord.js");
-const { Options } = require("distube");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("poll")
     .setDescription("Create a poll and send it to a certai channel.")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Admiistrator)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(option =>
       option.setName("description")
       .setDescription("Describe the poll.")
