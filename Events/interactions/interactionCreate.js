@@ -5,7 +5,7 @@ module.exports = {
 
     execute(interaction, client) {
         const embed = new EmbedBuilder()
-        .setTitle("Zepp™")
+        .setTitle("Ryvex™")
         .setDescription("Commands can only be used inside servers.")
         .setColor("fffffe")
         .setTimestamp()

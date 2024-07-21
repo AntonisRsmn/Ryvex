@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ComponentType, ActionRowBuilder, Stri
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("help")
-    .setDescription("Get a list of all the commands from Zepp."),
+    .setDescription("Get a list of all the commands from ryvex."),
     async execute(interaction) {
         const emojis = {
             info:"📝",
@@ -89,7 +89,7 @@ module.exports = {
                     return {
                         name: `***${cmd.name}***`,
                         value: cmd.description,
-                        inline: true,
+                        inline: false,
                     };
                 })
             );

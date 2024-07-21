@@ -1,31 +1,8 @@
-Music, Moderation, Fun, 24/7 Online/Support and a lot more with Zepp, Give it a try and you will not regret it.
+Moderation, Fun, 24/7 Online/Support and a lot more with Ryvex, Give it a try and you will not regret it.
 
-Zepp is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
+Ryvex is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
 
-Also check out our website at zepp.glitch.me
-
-# Music
-/play - Play a song.
-
-/pause - Pause the song.
-
-/resume - Resume the song.
-
-/skip - Skip the song.
-
-/queue - Check the queue.
-
-/volume - Change the volume.
-
-/forward - Forward seconds in a song.
-
-/rewind - Rewind seconds in a song.
-
-/shuffle - Shuffle the songs in the queue.
-
-/loop - Set the loop of the song or queue.
-
-/nowplaying - Display Info about the currently playing song.
+Also check out our website at https://ryvex.xyz
 
 # Mod
 /ban - Ban a member from the guild.
@@ -72,11 +49,11 @@ Also check out our website at zepp.glitch.me
 
 /help - Get a list of all the commands.
 
-/support - Zepp™ Support Server.
+/support - Ryvex™ Support Server.
 
-/website - Zepp Website.
+/website - Ryvex Website.
 
-/donate - Support Zepp by donating.
+/donate - Support Ryvex by donating.
 
 /userinfo - Get info about a member.
 

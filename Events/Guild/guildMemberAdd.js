@@ -14,7 +14,7 @@ module.exports = {
 
             const welcomeEmbed = new EmbedBuilder()
                 .setTitle("***New member!***")
-                .setDescription(`Welcome <@${member.id}> to ***Zepp™ Support*** Hope you have great time here`)
+                .setDescription(`Welcome <@${member.id}> to ***Ryvex™ Support*** Hope you have great time here`)
                 .setColor(0xfffffe)
                 .setTimestamp();
 
