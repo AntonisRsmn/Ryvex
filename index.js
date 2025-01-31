@@ -32,26 +32,26 @@ client.on("messageCreate", (message) => {
     }
 });
 
-client.on("messageCreate", (message) => {
-    const embed = new EmbedBuilder()
-        .setTitle("Ryvex™")
-        .setDescription("Commands can only be used inside servers.")
-        .setColor("fffffe")
-        .setTimestamp()
+// client.on("messageCreate", (message) => {
+//     const embed = new EmbedBuilder()
+//         .setTitle("Ryvex™")
+//         .setDescription("Commands can only be used inside servers.")
+//         .setColor("fffffe")
+//         .setTimestamp()
 
-        if (!interaction.isChatInputCommand()) return;
+//         if (!interaction.isChatInputCommand()) return;
 
-        const command = client.commands.get(interaction.commandName);
+//         const command = client.commands.get(interaction.commandName);
 
-        if (!command) {
-            interaction.reply({content: "outdated command"});
-        }
+//         if (!command) {
+//             interaction.reply({content: "outdated command"});
+//         }
 
-        if (!interaction.guild)
-            return interaction.reply({ embeds: [embed], ephemeral: true })
+//         if (!interaction.guild)
+//             return interaction.reply({ embeds: [embed], ephemeral: true })
 
-        command.execute(interaction, client);
-});
+//         command.execute(interaction, client);
+// });
 
 module.exports = client;
 
