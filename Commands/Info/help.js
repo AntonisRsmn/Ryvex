@@ -89,7 +89,7 @@ module.exports = {
                     return {
                         name: `***${cmd.name}***`,
                         value: cmd.description,
-                        inline: false,
+                        inline: true,
                     };
                 })
             );
