@@ -44,12 +44,12 @@ module.exports = {
 
             await channel.bulkDelete(filtered).then(message => {
                 res.setDescription(`Succesfully deleted ${message.size} messages from ${target}`);
-                interaction.reply({ embeds: [res], ephemeral: true });
+                interaction.reply({ embeds: [res], flags: 64 });
             });
         } else {
             await channel.bulkDelete(amount, true).then(message => {
                 res.setDescription(`Succesfully deleted ${message.size} messages from the channel`);
-                interaction.reply({ embeds: [res], ephemeral: true });
+                interaction.reply({ embeds: [res], flags: 64 });
             })
         }
     }

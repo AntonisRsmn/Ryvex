@@ -36,7 +36,7 @@ module.exports = {
                 iconURL: interaction.user.displayAvatarURL(),
               })
             .setTimestamp()
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
             return;
         }
 
@@ -57,7 +57,7 @@ module.exports = {
               })
             .setTimestamp()
 
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
         } catch (error) {
             console.error(error)
             const embed = new EmbedBuilder()
@@ -75,7 +75,7 @@ module.exports = {
             .setTimestamp()
             .setDescription(`Faild to add role ${role} to user ${user}.`)
 
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
         }
     }
 }

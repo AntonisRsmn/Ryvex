@@ -25,7 +25,7 @@ module.exports = {
                 .setTimestamp();
 
             await interaction.reply({
-                embeds: [embed], ephemeral: true
+                embeds: [embed], flags: 64
             });
         } catch (err) {
             console.log(err);
@@ -34,7 +34,7 @@ module.exports = {
                 .setDescription("Please provide a valid member's ID.")
                 .setColor("#FF0000");
 
-            interaction.reply({ embeds: [errEmbed], ephemeral: true });
+            interaction.reply({ embeds: [errEmbed], flags: 64 });
         }
     }
 }

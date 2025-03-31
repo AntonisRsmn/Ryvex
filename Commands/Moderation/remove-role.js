@@ -31,7 +31,7 @@ module.exports = {
             })
             .setFooter({ text: `Requested By ${interaction.user.tag}`})
             .setTimestamp()
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
             return;
         }
 
@@ -47,7 +47,7 @@ module.exports = {
             .setFooter({ text: `Requested By ${interaction.user.tag}`})
             .setTimestamp()
 
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
         } catch (error) {
             console.error(error)
             const embed = new EmbedBuilder()
@@ -60,7 +60,7 @@ module.exports = {
             .setTimestamp()
             .setDescription(`Faild to remove role ${role} from user ${user}.`)
 
-            await interaction.reply({ embeds: [embed], ephemeral: true })
+            await interaction.reply({ embeds: [embed], flags: 64 })
         }
     }
 }

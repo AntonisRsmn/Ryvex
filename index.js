@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits, Partials, Collection, EmbedBuilder } = require("discord.js");
+require('events').defaultMaxListeners = 20;
 
 const { Guilds, GuildMembers, GuildMessages, GuildVoiceStates } = GatewayIntentBits;
 const { User, Message, GuildMember, ThreadMember, Channel} = Partials;

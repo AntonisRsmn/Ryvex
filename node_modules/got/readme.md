@@ -22,24 +22,6 @@
 			<img src="https://sindresorhus.com/assets/thanks/fame-logo-dark.svg" width="200" alt="Fame Helsinki">
 		</a>
 		<br>
-		<br>
-		<br>
-		<br>
-		<a href="https://encore.dev?utm_campaign=github_repo&utm_medium=referral&utm_content=sindre&utm_source=github">
-			<div>
-				<picture>
-					<source width="230" media="(prefers-color-scheme: dark)" srcset="https://sindresorhus.com/assets/thanks/encore-logo-dark.svg">
-					<source width="230" media="(prefers-color-scheme: light)" srcset="https://sindresorhus.com/assets/thanks/encore-logo-light.svg">
-					<img width="230" src="https://sindresorhus.com/assets/thanks/encore-logo-light.svg" alt="Encore logo">
-				</picture>
-			</div>
-			<b>The development platform for building type-safe distributed systems</b>
-			<div>
-				<sup>End-to-end tooling from local development to automated DevOps and infrastructure in your AWS/GCP.</sup>
-			</div>
-			<br>
-			<br>
-		</a>
 	</p>
 	<hr>
 	<br>
@@ -61,7 +43,7 @@
 
 ---
 
-**You probably want [Ky](https://github.com/sindresorhus/ky) instead, by the same people. It's smaller, works in the browser too, and is more stable since it's built upon [`Fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).**
+**You probably want [Ky](https://github.com/sindresorhus/ky) instead, by the same people. It's smaller, works in the browser too, and is more stable since it's built on [`Fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). Or [fetch-extras](https://github.com/sindresorhus/fetch-extras) for simple needs.**
 
 ---
 

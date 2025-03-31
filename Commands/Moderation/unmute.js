@@ -28,12 +28,12 @@ module.exports = {
             .setTimestamp();
 
         if (member.roles.highest.position >= interaction.member.roles.highest.position)
-            return interaction.reply({ embeds: [errEmbed], ephemeral: true});
+            return interaction.reply({ embeds: [errEmbed], flags: 64});
 
         try {
             await member.timeout(null);
 
-            return interaction.reply({ embeds: [embed], ephemeral: true});
+            return interaction.reply({ embeds: [embed], flags: 64});
         } catch (err) {
             console.log(err);
         }

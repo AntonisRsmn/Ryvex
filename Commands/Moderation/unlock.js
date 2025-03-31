@@ -24,7 +24,7 @@ module.exports = {
         if (channel.permissionsFor(guild.id).has("SendMessages"))
         return interaction.reply({
             embeds: [errEmbed],
-            ephemeral: true
+            flags: 64
         })
 
         channel.permissionOverwrites.create(interaction.guild.id, { SendMessages: null })

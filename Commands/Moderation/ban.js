@@ -28,7 +28,7 @@ module.exports = {
                 .setColor("#FF0000")
 
             if (member.roles.highest.position >= interaction.member.roles.highest.position)
-                return interaction.reply({ embeds: [errEmbed], ephemeral: true });
+                return interaction.reply({ embeds: [errEmbed], flags: 64 });
 
             await member.ban({reason});
 
@@ -38,7 +38,7 @@ module.exports = {
                 .setTimestamp();
 
             await interaction.reply({
-                embeds: [embed], ephemeral: true
+                embeds: [embed], flags: 64
             });
         }
 }

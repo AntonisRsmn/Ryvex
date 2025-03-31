@@ -42,7 +42,7 @@ module.exports = {
             const m = await channel.send({ embeds: [embed] });
             await m.react("✅");
             await m.react("❌");
-            await interaction.reply({ embeds: [embedd], ephemeral: true });
+            await interaction.reply({ embeds: [embedd], flags: 64 });
         } catch (err) {
             console.log(err);
         }

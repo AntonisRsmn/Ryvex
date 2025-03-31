@@ -36,7 +36,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "🧻 Paper") {
@@ -52,7 +52,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "✂ Scissors") {
@@ -68,7 +68,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
         }
 
@@ -86,7 +86,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "🧻 Paper") {
@@ -102,7 +102,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "✂ Scissors") {
@@ -118,7 +118,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
         }
 
@@ -136,7 +136,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "🧻 Paper") {
@@ -152,7 +152,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
 
             if (responce === "✂ Scissors") {
@@ -168,7 +168,7 @@ module.exports = {
                   })
                 .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: 64 });
             }
         }
     }
