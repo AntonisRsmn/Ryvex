@@ -11,7 +11,7 @@ module.exports = {
         .setTitle(`***Ryvex Website***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Check out our [Website](https://ryvex.gr)")
+        .setDescription("Check out our [Website](https://ryvex.gr/)")
         .setFooter({
             text: `By ${interaction.user.username}`,
             iconURL: interaction.user.displayAvatarURL(),
