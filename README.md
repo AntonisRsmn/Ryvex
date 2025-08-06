@@ -2,7 +2,7 @@ Moderation, Fun, 24/7 Online/Support and a lot more with Ryvex, Give it a try an
 
 Ryvex is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
 
-Also check out our website at https://ryvex.xyz
+Also check out our website at https://ryvex.gr
 
 # Mod
 /ban - Ban a member from the guild.
