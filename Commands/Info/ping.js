@@ -6,6 +6,7 @@ module.exports = {
       .setDescription("Latency of the bot."),
 
     async execute(interaction, client) {
+      try {
       
       const embed = new EmbedBuilder()
         .setTitle("Pong!")
@@ -19,7 +20,10 @@ module.exports = {
         
       await interaction.reply({
         embeds: [embed],
-    
-    });  
+      });
+      
+      } catch (err) {
+        await interaction.reply({ content: "There was an error.", flags: 64 });
+    }
   }    
 }

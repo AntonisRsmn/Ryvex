@@ -18,6 +18,8 @@ module.exports = {
     ),
 
     async execute(interaction) {
+      try {
+
         const { options } = interaction;
 
         const channel = options.getChannel("channel");
@@ -46,5 +48,9 @@ module.exports = {
         } catch (err) {
             console.log(err);
         }
+
+        } catch (err) {
+        await interaction.reply({ content: "There was an error.", flags: 64 });
+      }
     }
 }

@@ -6,6 +6,7 @@ module.exports = {
     .setDescription("Support Ryvex by donating"),
 
     async execute(interaction, client) {
+        try {
 
         const embed = new EmbedBuilder()
         .setTitle(`***Donate***`)
@@ -18,5 +19,9 @@ module.exports = {
           })
 
         interaction.reply({ embeds: [embed]})
+
+        } catch (err) {
+        await interaction.reply({ content: "There was an error.", flags: 64 });
+        }
     }
 }

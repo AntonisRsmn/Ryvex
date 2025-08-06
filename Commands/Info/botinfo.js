@@ -7,6 +7,7 @@ module.exports = {
     .setDescription("Get information about the bot."),
 
   async execute(interaction, client) {
+    try{
     try {
       const days = Math.floor(client.uptime / 86400000);
       const hours = Math.floor(client.uptime / 3600000) % 24;
@@ -80,6 +81,10 @@ module.exports = {
       }
     } catch (err) {
       interaction.reply({ content: `Error: ${err.message || err}`, flags: 64 });
+    }
+
+    } catch (err) {
+        await interaction.reply({ content: "There was an error.", flags: 64 });
     }
   },
 };
