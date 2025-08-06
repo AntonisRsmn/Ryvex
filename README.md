@@ -96,4 +96,4 @@ Need help or suggestions? Join the official Ryvex Support Discord via /support c
 Ryvex is released under the MIT License (or your preferred open-source license).
 🤝 Credits
 
-Built by Antonis Rusman — web developer & bot creator. More projects: rusman.gr
+Built by Antonis Rusman — web developer & bot creator. More projects: [rusman.gr](https://rusman.gr)
