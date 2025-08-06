@@ -1,17 +1,19 @@
-const { SlashCommandBuilder, EmbedBuilder} = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-  .setName("8ball")
-  .setDescription("Answers a yes or no question.")
-  .addStringOption(option => option.setName('question')
-  .setDescription("Question to answer.")
-  .setRequired(true)
-  ),
-  
+    .setName("8ball")
+    .setDescription("Answers a yes or no question.")
+    .addStringOption((option) =>
+      option
+        .setName("question")
+        .setDescription("Question to answer.")
+        .setRequired(true)
+    ),
+
   async execute(interaction) {
     const { options } = interaction;
-    
+
     var responses = [
       "As I see it, yes.",
       "Ask again later.",
@@ -32,27 +34,27 @@ module.exports = {
       "Without a doubt.",
       "Yes.",
       "Yes – definitely.",
-      "You may rely on it."]
-      
+      "You may rely on it.",
+    ];
+
     const answer = options.getString("question");
     const response = responses[Math.floor(Math.random() * responses.length)];
-      
+
     const embed = new EmbedBuilder()
-      .setTitle('8Ball')
+      .setTitle("8Ball")
       .addFields(
-        { name: 'Question: ', value: `${answer}`, inline: true},
-        { name: 'Answer: ', value: `${response}`, inline: true},
-        )
-        .setColor(0xFFFFFE)
-        .setFooter({
-          text: `By ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp();
-        
-      await interaction.reply({
-        embeds: [embed],
-    
-    });  
-  }    
-}
+        { name: "Question: ", value: `${answer}`, inline: true },
+        { name: "Answer: ", value: `${response}`, inline: true }
+      )
+      .setColor(0xfffffe)
+      .setFooter({
+        text: `By ${interaction.user.username}`,
+        iconURL: interaction.user.displayAvatarURL(),
+      })
+      .setTimestamp();
+
+    await interaction.reply({
+      embeds: [embed],
+    });
+  },
+};

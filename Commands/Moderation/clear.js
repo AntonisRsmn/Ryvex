@@ -1,56 +1,67 @@
-const { SlashCommandBuilder, CommandInteraction, PermissionFlags, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  CommandInteraction,
+  PermissionFlags,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 
 module.exports = {
-    data: new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("clear")
     .setDescription("clear up to 99 messages from a target or channel.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
-    .addIntegerOption(option =>
-        option.setName("amount")
+    .addIntegerOption((option) =>
+      option
+        .setName("amount")
         .setDescription("Amount of messages to clear.")
         .setMinValue(1)
         .setMaxValue(99)
         .setRequired(true)
-        )
-    .addUserOption(option => 
-        option.setName("target")
+    )
+    .addUserOption((option) =>
+      option
+        .setName("target")
         .setDescription("Select a target to clear their messages.")
         .setRequired(false)
-        ),
-    
-    async execute(interaction) {
-        const { channel, options } = interaction;
+    ),
 
-        const amount = options.getInteger("amount");
-        const target = options.getUser("target");
+  async execute(interaction) {
+    const { channel, options } = interaction;
 
-        const messages = await channel.messages.fetch({
-            limit: amount +1,
-        });
+    const amount = options.getInteger("amount");
+    const target = options.getUser("target");
 
-        const res = new EmbedBuilder()
-        .setColor("#fffffe")
+    const messages = await channel.messages.fetch({
+      limit: amount + 1,
+    });
 
-        if (target) {
-            let i = 0;
-            const filtered = [];
+    const res = new EmbedBuilder().setColor("#fffffe");
 
-            (await messages).filter((msg) => {
-                if(msg.author.id === target.id && amount > i) {
-                    filtered.push(msg);
-                    i++;
-                }
-            });
+    if (target) {
+      let i = 0;
+      const filtered = [];
 
-            await channel.bulkDelete(filtered).then(message => {
-                res.setDescription(`Succesfully deleted ${message.size} messages from ${target}`);
-                interaction.reply({ embeds: [res], flags: 64 });
-            });
-        } else {
-            await channel.bulkDelete(amount, true).then(message => {
-                res.setDescription(`Succesfully deleted ${message.size} messages from the channel`);
-                interaction.reply({ embeds: [res], flags: 64 });
-            })
+      (await messages).filter((msg) => {
+        if (msg.author.id === target.id && amount > i) {
+          filtered.push(msg);
+          i++;
         }
+      });
+
+      await channel.bulkDelete(filtered).then((message) => {
+        res.setDescription(
+          `Succesfully deleted ${message.size} messages from ${target}`
+        );
+        interaction.reply({ embeds: [res], flags: 64 });
+      });
+    } else {
+      await channel.bulkDelete(amount, true).then((message) => {
+        res.setDescription(
+          `Succesfully deleted ${message.size} messages from the channel`
+        );
+        interaction.reply({ embeds: [res], flags: 64 });
+      });
     }
-}
+  },
+};

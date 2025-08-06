@@ -1,12 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder} = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-  .setName("compliment")
-  .setDescription("Gives you compliments."),
-  
+    .setName("compliment")
+    .setDescription("Gives you compliments."),
+
   async execute(interaction) {
-    
     var compliments = [
       "You’re that “Nothing” when people ask me what I’m thinking about.",
       "You look great today.",
@@ -57,23 +56,24 @@ module.exports = {
       "You’re more fun than a ball pit filled with candy. (And seriously, what could be more fun than that?)",
       "That thing you don’t like about yourself is what makes you so interesting.",
       "You’re wonderful.",
-      "Everyday is just BLAH when I don’t see you For reals!",]
-      
-    const compliment = compliments[Math.floor(Math.random() * compliments.length)];
-      
+      "Everyday is just BLAH when I don’t see you For reals!",
+    ];
+
+    const compliment =
+      compliments[Math.floor(Math.random() * compliments.length)];
+
     const embed = new EmbedBuilder()
-      .setTitle('Compliment')
+      .setTitle("Compliment")
       .setDescription(`${compliment}`)
-      .setColor(0xFFFFFE)
+      .setColor(0xfffffe)
       .setFooter({
         text: `By ${interaction.user.username}`,
         iconURL: interaction.user.displayAvatarURL(),
       })
       .setTimestamp();
-        
-      await interaction.reply({
-        embeds: [embed],
-    
-    });  
-  }    
-}
+
+    await interaction.reply({
+      embeds: [embed],
+    });
+  },
+};
