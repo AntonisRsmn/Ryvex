@@ -11,7 +11,7 @@ module.exports = {
         .setTitle(`***Donate***`)
         .setColor("#fffffe")
         .setTimestamp()
-        .setDescription("Consider [Donating](https://www.paypal.me/RusmanAntonios) to help me make Ryvex better for everyone Thanks.")
+        .setDescription("Consider [Donating](https://www.paypal.com/paypalme/AnthoxWasTaken) to help me make Ryvex better for everyone Thanks.")
         .setFooter({
             text: `By ${interaction.user.username}`,
             iconURL: interaction.user.displayAvatarURL(),
