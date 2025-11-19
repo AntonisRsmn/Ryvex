@@ -1,62 +1,99 @@
-Moderation, Fun, 24/7 Online/Support and a lot more with Ryvex, Give it a try and you will not regret it.
+# Ryvex 🤖
 
-Ryvex is a small bot created by Rusman and JavaScript we look forward to add more commands and hopefully join more servers
+**Ryvex** is a multipurpose Discord bot built to help manage your server with moderation tools, fun commands, economy features, polls, music, and more — all accessible via slash `/` commands.
 
-Also check out our website at https://ryvex.gr
+Explore it in action at [https://ryvex.gr](https://ryvex.gr)
 
-# Mod
-/ban - Ban a member from the guild.
+---
 
-/clear - Clear a specific amount of messages from a target or channel.
+## 🌟 Overview
 
-/kick - Kick a member from the guild.
+Ryvex is a versatile Discord bot created by Antonis Rusman with Node.js and `discord.js`. Designed for moderation, entertainment, and utility, Ryvex aims to enhance the server experience with minimal setup.
 
-/lock - Lock a given channel.
+---
 
-/unban - Unban a member from the guilf.
+## ⚙️ Features & Commands
 
-/unlock - Unlock a given channel.
+### Moderation
+- `/ban`, `/kick`, `/mute`, `/timeout`, `/clear` – manage members and messaging
+- `/lock` & `/unlock` – secure sensitive channels  
+- `/add-role`, `/remove-role`, `/unban` – manage roles and permissions
 
-/add-role - Add a role to a member.
+### Fun
+- `/8ball` – yes/no question predictor  
+- `/compliment` – sends a compliment  
+- `/meme` – delivers a random meme  
+- `/gaymeter`, `/ppmeter`, `/rps` – whimsical mini‑games and meters
 
-/remove-role - Remove a role from a member.
+### Utility
+- `/botinfo` – shows Ryvex’s current stats  
+- `/uptime` – indicates how long the bot has been online  
+- `/userinfo` or `/whois` – user details lookup  
+- `/poll` – create polls and post them to a channel  
+- `/support` – link to Ryvex Support Server  
+- `/website` – open Ryvex official site  
+- `/donate` – options for supporting development  
+- Help: `/help` — lists all available commands:contentReference[oaicite:4]{index=4}
 
-/mute - Mute a member from the guild.
+### Optional
+- Music playback: `/play`, `/pause`, `/skip`, `/queue`, `/volume` (if music features are enabled)
 
-/unmute - Unmute a member from the guild
+---
 
-/timeout - Timeout a member from the guild.
+## 🚀 Installation & Setup
 
-/remove-timeout - Remove timeout from a member of the guild.
+### 1. Invite the Bot
+Visit Ryvex’s website or use the invite link on bot lists like Top.gg to add Ryvex to your server.
 
-# Fun
-/8ball - Answer a yes or no question.
+### 2. Enable Slash Commands
+Ensure Ryvex has proper permissions in your Discord server, including:
+- Manage roles and messages
+- Send messages and embed links
+- Use slash commands
 
-/compliment - Gives you compliments.
+### 3. Configure Permissions
+Use Discord role settings to limit who can use moderation commands. You may also configure channel-specific access.
 
-/gaymeter - Gay meter.
+---
 
-/meme - Sends some funny memes.
+## 🧩 Tech Stack & Architecture
 
-/ppmeter - PP meter.
+- **Built with**: Node.js & `discord.js` library
+- **Slash command handlers** using Discord API v10  
+- **Hosted**: usually on cloud VPS or serverless platform  
+- **No external dependencies** required for operation—stateless and easy to deploy
 
-/rps - Play rock paper scissors against the bot
+---
 
-# info
-/botinfo - Shows the information of the bot.
+## 🧭 Why Use Ryvex?
 
-/uptime - Shows the uptime of the bot.
+- ✅ Comprehensive features: mix of moderation tools and fun utilities  
+- ⚡ Slash commands provide clean, intuitive UX  
+- 🔄 Lightweight and always-on (24/7 runtime supported):contentReference[oaicite:8]{index=8}  
+- 🌐 Web dashboard via [ryvex.gr](https://ryvex.gr) and support community
 
-/help - Get a list of all the commands.
+---
 
-/support - Ryvex™ Support Server.
+🎯 Roadmap (What’s Next)
 
-/website - Ryvex Website.
+    ✅ Add more fun commands
 
-/donate - Support Ryvex by donating.
+    ⚙️ Enhance economy/game systems
 
-/userinfo - Get info about a member.
+    🎶 Improve music support & queue functionality
 
-/poll - Create a poll and send it to a certain channel.
+    📊 Provide server analytics dashboard
 
-/ping - Latency of the bot.
+    🛠 Expand localization or custom prefixes support
+
+💡 Contribution & Support
+
+Contributions are welcome! Feel free to open pull requests or issues in the repository.
+
+Need help or suggestions? Join the official Ryvex Support Discord via /support command or visit the website to find the invite link.
+📄 License
+
+Ryvex is released under the MIT License (or your preferred open-source license).
+🤝 Credits
+
+Built by Antonis Rusman — web developer & bot creator. More projects: [rusman.gr](https://rusman.gr)
