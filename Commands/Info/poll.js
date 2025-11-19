@@ -3,15 +3,17 @@ const {
   EmbedBuilder,
   PermissionFlagsBits,
   ChannelType,
+  MessageFlags,
 } = require("discord.js");
 
-// Store poll message IDs
+// Poll message IDs (shared via require cache)
 const pollMessages = [];
+const POLL_EMOJIS = ["✅", "❌"];
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("poll")
-    .setDescription("Create a poll and send it to a certai channel.")
+    .setDescription("Create a poll and send it to a certain channel.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption((option) =>
       option
@@ -22,21 +24,34 @@ module.exports = {
     .addChannelOption((option) =>
       option
         .setName("channel")
-        .setDescription("Where do you want to send the poll to ?.")
+        .setDescription("Where do you want to send the poll?")
         .addChannelTypes(ChannelType.GuildText)
         .setRequired(true)
     ),
 
-  pollMessages, // Export for use in index.js
+  pollMessages,
+  POLL_EMOJIS,
 
   async execute(interaction) {
-    try {
-      const { options } = interaction;
-      const channel = options.getChannel("channel");
-      const description = options.getString("description");
+    const safeReply = async (payload) => {
+      try {
+        if (interaction.replied || interaction.deferred) {
+          return interaction.followUp({ ...payload, flags: MessageFlags.Ephemeral }).catch(() => {});
+        }
+        return interaction.reply({ ...payload, flags: MessageFlags.Ephemeral }).catch(() => {});
+      } catch {}
+    };
 
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
+    try {
+      const channel = interaction.options.getChannel("channel");
+      const description = interaction.options.getString("description");
+
+      if (!channel) {
+        return safeReply({ content: "Channel not found." });
+      }
+
+      const pollEmbed = new EmbedBuilder()
+        .setColor(0xfffffe)
         .setTitle("Poll")
         .setDescription(description)
         .setFooter({
@@ -45,22 +60,24 @@ module.exports = {
         })
         .setTimestamp();
 
-      const embedd = new EmbedBuilder()
-        .setColor("fffffe")
-        .setTitle(`Poll was succesfully sent to ${channel}.`)
+      const confirmEmbed = new EmbedBuilder()
+        .setColor(0xfffffe)
+        .setTitle(`Poll sent to #${channel.name}`)
         .setTimestamp();
 
-      try {
-        const m = await channel.send({ embeds: [embed] });
-        await m.react("✅");
-        await m.react("❌");
-        pollMessages.push(m.id); // Store poll message ID
-        await interaction.reply({ embeds: [embedd], flags: 64 });
-      } catch (err) {
-        console.log(err);
+      const sent = await channel.send({ embeds: [pollEmbed] });
+
+      // React with allowed poll emojis
+      for (const e of POLL_EMOJIS) {
+        await sent.react(e).catch(() => {});
       }
+
+      pollMessages.push(sent.id);
+
+      await safeReply({ embeds: [confirmEmbed] });
     } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
+      console.error("[Poll] Error creating poll:", err);
+      await safeReply({ content: "Failed to create poll." });
     }
   },
 };
