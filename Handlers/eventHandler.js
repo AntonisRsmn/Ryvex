@@ -20,9 +20,11 @@ function loadEvents(client) {
                         event.execute(...args, client)
                 );
             } else {
-                if (event.once)
-                    client.once(event.name, (...args) => event.execute(...args, client));
-                else client.on(event.name, (...args) => event.execute(...args, client));
+                if (client.listenerCount(event.name) === 0) {
+                  client.on(event.name, (...args) => event.execute(...args, client));
+                } else {
+                  console.warn(`Skipped duplicate listener for event "${event.name}"`);
+                }
             }
             table.addRow(file, "loaded");
             continue;
@@ -31,4 +33,4 @@ function loadEvents(client) {
     return console.log(table.toString(), "\nLoaded events");
 }
 
-module.exports = {loadEvents};
+module.exports = { loadEvents };

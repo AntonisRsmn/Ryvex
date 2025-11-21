@@ -33,6 +33,9 @@ const client = new Client({
   partials: [User, Message, GuildMember, ThreadMember, Channel, Reaction],
 });
 
+// set client-specific listener limit (instead of require('events').defaultMaxListeners)
+client.setMaxListeners(20);
+
 client.commands = new Collection();
 client.config = require("./config.json");
 
