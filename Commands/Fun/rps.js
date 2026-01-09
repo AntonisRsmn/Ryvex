@@ -1,184 +1,79 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("rps")
-    .setDescription("Play rock paper scissors against the bot.")
-    .addStringOption((option) =>
+    .setDescription("Play rock, paper, scissors against the bot.")
+    .addStringOption(option =>
       option
         .setName("choice")
-        .setDescription("Choose Rock, Paper or Scissors")
+        .setDescription("Choose rock, paper, or scissors.")
         .addChoices(
-          { name: "🗻 Rock", value: "🗻 Rock" },
-          { name: "🧻 Paper", value: "🧻 Paper" },
-          { name: "✂ Scissors", value: "✂ Scissors" }
+          { name: "🗻 Rock", value: "rock" },
+          { name: "🧻 Paper", value: "paper" },
+          { name: "✂ Scissors", value: "scissors" }
         )
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    const { options } = interaction;
-    var list = ["🗻 Rock", "🧻 Paper", "✂ Scissors"];
-    const option = options.getString("choice");
-    const embed = new EmbedBuilder();
-    const responce = list[Math.floor(Math.random() * list.length)];
+    try {
+      const userChoice = interaction.options.getString("choice");
 
-    if (interaction.options.getString("choice") === "🗻 Rock") {
-      if (responce === "🗻 Rock") {
-        embed
-          .setTitle("***It's a tie***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🗻 Rock", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
+      const choices = {
+        rock: "🗻 Rock",
+        paper: "🧻 Paper",
+        scissors: "✂ Scissors",
+      };
 
-        return interaction.reply({ embeds: [embed], flags: 64 });
+      const keys = Object.keys(choices);
+      const botChoiceKey = keys[Math.floor(Math.random() * keys.length)];
+      const botChoice = choices[botChoiceKey];
+
+      let result;
+
+      if (userChoice === botChoiceKey) {
+        result = "🤝 It's a tie!";
+      } else if (
+        (userChoice === "rock" && botChoiceKey === "scissors") ||
+        (userChoice === "paper" && botChoiceKey === "rock") ||
+        (userChoice === "scissors" && botChoiceKey === "paper")
+      ) {
+        result = "🎉 You won!";
+      } else {
+        result = "😢 You lost!";
       }
 
-      if (responce === "🧻 Paper") {
-        embed
-          .setTitle("***You lose***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🗻 Rock", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
+      const embed = new EmbedBuilder()
+        .setTitle("✊ Rock • Paper • Scissors")
+        .setDescription(result)
+        .addFields(
+          { name: "Your choice", value: choices[userChoice], inline: true },
+          { name: "My choice", value: botChoice, inline: true }
+        )
+        .setColor("White")
+        .setFooter({
+          text: `Requested by ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
+        .setTimestamp();
 
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("RPS command failed:", error);
 
-      if (responce === "✂ Scissors") {
-        embed
-          .setTitle("***You Won***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🗻 Rock", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-    }
-
-    if (interaction.options.getString("choice") === "🧻 Paper") {
-      if (responce === "🗻 Rock") {
-        embed
-          .setTitle("***You won***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🧻 Paper", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-
-      if (responce === "🧻 Paper") {
-        embed
-          .setTitle("***It's a tie***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🧻 Paper", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-
-      if (responce === "✂ Scissors") {
-        embed
-          .setTitle("***You lose***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "🧻 Paper", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-    }
-
-    if (interaction.options.getString("choice") === "✂ Scissors") {
-      if (responce === "🗻 Rock") {
-        embed
-          .setTitle("***You lose***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "✂ Scissors", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-
-      if (responce === "🧻 Paper") {
-        embed
-          .setTitle("***You won***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "✂ Scissors", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
-      }
-
-      if (responce === "✂ Scissors") {
-        embed
-          .setTitle("***It's a tie***")
-          .setColor("FFFFFE")
-          .addFields(
-            { name: "Your choice: ", value: "✂ Scissors", inline: true },
-            { name: "My choice: ", value: `${responce}`, inline: true }
-          )
-          .setFooter({
-            text: `By ${interaction.user.username}`,
-            iconURL: interaction.user.displayAvatarURL(),
-          })
-          .setTimestamp();
-
-        return interaction.reply({ embeds: [embed], flags: 64 });
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to play Rock Paper Scissors.",
+          flags: MessageFlags.Ephemeral,
+        });
       }
     }
   },

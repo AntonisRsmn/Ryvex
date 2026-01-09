@@ -1,28 +1,33 @@
-const { Client, ActivityType } = require("discord.js");
-const mongoose = require("mongoose");
-const config = require("../../config.json");
+const { ActivityType } = require("discord.js");
 
 module.exports = {
-    name: "ready",
-    once: true,
-    async execute(client) {
-        if (mongoose.connect) {
-            console.log("MongoDB Connected.")
-        }
+  name: "ready",
+  once: true,
 
-        console.log(`${client.user.username} is now online.`);
+  async execute(client) {
+    console.log(`${client.user.username} is now online.`);
 
-        setInterval(() => {
-            const act = [
-                { name: `@${client.user.username}`, type: ActivityType.Listening },
-                { name: `${client.guilds.cache.size} Servers`, type: ActivityType.Watching },
-            ];
+    // ✅ Register slash commands HERE
+    try {
+      await client.application.commands.set(client._slashCommands);
+      console.log("Slash commands registered.");
+    } catch (err) {
+      console.error("Failed to register slash commands:", err);
+    }
 
-            var random = act[Math.floor(Math.random() * act.length)];
-            client.user.setPresence({
-                activities: [random]
-            })
-        }, 1000 * 10);
-        
-    },
+    const activities = [
+      { name: `@${client.user.username}`, type: ActivityType.Listening },
+      { name: `${client.guilds.cache.size} servers`, type: ActivityType.Watching },
+    ];
+
+    setInterval(() => {
+      const activity =
+        activities[Math.floor(Math.random() * activities.length)];
+
+      client.user.setPresence({
+        activities: [activity],
+        status: "online",
+      });
+    }, 60_000);
+  },
 };

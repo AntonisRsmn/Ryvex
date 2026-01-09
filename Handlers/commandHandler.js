@@ -1,30 +1,39 @@
-function loadCommands(client){
-    const ascii = require("ascii-table");
-    const fs = require("fs")
-    const table = new ascii().setHeading("Commands", "Status");
+function loadCommands(client) {
+  const ascii = require("ascii-table");
+  const fs = require("fs");
+  const table = new ascii().setHeading("Commands", "Status");
 
-    let commandsArray= [];
+  const commandsArray = [];
 
-    const commandsFolder = fs.readdirSync("./Commands");
-    for (const folder of commandsFolder) {
-        const commandFiles = fs.readdirSync(`./Commands/${folder}`).filter((file) => file.endsWith(".js"));
+  const commandsFolder = fs.readdirSync("./Commands");
+  for (const folder of commandsFolder) {
+    const commandFiles = fs
+      .readdirSync(`./Commands/${folder}`)
+      .filter(file => file.endsWith(".js"));
 
-        for (const file of commandFiles) {
-            const commandFile = require(`../Commands/${folder}/${file}`);
+    for (const file of commandFiles) {
+      const commandFile = require(`../Commands/${folder}/${file}`);
 
-            const properties = {folder, ...commandFile};
-            client.commands.set(commandFile.data.name, properties);
+      if (!commandFile.data || !commandFile.execute) {
+        table.addRow(file, "❌ Invalid");
+        continue;
+      }
 
-            commandsArray.push(commandFile.data.toJSON());
+      client.commands.set(commandFile.data.name, {
+        folder,
+        ...commandFile,
+      });
 
-            table.addRow(file, "Loaded");
-            continue;
-        }
+      commandsArray.push(commandFile.data.toJSON());
+      table.addRow(file, "✅ Loaded");
     }
+  }
 
-    client.application.commands.set(commandsArray);
+  console.log(table.toString());
+  console.log("Commands loaded.");
 
-    return console.log(table.toString(), "\n LodedCommands");
+  // ⛔ DO NOT REGISTER HERE
+  client._slashCommands = commandsArray;
 }
 
-module.exports = {loadCommands};
+module.exports = { loadCommands };

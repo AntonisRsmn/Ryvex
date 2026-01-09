@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -6,32 +10,45 @@ module.exports = {
     .setDescription("PP meter."),
 
   async execute(interaction) {
-    var ppmeter = [
-      "8=D",
-      "8==D",
-      "8===D",
-      "8====D",
-      "8=====D",
-      "8======D",
-      "8=======D",
-      "8========D",
-      "8=========D",
-      "8==========D",
-    ];
-    const response = ppmeter[Math.floor(Math.random() * ppmeter.length)];
+    try {
+      const sizes = [
+        "8=D",
+        "8==D",
+        "8===D",
+        "8====D",
+        "8=====D",
+        "8======D",
+        "8=======D",
+        "8========D",
+        "8=========D",
+        "8==========D",
+      ];
 
-    const embed = new EmbedBuilder()
-      .setTitle("PPmeter")
-      .setDescription("Your pp size is: " + response)
-      .setColor(0xfffffe)
-      .setFooter({
-        text: `By ${interaction.user.username}`,
-        iconURL: interaction.user.displayAvatarURL(),
-      })
-      .setTimestamp();
+      const result = sizes[Math.floor(Math.random() * sizes.length)];
 
-    await interaction.reply({
-      embeds: [embed],
-    });
+      const embed = new EmbedBuilder()
+        .setTitle("📏 PP Meter")
+        .setDescription(`Your PP size is:\n\n${result}`)
+        .setColor("White")
+        .setFooter({
+          text: `Requested by ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
+        .setTimestamp();
+
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("PPmeter command failed:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to measure PP size.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
   },
 };

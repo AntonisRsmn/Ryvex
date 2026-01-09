@@ -2,45 +2,87 @@ const {
   SlashCommandBuilder,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("unban")
     .setDescription("Unban a member from the guild.")
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
-    .addStringOption((option) =>
+    .addStringOption(option =>
       option
         .setName("userid")
-        .setDescription("Discord ID of the user you want to unban.")
+        .setDescription("Discord ID of the user to unban.")
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    const { channel, options } = interaction;
-
+    const { guild, options, user: moderator } = interaction;
     const userId = options.getString("userid");
 
-    try {
-      await interaction.guild.members.unban(userId);
-
-      const embed = new EmbedBuilder()
-        .setDescription(`Succesfully unbanned id ${userId} from the guild.`)
-        .setColor("#FFFFFE")
-        .setTimestamp();
-
-      await interaction.reply({
-        embeds: [embed],
-        flags: 64,
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to unban members.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
       });
-    } catch (err) {
-      console.log(err);
+    }
 
-      const errEmbed = new EmbedBuilder()
-        .setDescription("Please provide a valid member's ID.")
-        .setColor("#FF0000");
+    let bannedUser;
+    try {
+      bannedUser = await guild.bans.fetch(userId);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ This user is not banned or the ID is invalid.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-      interaction.reply({ embeds: [errEmbed], flags: 64 });
+    try {
+      await guild.members.unban(userId);
+
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Unban",
+        target: bannedUser.user,
+        moderator,
+        reason: "Unbanned via command",
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              `✅ Successfully unbanned **${bannedUser.user.tag}**.`
+            )
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Unban failed:", error);
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Failed to unban the user.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

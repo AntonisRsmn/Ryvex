@@ -5,92 +5,76 @@ const {
   Collection,
   EmbedBuilder,
 } = require("discord.js");
-require("events").defaultMaxListeners = 20;
 
-const {
-  Guilds,
-  GuildMembers,
-  GuildMessages,
-  GuildVoiceStates,
-  MessageContent,
-  GuildMessageReactions,
-} = GatewayIntentBits;
-const { User, Message, GuildMember, ThreadMember, Channel, Reaction } =
-  Partials;
-
+const mongoose = require("mongoose");
 const { loadEvents } = require("./Handlers/eventHandler");
 const { loadCommands } = require("./Handlers/commandHandler");
-const pollCommand = require("./Commands/Info/poll.js");
+const config = require("./config.json");
 
 const client = new Client({
   intents: [
-    Guilds,
-    GuildMembers,
-    GuildMessages,
-    GuildVoiceStates,
-    GuildMessageReactions,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers, // REQUIRED for join/leave
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessageReactions,
   ],
-  partials: [User, Message, GuildMember, ThreadMember, Channel, Reaction],
+  partials: [
+    Partials.User,
+    Partials.Message,
+    Partials.GuildMember,
+    Partials.ThreadMember,
+    Partials.Channel,
+    Partials.Reaction,
+  ],
 });
 
-// set client-specific listener limit (instead of require('events').defaultMaxListeners)
-client.setMaxListeners(20);
-
+// Collections
 client.commands = new Collection();
-client.config = require("./config.json");
 
+// Mention handler
 client.on("messageCreate", (message) => {
-  const embed = new EmbedBuilder()
-    .addFields(
-      { name: " ", value: "👀 Need assistance ?", inline: true },
-      {
-        name: " ",
-        value:
-          "🤖 Use </help:1084950800398303267> or join our [Support Server](https://discord.gg/JDDSbxKDne)",
-        inline: true,
-      }
-    )
-    .setColor(0xfffffe)
-    .setTimestamp();
-
-  if (message.author.bot) return;
+  if (message.author.bot || !message.guild) return;
 
   if (
     message.content.includes("@here") ||
-    message.content.includes("@everyone") ||
-    message.type == "REPLY"
-  )
-    return;
+    message.content.includes("@everyone")
+  ) return;
 
-  if (message.content.match(new RegExp(`^<@!?${client.user.id}>( |)$`))) {
-    message.channel.send({ embeds: [embed] });
+  if (
+    message.content.match(new RegExp(`^<@!?${client.user.id}>(\\s|$)`))
+  ) {
+    const embed = new EmbedBuilder()
+      .setColor("White")
+      .setDescription(
+        "👀 **Need assistance?**\n🤖 Use `/help` or join our [Support Server](https://discord.gg/JDDSbxKDne)"
+      )
+      .setTimestamp();
+
+    message.channel.send({ embeds: [embed] }).catch(() => {});
   }
 });
 
-client.on("messageReactionAdd", async (reaction, user) => {
-  if (reaction.partial) await reaction.fetch();
-  if (reaction.message.partial) await reaction.message.fetch();
-  if (user.bot) return;
+// 🚨 IMPORTANT ORDER 🚨
+(async () => {
+  try {
+    // 1️⃣ Load handlers FIRST
+    loadEvents(client);
+    loadCommands(client);
 
-  // Only handle reactions on poll messages
-  if (!pollCommand.pollMessages.includes(reaction.message.id)) return;
+    // 2️⃣ Connect MongoDB
+    await mongoose.connect(config.mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    console.log("MongoDB connected.");
 
-  if (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") {
-    const otherEmoji = reaction.emoji.name === "✅" ? "❌" : "✅";
-    const userReactions = reaction.message.reactions.cache.filter((r) =>
-      r.users.cache.has(user.id)
-    );
-    for (const r of userReactions.values()) {
-      if (r.emoji.name === otherEmoji) {
-        await r.users.remove(user.id);
-      }
-    }
+    // 3️⃣ Login LAST
+    await client.login(config.token);
+  } catch (error) {
+    console.error("Failed to start bot:", error);
+    process.exit(1);
   }
-});
+})();
+
 
 module.exports = client;
-
-client.login(client.config.token).then(() => {
-  loadEvents(client);
-  loadCommands(client);
-});

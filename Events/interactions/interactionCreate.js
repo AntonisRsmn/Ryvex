@@ -1,26 +1,53 @@
-const {CommandInteraction, InteractionResponse, EmbedBuilder } = require("discord.js");
+const {
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
-    name: "interactionCreate",
+  name: "interactionCreate",
 
-    execute(interaction, client) {
-        const embed = new EmbedBuilder()
+  async execute(interaction) {
+    if (!interaction.isChatInputCommand()) return;
+
+    const client = interaction.client;
+
+    // Guild-only command protection
+    if (!interaction.guild) {
+      const embed = new EmbedBuilder()
         .setTitle("Ryvex™")
-        .setDescription("Commands can only be used inside servers.")
-        .setColor("fffffe")
-        .setTimestamp()
+        .setDescription("❌ Commands can only be used inside servers.")
+        .setColor("White")
+        .setTimestamp();
 
-        if (!interaction.isChatInputCommand()) return;
+      return interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-        const command = client.commands.get(interaction.commandName);
+    const command = client.commands.get(interaction.commandName);
 
-        if (!command) {
-            interaction.reply({content: "outdated command"});
-        }
+    if (!command) {
+      return interaction.reply({
+        content: "❌ This command is outdated or unavailable.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-        if (!interaction.guild)
-            return interaction.reply({ embeds: [embed], ephemeral: true })
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(
+        `Error executing command ${interaction.commandName}:`,
+        error
+      );
 
-        command.execute(interaction, client);
-    },
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ An error occurred while executing this command.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
+  },
 };

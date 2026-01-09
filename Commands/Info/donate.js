@@ -1,27 +1,37 @@
-const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags, } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("donate")
-    .setDescription("Support Ryvex by donating"),
+    .setDescription("Support Ryvex by donating."),
 
-  async execute(interaction, client) {
+  async execute(interaction) {
     try {
       const embed = new EmbedBuilder()
-        .setTitle(`***Donate***`)
-        .setColor("#fffffe")
-        .setTimestamp()
+        .setTitle("💖 Donate")
         .setDescription(
-          "Consider [Donating](https://www.paypal.com/paypalme/AnthoxWasTaken) to help me make Ryvex better for everyone Thanks."
+          "Consider [donating](https://www.paypal.com/paypalme/AnthoxWasTaken) to help improve **Ryvex** for everyone. Thank you for the support!"
         )
+        .setColor("White")
         .setFooter({
-          text: `By ${interaction.user.username}`,
+          text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
-        });
+        })
+        .setTimestamp();
 
-      interaction.reply({ embeds: [embed] });
-    } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Donate command failed:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to display the donation link.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
     }
   },
 };

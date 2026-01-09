@@ -1,49 +1,142 @@
 const {
-  Client,
   SlashCommandBuilder,
-  PermissionFlagsBits,
   EmbedBuilder,
+  PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("remove-timeout")
-    .setDescription("Remove timeout from a member of the guild.")
+    .setDescription("Remove the timeout from a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-    .addUserOption((option) =>
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("member to remove the timeout.")
+        .setDescription("Member to remove the timeout from.")
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    const { guild, options } = interaction;
+    const { guild, member: moderator, options } = interaction;
 
-    const user = options.getUser("target");
-    const member = guild.members.cache.get(user.id);
+    const targetUser = options.getUser("target");
 
-    const errEmbed = new EmbedBuilder()
-      .setDescription("Something went wrong")
-      .setColor(0xfffffe);
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to moderate members.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-    const embed = new EmbedBuilder()
-      .setTitle("**Timeout**")
-      .setDescription(`timeout removed succesfully from ${user}.`)
-      .setColor(0xfffffe)
-      .setTimestamp();
+    let targetMember;
+    try {
+      targetMember = await guild.members.fetch(targetUser.id);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Member not found in this server.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
+    // Owner protection
+    if (targetMember.id === guild.ownerId) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot remove the timeout from the server owner."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Self protection
+    if (targetMember.id === moderator.id) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot remove your own timeout.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Role hierarchy check
     if (
-      member.roles.highest.position >= interaction.member.roles.highest.position
-    )
-      return interaction.reply({ embeds: [errEmbed], flags: 64 });
+      targetMember.roles.highest.position >=
+      moderator.roles.highest.position
+    ) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot modify a member with an equal or higher role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Not timed out check
+    if (!targetMember.isCommunicationDisabled()) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ This member is not currently timed out.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
     try {
-      await member.timeout(null);
+      await targetMember.timeout(null);
 
-      return interaction.reply({ embeds: [embed], flags: 64 });
-    } catch (err) {
-      console.log(err);
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Remove Timeout",
+        target: targetUser,
+        moderator: interaction.user,
+        reason: "Timeout removed",
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(`✅ Timeout removed from ${targetUser}.`)
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Remove-timeout failed:", error);
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Failed to remove the timeout.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

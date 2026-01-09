@@ -1,73 +1,165 @@
 const {
-  Client,
   SlashCommandBuilder,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("remove-role")
     .setDescription("Remove a role from a member.")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addUserOption((option) =>
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("member to remove the role.")
+        .setDescription("Member to remove the role from.")
         .setRequired(true)
     )
-    .addRoleOption((option) =>
+    .addRoleOption(option =>
       option
         .setName("role")
-        .setDescription("Role to remove from the member.")
+        .setDescription("Role to remove.")
         .setRequired(true)
     ),
 
-  async execute(interaction, client) {
-    const user = interaction.options.getUser("target");
-    const role = interaction.options.getRole("role");
-    const member = await interaction.guild.members.fetch(user.id);
+  async execute(interaction) {
+    const { guild, member: moderator, options } = interaction;
 
-    if (!member.roles.cache.has(role.id)) {
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        .setDescription(`User ${user} doesn't have the role ${role}.`)
-        .setAuthor({
-          name: interaction.user.tag,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-        })
-        .setFooter({ text: `Requested By ${interaction.user.tag}` })
-        .setTimestamp();
-      await interaction.reply({ embeds: [embed], flags: 64 });
-      return;
+    const targetUser = options.getUser("target");
+    const role = options.getRole("role");
+
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to manage roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
+    let targetMember;
     try {
-      await interaction.guild.members.cache.get(user.id).roles.remove(role);
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        .setAuthor({
-          name: interaction.user.tag,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-        })
-        .setDescription(`Succesfully removed role ${role} from ${user}.`)
-        .setFooter({ text: `Requested By ${interaction.user.tag}` })
-        .setTimestamp();
+      targetMember = await guild.members.fetch(targetUser.id);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Member not found in this server.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-      await interaction.reply({ embeds: [embed], flags: 64 });
+    // Owner protection
+    if (targetMember.id === guild.ownerId) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot modify the server owner's roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Self-action protection
+    if (targetMember.id === moderator.id) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot modify your own roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Moderator role hierarchy check
+    if (role.position >= moderator.roles.highest.position) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot remove a role higher or equal to your highest role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Bot role hierarchy check
+    if (role.position >= guild.members.me.roles.highest.position) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ I cannot remove a role higher or equal to my highest role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Role presence check
+    if (!targetMember.roles.cache.has(role.id)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              `❌ ${targetUser.tag} does not have the ${role.name} role.`
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Execute role removal
+    try {
+      await targetMember.roles.remove(role);
+
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Remove Role",
+        target: targetUser,
+        moderator: interaction.user,
+        reason: `Role removed: ${role.name}`,
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              `✅ Successfully removed ${role} from ${targetUser}.`
+            )
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     } catch (error) {
-      console.error(error);
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        .setAuthor({
-          name: interaction.user.tag,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-        })
-        .setFooter({ text: `Requested By ${interaction.user.tag}` })
-        .setTimestamp()
-        .setDescription(`Faild to remove role ${role} from user ${user}.`);
+      console.error("Remove-role failed:", error);
 
-      await interaction.reply({ embeds: [embed], flags: 64 });
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ Failed to remove the role. Check permissions and role hierarchy."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

@@ -1,69 +1,175 @@
 const {
-  Client,
   SlashCommandBuilder,
-  PermissionFlagsBits,
   EmbedBuilder,
+  PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
 const ms = require("ms");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("mute")
-    .setDescription("Mute a member from the guild.")
+    .setDescription("Timeout (mute) a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-    .addUserOption((option) =>
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("member to be mute.")
+        .setDescription("Member to mute.")
         .setRequired(true)
     )
-    .addStringOption((option) =>
+    .addStringOption(option =>
       option
         .setName("time")
-        .setDescription("How long should the mute last (Up to 27 days).")
+        .setDescription("Duration (e.g. 10m, 1h, 2d — max 27 days).")
         .setRequired(true)
     )
-    .addStringOption((option) =>
-      option.setName("reason").setDescription("Reason for the mute.")
+    .addStringOption(option =>
+      option
+        .setName("reason")
+        .setDescription("Reason for the mute.")
     ),
 
   async execute(interaction) {
-    const { guild, options } = interaction;
+    const { guild, member: moderator, options } = interaction;
 
-    const user = options.getUser("target");
-    const member = guild.members.cache.get(user.id);
-    const time = options.getString("time");
-    const convertedTime = ms(time);
+    const targetUser = options.getUser("target");
+    const timeInput = options.getString("time");
+    const duration = ms(timeInput);
     const reason = options.getString("reason") || "No reason provided";
 
-    const errEmbed = new EmbedBuilder()
-      .setDescription("Something went wrong")
-      .setColor(0xfffffe);
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to timeout members.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-    const embed = new EmbedBuilder()
-      .setTitle("**Muted**")
-      .setDescription(`Succesfully muted ${user}.`)
-      .addFields(
-        { name: "Reason", value: `${reason}`, inline: true },
-        { name: "Duration", value: `${time}`, inline: true }
-      )
-      .setColor(0xfffffe)
-      .setTimestamp();
+    // Invalid duration
+    if (!duration || duration <= 0 || duration > 2_332_800_000) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Invalid duration. Max is 27 days.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-    if (
-      member.roles.highest.position >= interaction.member.roles.highest.position
-    )
-      return interaction.reply({ embeds: [errEmbed], flags: 64 });
-
-    if (!convertedTime)
-      return interaction.reply({ embeds: [errEmbed], flags: 64 });
-
+    let targetMember;
     try {
-      await member.timeout(convertedTime, reason);
+      targetMember = await guild.members.fetch(targetUser.id);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Member not found in this server.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-      return interaction.reply({ embeds: [embed], flags: 64 });
-    } catch (err) {
-      console.log(err);
+    // Owner protection
+    if (targetMember.id === guild.ownerId) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot mute the server owner.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Self protection
+    if (targetMember.id === moderator.id) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot mute yourself.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Moderator role hierarchy check
+    if (targetMember.roles.highest.position >= moderator.roles.highest.position) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot mute a member with an equal or higher role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Bot role hierarchy check
+    if (
+      targetMember.roles.highest.position >=
+      guild.members.me.roles.highest.position
+    ) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ I cannot mute this member due to role hierarchy."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Execute mute
+    try {
+      await targetMember.timeout(duration, reason);
+
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Mute",
+        target: targetUser,
+        moderator: interaction.user,
+        reason: `${reason} (Duration: ${timeInput})`,
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("🔇 Member Muted")
+            .setDescription(`Successfully muted ${targetUser}.`)
+            .addFields(
+              { name: "Duration", value: timeInput, inline: true },
+              { name: "Reason", value: reason, inline: true }
+            )
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Mute failed:", error);
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Failed to mute the member.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

@@ -1,99 +1,150 @@
-# Ryvex 🤖
+# 🤖 Ryvex — Advanced Discord Server Management Bot
 
-**Ryvex** is a multipurpose Discord bot built to help manage your server with moderation tools, fun commands, economy features, polls, music, and more — all accessible via slash `/` commands.
+**Ryvex** is a modern, slash-command–based Discord bot designed to help server owners and moderators **manage, moderate, and monitor** their communities with clarity and control.
 
-Explore it in action at [https://ryvex.gr](https://ryvex.gr)
-
----
-
-## 🌟 Overview
-
-Ryvex is a versatile Discord bot created by Antonis Rusman with Node.js and `discord.js`. Designed for moderation, entertainment, and utility, Ryvex aims to enhance the server experience with minimal setup.
+🌐 Website: https://ryvex.gr  
+🆘 Support: Use `/support` inside Discord
 
 ---
 
-## ⚙️ Features & Commands
+## 🌟 What Is Ryvex?
 
-### Moderation
-- `/ban`, `/kick`, `/mute`, `/timeout`, `/clear` – manage members and messaging
-- `/lock` & `/unlock` – secure sensitive channels  
-- `/add-role`, `/remove-role`, `/unban` – manage roles and permissions
+Ryvex is a **multipurpose Discord bot** focused on:
 
-### Fun
-- `/8ball` – yes/no question predictor  
-- `/compliment` – sends a compliment  
-- `/meme` – delivers a random meme  
-- `/gaymeter`, `/ppmeter`, `/rps` – whimsical mini‑games and meters
+- 🛡️ **Moderation**
+- 🧾 **Server & activity logging**
+- 👋 **Welcome & onboarding**
+- 🎮 **Fun & utility commands**
 
-### Utility
-- `/botinfo` – shows Ryvex’s current stats  
-- `/uptime` – indicates how long the bot has been online  
-- `/userinfo` or `/whois` – user details lookup  
-- `/poll` – create polls and post them to a channel  
-- `/support` – link to Ryvex Support Server  
-- `/website` – open Ryvex official site  
-- `/donate` – options for supporting development  
-- Help: `/help` — lists all available commands:contentReference[oaicite:4]{index=4}
+All features are configurable **per server** using a built-in **settings system** backed by MongoDB.
 
-### Optional
-- Music playback: `/play`, `/pause`, `/skip`, `/queue`, `/volume` (if music features are enabled)
+No prefixes. No clutter. Everything works through `/` slash commands.
 
 ---
 
-## 🚀 Installation & Setup
+## ⚙️ Core Systems Overview
 
-### 1. Invite the Bot
-Visit Ryvex’s website or use the invite link on bot lists like Top.gg to add Ryvex to your server.
+### 🧾 Logging System (Admin-Facing)
 
-### 2. Enable Slash Commands
-Ensure Ryvex has proper permissions in your Discord server, including:
-- Manage roles and messages
-- Send messages and embed links
-- Use slash commands
+Ryvex includes a **server logging system** designed for transparency and moderation auditing.
 
-### 3. Configure Permissions
-Use Discord role settings to limit who can use moderation commands. You may also configure channel-specific access.
+**What gets logged**
+- Member joins & leaves
+- Channel creation & deletion
+- Moderation actions (ban, kick, mute, timeout, etc.)
 
----
+**What does NOT get logged**
+- Message purges (`/clear`)
+- Fun commands
+- Private interactions
 
-## 🧩 Tech Stack & Architecture
+Logs are sent to a **designated log channel** configured via `/settings`.
 
-- **Built with**: Node.js & `discord.js` library
-- **Slash command handlers** using Discord API v10  
-- **Hosted**: usually on cloud VPS or serverless platform  
-- **No external dependencies** required for operation—stateless and easy to deploy
+> Logging is **event-based**, not spammy, and fully optional.
 
 ---
 
-## 🧭 Why Use Ryvex?
+### 👋 Welcome System (User-Facing)
 
-- ✅ Comprehensive features: mix of moderation tools and fun utilities  
-- ⚡ Slash commands provide clean, intuitive UX  
-- 🔄 Lightweight and always-on (24/7 runtime supported):contentReference[oaicite:8]{index=8}  
-- 🌐 Web dashboard via [ryvex.gr](https://ryvex.gr) and support community
+The welcome system is separate from logging and is used for onboarding new members.
+
+**Features**
+- Send welcome messages to a chosen channel
+- Assign an automatic role to new members
+- Fully optional and configurable
+
+Welcome messages do **not** interfere with logging.
 
 ---
 
-🎯 Roadmap (What’s Next)
+### 🛡️ Moderation System
 
-    ✅ Add more fun commands
+Ryvex includes a robust moderation system with **built-in safety checks**:
 
-    ⚙️ Enhance economy/game systems
+- Role hierarchy enforcement
+- Bot permission validation
+- Owner & self-action protection
+- Proper error handling
 
-    🎶 Improve music support & queue functionality
+Moderation actions are **logged automatically** if logging is enabled.
 
-    📊 Provide server analytics dashboard
+---
 
-    🛠 Expand localization or custom prefixes support
+## 🔧 Server Configuration (`/settings`)
 
-💡 Contribution & Support
+Admins can configure Ryvex using:
 
-Contributions are welcome! Feel free to open pull requests or issues in the repository.
+```
+/settings
+```
 
-Need help or suggestions? Join the official Ryvex Support Discord via /support command or visit the website to find the invite link.
-📄 License
+### Available settings groups
 
-Ryvex is released under the MIT License (or your preferred open-source license).
-🤝 Credits
+#### Logging
+```
+/settings logging enable
+/settings logging disable
+/settings logging channel <channel>
+```
 
-Built by Antonis Rusman — web developer & bot creator. More projects: [rusman.gr](https://rusman.gr)
+#### Welcome
+```
+/settings welcome enable
+/settings welcome disable
+/settings welcome channel <channel>
+/settings welcome autorole <role>
+```
+
+---
+
+## 📜 Commands Reference
+
+### 🛡️ Moderation Commands
+- `/ban`
+- `/kick`
+- `/mute`
+- `/timeout`
+- `/unmute` / `/remove-timeout`
+- `/lock` / `/unlock`
+- `/add-role` / `/remove-role`
+- `/unban`
+- `/clear`
+
+### 🎮 Fun Commands
+- `/8ball`
+- `/compliment`
+- `/meme`
+- `/gaymeter`, `/ppmeter`
+- `/rps`
+
+### ℹ️ Info & Utility
+- `/help`
+- `/botinfo`
+- `/uptime`
+- `/userinfo`
+- `/poll`
+- `/support`
+- `/website`
+- `/donate`
+
+---
+
+## 🧩 Technical Details
+
+- **Node.js**
+- **discord.js (API v10)**
+- **MongoDB**
+- Slash commands only
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## 👤 Author
+
+**Antonis Rusman**  
+https://rusman.gr

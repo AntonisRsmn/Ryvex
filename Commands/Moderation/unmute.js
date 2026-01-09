@@ -1,49 +1,140 @@
 const {
-  Client,
   SlashCommandBuilder,
-  PermissionFlagsBits,
   EmbedBuilder,
+  PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("unmute")
-    .setDescription("Unmute a member from the guild.")
+    .setDescription("Remove the timeout (unmute) from a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-    .addUserOption((option) =>
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("member to be unmute.")
+        .setDescription("Member to unmute.")
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    const { guild, options } = interaction;
+    const { guild, member: moderator, options } = interaction;
 
-    const user = options.getUser("target");
-    const member = guild.members.cache.get(user.id);
+    const targetUser = options.getUser("target");
 
-    const errEmbed = new EmbedBuilder()
-      .setDescription("Something went wrong")
-      .setColor(0xfffffe);
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to moderate members.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-    const embed = new EmbedBuilder()
-      .setTitle("**Unmuted**")
-      .setDescription(`Succesfully Unuted ${user}.`)
-      .setColor(0xfffffe)
-      .setTimestamp();
+    let targetMember;
+    try {
+      targetMember = await guild.members.fetch(targetUser.id);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Member not found in this server.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
+    // Owner protection
+    if (targetMember.id === guild.ownerId) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot unmute the server owner.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Self protection
+    if (targetMember.id === moderator.id) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot unmute yourself.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Role hierarchy check
     if (
-      member.roles.highest.position >= interaction.member.roles.highest.position
-    )
-      return interaction.reply({ embeds: [errEmbed], flags: 64 });
+      targetMember.roles.highest.position >=
+      moderator.roles.highest.position
+    ) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot modify a member with an equal or higher role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Not muted check
+    if (!targetMember.isCommunicationDisabled()) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ This member is not muted.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
     try {
-      await member.timeout(null);
+      await targetMember.timeout(null);
 
-      return interaction.reply({ embeds: [embed], flags: 64 });
-    } catch (err) {
-      console.log(err);
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Unmute",
+        target: targetUser,
+        moderator: interaction.user,
+        reason: "Timeout removed",
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(`✅ Successfully unmuted ${targetUser}.`)
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Unmute failed:", error);
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Failed to unmute the member.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

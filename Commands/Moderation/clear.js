@@ -1,66 +1,111 @@
 const {
   SlashCommandBuilder,
-  CommandInteraction,
-  PermissionFlags,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("clear")
-    .setDescription("clear up to 99 messages from a target or channel.")
+    .setDescription("Delete up to 99 messages from a channel or a specific user.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
-    .addIntegerOption((option) =>
+    .addIntegerOption(option =>
       option
         .setName("amount")
-        .setDescription("Amount of messages to clear.")
+        .setDescription("Number of messages to delete (1–99).")
         .setMinValue(1)
         .setMaxValue(99)
         .setRequired(true)
     )
-    .addUserOption((option) =>
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("Select a target to clear their messages.")
-        .setRequired(false)
+        .setDescription("Only delete messages from this user.")
     ),
 
   async execute(interaction) {
-    const { channel, options } = interaction;
-
+    const { channel, guild, options } = interaction;
     const amount = options.getInteger("amount");
     const target = options.getUser("target");
 
-    const messages = await channel.messages.fetch({
-      limit: amount + 1,
-    });
+    // 1️⃣ Bot permission check
+    if (
+      !guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)
+    ) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to manage messages.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-    const res = new EmbedBuilder().setColor("#fffffe");
+    let messages;
+    try {
+      messages = await channel.messages.fetch({ limit: 100 });
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Failed to fetch messages from this channel.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    let toDelete;
 
     if (target) {
-      let i = 0;
-      const filtered = [];
-
-      (await messages).filter((msg) => {
-        if (msg.author.id === target.id && amount > i) {
-          filtered.push(msg);
-          i++;
-        }
-      });
-
-      await channel.bulkDelete(filtered).then((message) => {
-        res.setDescription(
-          `Succesfully deleted ${message.size} messages from ${target}`
-        );
-        interaction.reply({ embeds: [res], flags: 64 });
-      });
+      toDelete = messages
+        .filter(msg => msg.author.id === target.id)
+        .first(amount);
     } else {
-      await channel.bulkDelete(amount, true).then((message) => {
-        res.setDescription(
-          `Succesfully deleted ${message.size} messages from the channel`
-        );
-        interaction.reply({ embeds: [res], flags: 64 });
+      toDelete = messages.first(amount);
+    }
+
+    if (!toDelete.length) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ No messages found to delete.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    try {
+      const deleted = await channel.bulkDelete(toDelete, true);
+
+      await interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              target
+                ? `✅ Deleted **${deleted.size}** messages from **${target.tag}**.\n⚠️ Messages older than 14 days are ignored.`
+                : `✅ Deleted **${deleted.size}** messages from this channel.\n⚠️ Messages older than 14 days are ignored.`
+            )
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Clear failed:", error);
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ Failed to delete messages. Some may be too old or I lack permissions."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

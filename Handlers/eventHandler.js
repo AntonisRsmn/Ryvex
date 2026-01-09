@@ -1,36 +1,52 @@
+const ascii = require("ascii-table");
+const fs = require("fs");
+const path = require("path");
+
 function loadEvents(client) {
-    const ascii = require("ascii-table");
-    const fs = require("fs");
-    const table = new ascii().setHeading("Events", "Status");
+  const table = new ascii().setHeading("Event", "Status");
 
-    const folders = fs.readdirSync("./Events");
-    for (const folder of folders) {
-        const files = fs.readdirSync(`./Events/${folder}`).filter((file) => file.endsWith(".js"));
+  const eventsPath = path.join(__dirname, "../Events");
+  const eventFolders = fs.readdirSync(eventsPath);
 
-        for (const file of files) {
-            const event = require(`../Events/${folder}/${file}`);
+  for (const folder of eventFolders) {
+    const folderPath = path.join(eventsPath, folder);
+    const eventFiles = fs
+      .readdirSync(folderPath)
+      .filter(file => file.endsWith(".js"));
 
-            if (event.rest) {
-                if(event.once)
-                    client.rest.once(event.name, (...args) => 
-                    event.execute(...args, client)
-                );
-                else
-                    client.rest.on(event.name, (...args) =>
-                        event.execute(...args, client)
-                );
-            } else {
-                if (client.listenerCount(event.name) === 0) {
-                  client.on(event.name, (...args) => event.execute(...args, client));
-                } else {
-                  console.warn(`Skipped duplicate listener for event "${event.name}"`);
-                }
-            }
-            table.addRow(file, "loaded");
-            continue;
+    for (const file of eventFiles) {
+      const filePath = path.join(folderPath, file);
+      const event = require(filePath);
+
+      // Validation
+      if (!event.name || typeof event.execute !== "function") {
+        table.addRow(file, "❌ Invalid");
+        console.warn(`Event ${file} is missing name or execute().`);
+        continue;
+      }
+
+      const handler = (...args) => event.execute(...args, client);
+
+      if (event.rest) {
+        if (event.once) {
+          client.rest.once(event.name, handler);
+        } else {
+          client.rest.on(event.name, handler);
         }
+      } else {
+        if (event.once) {
+          client.once(event.name, handler);
+        } else {
+          client.on(event.name, handler);
+        }
+      }
+
+      table.addRow(event.name, "✅ Loaded");
     }
-    return console.log(table.toString(), "\nLoaded events");
+  }
+
+  console.log(table.toString());
+  console.log("Events loaded.");
 }
 
 module.exports = { loadEvents };

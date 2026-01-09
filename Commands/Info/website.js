@@ -1,25 +1,39 @@
-const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("website")
-    .setDescription("Ryvex Website."),
+    .setDescription("Get the Ryvex website."),
 
-  async execute(interaction, client) {
+  async execute(interaction) {
     try {
       const embed = new EmbedBuilder()
-        .setTitle(`***Ryvex Website***`)
-        .setColor("#fffffe")
-        .setTimestamp()
-        .setDescription("Check out our [Website](https://ryvex.gr/)")
+        .setTitle("🌐 Ryvex Website")
+        .setDescription("Visit the official Ryvex website:\n👉 https://ryvex.gr/")
+        .setColor("White")
         .setFooter({
-          text: `By ${interaction.user.username}`,
+          text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
-        });
+        })
+        .setTimestamp();
 
-      interaction.reply({ embeds: [embed] });
-    } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Website command failed:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to display the website link.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
     }
   },
 };

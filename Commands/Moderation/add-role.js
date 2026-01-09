@@ -1,88 +1,161 @@
 const {
-  Client,
   SlashCommandBuilder,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
+
+const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("add-role")
     .setDescription("Add a role to a member.")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addUserOption((option) =>
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+    .addUserOption(option =>
       option
         .setName("target")
-        .setDescription("User to add the role.")
+        .setDescription("User to add the role to.")
         .setRequired(true)
     )
-    .addRoleOption((option) =>
+    .addRoleOption(option =>
       option
         .setName("role")
-        .setDescription("Role to add to the member.")
+        .setDescription("Role to add.")
         .setRequired(true)
     ),
 
-  async execute(interaction, client) {
-    const user = interaction.options.getUser("target");
-    const role = interaction.options.getRole("role");
-    const member = await interaction.guild.members.fetch(user.id);
+  async execute(interaction) {
+    const { guild, member: moderator, options } = interaction;
 
-    if (member.roles.cache.has(role.id)) {
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        .setDescription(`User ${user} already has the role ${role}.`)
-        /*
-            .setAuthor({
-                name: interaction.user.tag,
-                iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-            })
-            */
-        .setFooter({
-          text: `By ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp();
-      await interaction.reply({ embeds: [embed], flags: 64 });
-      return;
+    const targetUser = options.getUser("target");
+    const role = options.getRole("role");
+
+    // Bot permission check
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ I don't have permission to manage roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
+    let targetMember;
     try {
-      await interaction.guild.members.cache.get(user.id).roles.add(role);
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        /*
-            .setAuthor({
-                name: interaction.user.tag,
-                iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-            })
-            */
-        .setDescription(`Succesfully added role ${role} to ${user}.`)
-        .setFooter({
-          text: `By ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp();
+      targetMember = await guild.members.fetch(targetUser.id);
+    } catch {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ Member not found in this server.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-      await interaction.reply({ embeds: [embed], flags: 64 });
+    // Owner protection
+    if (targetMember.id === guild.ownerId) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot modify the server owner's roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Self-role modification protection
+    if (targetMember.id === moderator.id) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot modify your own roles.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Moderator role hierarchy check
+    if (role.position >= moderator.roles.highest.position) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ You cannot assign a role higher or equal to your highest role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Bot role hierarchy check
+    if (role.position >= guild.members.me.roles.highest.position) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ I cannot assign a role higher or equal to my highest role."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Already has role
+    if (targetMember.roles.cache.has(role.id)) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(`❌ ${targetUser.tag} already has the ${role.name} role.`)
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Execute role add
+    try {
+      await targetMember.roles.add(role);
+
+      // ✅ LOG AFTER SUCCESS
+      await logAction({
+        guild,
+        action: "Add Role",
+        target: targetUser,
+        moderator: interaction.user,
+        reason: `Role added: ${role.name}`,
+      });
+
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(`✅ Successfully added ${role} to ${targetUser}.`)
+            .setColor("White")
+            .setTimestamp(),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     } catch (error) {
-      console.error(error);
-      const embed = new EmbedBuilder()
-        .setColor("fffffe")
-        /*
-            .setAuthor({
-                name: interaction.user.tag,
-                iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-            })
-            */
-        .setFooter({
-          text: `By ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp()
-        .setDescription(`Faild to add role ${role} to user ${user}.`);
+      console.error("Add-role failed:", error);
 
-      await interaction.reply({ embeds: [embed], flags: 64 });
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription(
+              "❌ Failed to add the role. Check permissions and role hierarchy."
+            )
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

@@ -1,32 +1,37 @@
-const {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  Embed,
-  Client,
-} = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags, } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("ping")
-    .setDescription("Latency of the bot."),
+    .setDescription("Show the bot's latency."),
 
-  async execute(interaction, client) {
+  async execute(interaction) {
     try {
+      const ping = Math.round(interaction.client.ws.ping);
+
       const embed = new EmbedBuilder()
-        .setTitle("Pong!")
-        .setDescription(`${Math.round(client.ws.ping)}ms.`)
-        .setColor(0xfffffe)
+        .setTitle("🏓 Pong!")
+        .setDescription(`Latency: **${ping} ms**`)
+        .setColor("White")
         .setFooter({
-          text: `By ${interaction.user.username}`,
+          text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
         })
         .setTimestamp();
 
       await interaction.reply({
         embeds: [embed],
+        flags: MessageFlags.Ephemeral,
       });
-    } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
+    } catch (error) {
+      console.error("Ping command failed:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to fetch latency.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
     }
   },
 };

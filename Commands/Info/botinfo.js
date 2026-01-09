@@ -1,96 +1,72 @@
-const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags, } = require("discord.js");
 const cpuStat = require("cpu-stat");
+const util = require("util");
+
+const cpuUsage = util.promisify(cpuStat.usagePercent);
+
+function formatBytes(bytes, decimals = 2) {
+  if (!bytes) return "0 B";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("botinfo")
     .setDescription("Get information about the bot."),
 
-  async execute(interaction, client) {
+  async execute(interaction) {
+    const { client } = interaction;
+
     try {
-      try {
-        const days = Math.floor(client.uptime / 86400000);
-        const hours = Math.floor(client.uptime / 3600000) % 24;
-        const minutes = Math.floor(client.uptime / 60000) % 60;
-        const seconds = Math.floor(client.uptime / 1000) % 60;
+      const uptime = client.uptime;
+      const days = Math.floor(uptime / 86400000);
+      const hours = Math.floor(uptime / 3600000) % 24;
+      const minutes = Math.floor(uptime / 60000) % 60;
+      const seconds = Math.floor(uptime / 1000) % 60;
 
-        cpuStat.usagePercent(function (error, percent) {
-          if (error) {
-            return interaction.reply({
-              content: `Error: ${error.message || error}`,
-              flags: 64,
-            });
+      const cpu = await cpuUsage();
+      const memoryUsage = formatBytes(process.memoryUsage().heapUsed);
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${client.user.username} — Bot Information`)
+        .setColor("White")
+        .addFields(
+          { name: "Developer", value: "Rusman", inline: true },
+          { name: "Bot Username", value: client.user.username, inline: true },
+          { name: "Bot ID", value: client.user.id, inline: true },
+          { name: "Node.js", value: process.version, inline: true },
+          { name: "Ping", value: `${client.ws.ping} ms`, inline: true },
+          { name: "CPU Usage", value: `${cpu.toFixed(2)}%`, inline: true },
+          { name: "Memory Usage", value: memoryUsage, inline: true },
+          {
+            name: "Uptime",
+            value: `${days}d ${hours}h ${minutes}m ${seconds}s`,
+            inline: true,
           }
-          try {
-            const memoryUsage = formatBytes(process.memoryUsage().heapUsed);
-            const node = process.version;
-            const cpu = percent.toFixed(2);
-
-            const embed = new EmbedBuilder()
-              .setTitle(`***${client.user.username} Information***`)
-              .setColor("#fffffe")
-              .setTimestamp()
-              .addFields(
-                { name: "Developer: ", value: "Rusman", inline: true },
-                {
-                  name: "Username: ",
-                  value: `${client.user.username}`,
-                  inline: true,
-                },
-                { name: "ID: ", value: `${client.user.id}`, inline: true },
-                { name: "Active since: ", value: "Sep 1, 2022", inline: true },
-                {
-                  name: "Help Command: ",
-                  value: "</help:1084950800398303267>",
-                  inline: true,
-                },
-                { name: "Node version: ", value: `${node}`, inline: true },
-                {
-                  name: "Bot-ping: ",
-                  value: `${client.ws.ping} ms`,
-                  inline: true,
-                },
-                { name: "CPU usage: ", value: `${cpu}`, inline: true },
-                {
-                  name: "Memory usage: ",
-                  value: `${memoryUsage}`,
-                  inline: true,
-                },
-                {
-                  name: "Uptime",
-                  value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`,
-                  inline: true,
-                }
-              )
-              .setFooter({
-                text: `By ${interaction.user.username}`,
-                iconURL: interaction.user.displayAvatarURL(),
-              });
-
-            interaction.reply({ embeds: [embed] });
-          } catch (err) {
-            interaction.reply({
-              content: `Error: ${err.message || err}`,
-              flags: 64,
-            });
-          }
+        )
+        .setTimestamp()
+        .setFooter({
+          text: `Requested by ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
         });
 
-        function formatBytes(a, b) {
-          let c = 1024;
-          let d = b || 2;
-          let e = ["B", "KB", "MB", "GB", "TB"];
-          let f = Math.floor(Math.log(a) / Math.log(c));
-          return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f];
-        }
-      } catch (err) {
-        interaction.reply({
-          content: `Error: ${err.message || err}`,
-          flags: 64,
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("botinfo error:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to fetch bot information.",
+          flags: MessageFlags.Ephemeral,
         });
       }
-    } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
     }
   },
 };

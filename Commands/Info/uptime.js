@@ -1,34 +1,51 @@
-const { SlashCommandBuilder, EmbedBuilder, Client } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("uptime")
-    .setDescription("Shows the uptime of the bot."),
+    .setDescription("Show how long the bot has been online."),
 
-  async execute(interaction, client) {
+  async execute(interaction) {
     try {
-      const days = Math.floor(client.uptime / 86400000);
-      const hours = Math.floor(client.uptime / 3600000) % 24;
-      const minutes = Math.floor(client.uptime / 60000) % 60;
-      const seconds = Math.floor(client.uptime / 1000) % 60;
+      const client = interaction.client;
+      const uptime = client.uptime;
+
+      const days = Math.floor(uptime / 86400000);
+      const hours = Math.floor(uptime / 3600000) % 24;
+      const minutes = Math.floor(uptime / 60000) % 60;
+      const seconds = Math.floor(uptime / 1000) % 60;
 
       const embed = new EmbedBuilder()
-        .setTitle(`***${client.user.username} Uptime***`)
-        .setColor("#fffffe")
-        .setTimestamp()
+        .setTitle(`⏱️ ${client.user.username} Uptime`)
         .addFields({
           name: "Uptime",
-          value: ` \`${days}\` days, \`${hours}\` hours, \`${minutes}\` minutes and \`${seconds}\` seconds.`,
+          value: `${days}d ${hours}h ${minutes}m ${seconds}s`,
           inline: true,
         })
+        .setColor("White")
         .setFooter({
-          text: `By ${interaction.user.username}`,
+          text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
-        });
+        })
+        .setTimestamp();
 
-      await interaction.reply({ embeds: [embed] });
-    } catch (err) {
-      await interaction.reply({ content: "There was an error.", flags: 64 });
+      await interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (error) {
+      console.error("Uptime command failed:", error);
+
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ Failed to fetch uptime.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
     }
   },
 };

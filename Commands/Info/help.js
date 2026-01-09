@@ -4,13 +4,14 @@ const {
   ComponentType,
   ActionRowBuilder,
   StringSelectMenuBuilder,
-  Client,
+  MessageFlags, 
 } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("help")
-    .setDescription("Get a list of all the commands from ryvex."),
+    .setDescription("Get a list of all Ryvex commands."),
+
   async execute(interaction) {
     const emojis = {
       info: "📝",
@@ -19,94 +20,90 @@ module.exports = {
       music: "🎶",
     };
 
+    const client = interaction.client;
+
     const directories = [
-      ...new Set(interaction.client.commands.map((cmd) => cmd.folder)),
+      ...new Set(client.commands.map(cmd => cmd.folder)),
     ];
 
-    const formatString = (str) =>
-      `${str[0].toUpperCase()}${str.slice(1).toLowerCase()}`;
+    const format = str =>
+      `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`;
 
-    const categories = directories.map((dir) => {
-      const getCommands = interaction.client.commands
-        .filter((cmd) => cmd.folder === dir)
-        .map((cmd) => {
-          return {
-            name: cmd.data.name,
-            description:
-              cmd.data.description ||
-              "There is no description for this command.",
-          };
-        });
+    const categories = directories.map(dir => {
+      const commands = client.commands
+        .filter(cmd => cmd.folder === dir)
+        .map(cmd => ({
+          name: cmd.data.name,
+          description:
+            cmd.data.description || "No description provided.",
+        }));
 
       return {
-        directory: formatString(dir),
-        commands: getCommands,
+        directory: dir.toLowerCase(),
+        display: format(dir),
+        commands,
       };
     });
 
-    const embed = new EmbedBuilder()
-      .setDescription("Please choose a category in the dropdown menu")
-      .setColor("#FFFFFE");
+    const baseEmbed = new EmbedBuilder()
+      .setDescription("Select a category from the menu below.")
+      .setColor("White")
+      .setFooter({
+        text: `Requested by ${interaction.user.username}`,
+        iconURL: interaction.user.displayAvatarURL(),
+      })
+      .setTimestamp();
 
-    const components = (state) => [
+    const menu = disabled =>
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId("help-menu")
-          .setPlaceholder("Please select a category")
-          .setDisabled(state)
-          .setOptions(
-            categories.map((cmd) => {
-              return {
-                label: cmd.directory,
-                value: cmd.directory.toLowerCase(),
-                description: `Commands from ${cmd.directory} category.`,
-                emoji: emojis[cmd.directory.toLowerCase() || null],
-              };
-            })
+          .setPlaceholder("Choose a command category")
+          .setDisabled(disabled)
+          .addOptions(
+            categories.map(cat => ({
+              label: cat.display,
+              value: cat.directory,
+              description: `Commands from the ${cat.display} category.`,
+              emoji: emojis[cat.directory] ?? undefined,
+            }))
           )
-      ),
-    ];
+      );
 
-    const initialMessage = await interaction.reply({
-      embeds: [embed],
-      components: components(false),
+    const message = await interaction.reply({
+      embeds: [baseEmbed],
+      components: [menu(false)],
+      flags: MessageFlags.Ephemeral,
     });
 
-    const filter = (interaction) =>
-      interaction.user.id === interaction.member.id;
-
-    const collector = initialMessage.createMessageComponentCollector({
-      filter,
-      compontentType: ComponentType.StringSelect,
+    const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.StringSelect,
+      time: 60_000,
+      filter: i => i.user.id === interaction.user.id,
     });
 
-    collector.on("collect", (i) => {
-      const [directory] = i.values;
-      const category = categories.find(
-        (x) => x.directory.toLowerCase() === directory
+    collector.on("collect", async i => {
+      const selected = categories.find(
+        c => c.directory === i.values[0]
       );
 
       const categoryEmbed = new EmbedBuilder()
-        .setTitle(`***${formatString(directory)} commands***`)
-        .setDescription(
-          `A list of all the commands categorized under ${directory}`
-        )
-        .setColor("#FFFFFE")
+        .setTitle(`${selected.display} Commands`)
+        .setColor("White")
         .addFields(
-          category.commands.map((cmd) => {
-            return {
-              name: `***${cmd.name}***`,
-              value: cmd.description,
-              inline: true,
-            };
-          })
-        );
+          selected.commands.map(cmd => ({
+            name: `/${cmd.name}`,
+            value: cmd.description,
+            inline: true,
+          }))
+        )
+        .setTimestamp();
 
-      i.update({ embeds: [categoryEmbed] });
+      await i.update({ embeds: [categoryEmbed] });
     });
 
-    collector.on("end", () => {
-      initialMessage.edit({ components: components(true) });
+    collector.on("end", async () => {
+      await message.edit({ components: [menu(true)] });
     });
   },
 };
