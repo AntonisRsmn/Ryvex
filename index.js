@@ -18,6 +18,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent, // REQUIRED for message content logging
+
   ],
   partials: [
     Partials.User,

@@ -1,9 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
-
-const {
-  getGuildSettings,
-} = require("../../Database/services/guildSettingsService");
-
+const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 const { logEvent } = require("../../Utils/logEvent");
 
 module.exports = {
@@ -11,15 +7,13 @@ module.exports = {
 
   async execute(member) {
     const { guild, user } = member;
-
-    // Fetch settings (auto-creates if missing)
     const settings = await getGuildSettings(guild.id);
 
     /* ───────── GENERAL LOGGING ───────── */
-    if (
-      settings.logging?.enabled &&
-      settings.logging.events?.memberJoin
-    ) {
+    const memberJoinEnabled =
+      settings.logging?.events?.memberJoin ?? true;
+
+    if (settings.logging?.enabled && memberJoinEnabled) {
       await logEvent({
         guild,
         title: "👋 Member Joined",
@@ -31,25 +25,21 @@ module.exports = {
     /* ───────── WELCOME SYSTEM ───────── */
     if (!settings.welcome.enabled) return;
 
-    const channelId = settings.welcome.channelId;
-    const welcomeChannel = channelId
-      ? guild.channels.cache.get(channelId)
+    const welcomeChannel = settings.welcome.channelId
+      ? guild.channels.cache.get(settings.welcome.channelId)
       : null;
 
-    // Add auto-role if configured
     if (settings.welcome.autoRoleId) {
       const role = guild.roles.cache.get(settings.welcome.autoRoleId);
-
       if (role) {
         try {
           await member.roles.add(role);
-        } catch (error) {
-          console.error("Failed to add auto-role:", error.message);
+        } catch (err) {
+          console.error("Failed to add auto-role:", err.message);
         }
       }
     }
 
-    // Send welcome message if channel exists
     if (!welcomeChannel) return;
 
     const embed = new EmbedBuilder()
@@ -61,10 +51,8 @@ module.exports = {
       .setColor("White")
       .setTimestamp();
 
-    try {
-      await welcomeChannel.send({ embeds: [embed] });
-    } catch (error) {
-      console.error("Failed to send welcome message:", error.message);
-    }
+    welcomeChannel.send({ embeds: [embed] }).catch(err =>
+      console.error("Failed to send welcome message:", err.message)
+    );
   },
 };

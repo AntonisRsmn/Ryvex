@@ -1,54 +1,66 @@
-const { EmbedBuilder } = require("discord.js");
+const { AuditLogEvent } = require("discord.js");
 const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 const { logEvent } = require("../../Utils/logEvent");
 
 module.exports = {
-  name: "guildMemberAdd",
+  name: "guildMemberRemove",
 
   async execute(member) {
     const { guild, user } = member;
     const settings = await getGuildSettings(guild.id);
 
-    /* ───────── GENERAL LOGGING ───────── */
-    if (settings.logging?.enabled) {
-      await logEvent({
-        guild,
-        title: "👋 Member Joined",
-        description: `${user.tag} joined the server.`,
-        color: "Green",
+    /* ───────── DEFAULT-ON EVENT TOGGLE ───────── */
+    const memberLeaveEnabled =
+      settings.logging?.events?.memberLeave ?? true;
+
+    if (!settings.logging?.enabled || !memberLeaveEnabled) return;
+
+    /* ───────── AVOID DUPLICATES (kick / ban) ───────── */
+    let wasModerated = false;
+
+    try {
+      // Check for kick
+      const kickLogs = await guild.fetchAuditLogs({
+        type: AuditLogEvent.MemberKick,
+        limit: 1,
       });
-    }
 
-    /* ───────── WELCOME SYSTEM ───────── */
-    if (!settings.welcome.enabled) return;
-
-    const welcomeChannel = settings.welcome.channelId
-      ? guild.channels.cache.get(settings.welcome.channelId)
-      : null;
-
-    // Auto-role
-    if (settings.welcome.autoRoleId) {
-      const role = guild.roles.cache.get(settings.welcome.autoRoleId);
-      if (role) {
-        member.roles.add(role).catch(err =>
-          console.error("Failed to add auto-role:", err.message)
-        );
+      const kickLog = kickLogs.entries.first();
+      if (
+        kickLog &&
+        kickLog.target?.id === user.id &&
+        Date.now() - kickLog.createdTimestamp < 5000
+      ) {
+        wasModerated = true;
       }
+
+      // Check for ban
+      const banLogs = await guild.fetchAuditLogs({
+        type: AuditLogEvent.MemberBanAdd,
+        limit: 1,
+      });
+
+      const banLog = banLogs.entries.first();
+      if (
+        banLog &&
+        banLog.target?.id === user.id &&
+        Date.now() - banLog.createdTimestamp < 5000
+      ) {
+        wasModerated = true;
+      }
+    } catch (err) {
+      console.error("Audit log check failed:", err.message);
     }
 
-    if (!welcomeChannel) return;
+    // If kicked or banned → do NOT log as leave
+    if (wasModerated) return;
 
-    const embed = new EmbedBuilder()
-      .setTitle("👋 Welcome!")
-      .setDescription(
-        `Welcome ${member} to **${guild.name}**!\nWe’re glad to have you here 💙`
-      )
-      .setThumbnail(user.displayAvatarURL())
-      .setColor("White")
-      .setTimestamp();
-
-    welcomeChannel.send({ embeds: [embed] }).catch(err =>
-      console.error("Failed to send welcome message:", err.message)
-    );
+    /* ───────── VOLUNTARY LEAVE LOG ───────── */
+    await logEvent({
+      guild,
+      title: "👋 Member Left",
+      description: `${user.tag} left the server.`,
+      color: "Orange",
+    });
   },
 };

@@ -1,4 +1,4 @@
-const { ChannelType } = require("discord.js");
+const { ChannelType, AuditLogEvent } = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
@@ -21,24 +21,57 @@ module.exports = {
       return;
     }
 
+    // ───────── CHANNEL TYPE LABEL ─────────
     let typeLabel = "Channel";
 
-    if (channel.type === ChannelType.GuildText) {
-      typeLabel = "📝 Text Channel";
-    } else if (channel.type === ChannelType.GuildVoice) {
-      typeLabel = "🔊 Voice Channel";
-    } else if (channel.type === ChannelType.GuildAnnouncement) {
-      typeLabel = "📢 Announcement Channel";
-    } else if (channel.type === ChannelType.GuildForum) {
-      typeLabel = "🧵 Forum Channel";
-    } else if (channel.type === ChannelType.GuildCategory) {
-      typeLabel = "📁 Category";
+    switch (channel.type) {
+      case ChannelType.GuildText:
+        typeLabel = "📝 Text Channel";
+        break;
+      case ChannelType.GuildVoice:
+        typeLabel = "🔊 Voice Channel";
+        break;
+      case ChannelType.GuildAnnouncement:
+        typeLabel = "📢 Announcement Channel";
+        break;
+      case ChannelType.GuildForum:
+        typeLabel = "🧵 Forum Channel";
+        break;
+      case ChannelType.GuildCategory:
+        typeLabel = "📁 Category";
+        break;
     }
 
+    // ───────── AUDIT LOG LOOKUP ─────────
+    let executor = "Unknown";
+
+    try {
+      const logs = await guild.fetchAuditLogs({
+        type: AuditLogEvent.ChannelDelete,
+        limit: 1,
+      });
+
+      const entry = logs.entries.first();
+
+      if (
+        entry &&
+        entry.target?.id === channel.id &&
+        Date.now() - entry.createdTimestamp < 5000
+      ) {
+        executor = `${entry.executor.tag}`;
+      }
+    } catch (error) {
+      console.error("ChannelDelete audit log fetch failed:", error.message);
+    }
+
+    // ───────── LOG EVENT ─────────
     await logEvent({
       guild,
       title: `${typeLabel} Deleted`,
-      description: `**Name:** ${channel.name}`,
+      description: [
+        `**Name:** ${channel.name}`,
+        `**Deleted by:** ${executor}`,
+      ].join("\n"),
       color: "Red",
     });
   },
