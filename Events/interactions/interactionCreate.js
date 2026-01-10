@@ -11,7 +11,7 @@ module.exports = {
 
     const client = interaction.client;
 
-    // ───────── GUILD ONLY GUARD ─────────
+    // Guild-only command protection
     if (!interaction.guild) {
       const embed = new EmbedBuilder()
         .setTitle("Ryvex™")
@@ -26,6 +26,7 @@ module.exports = {
     }
 
     const command = client.commands.get(interaction.commandName);
+
     if (!command) {
       return interaction.reply({
         content: "❌ This command is outdated or unavailable.",
@@ -41,12 +42,7 @@ module.exports = {
         error
       );
 
-      // ✅ CRITICAL FIX
-      if (interaction.deferred || interaction.replied) {
-        await interaction.editReply({
-          content: "❌ An error occurred while executing this command.",
-        });
-      } else {
+      if (!interaction.replied) {
         await interaction.reply({
           content: "❌ An error occurred while executing this command.",
           flags: MessageFlags.Ephemeral,
