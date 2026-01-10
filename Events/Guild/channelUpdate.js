@@ -123,7 +123,6 @@ module.exports = {
         ...changes,
       ].join("\n"),
       color: "Yellow",
-      type: "moderation",
     });
   },
 };
