@@ -30,7 +30,7 @@ module.exports = {
     const targetUser = options.getUser("target");
     const reason = options.getString("reason") || "No reason provided";
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.KickMembers)) {
       return interaction.reply({
         embeds: [
@@ -42,7 +42,7 @@ module.exports = {
       });
     }
 
-    // Self-kick protection
+    /* ───────── SAFETY CHECKS ───────── */
     if (targetUser.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -54,7 +54,6 @@ module.exports = {
       });
     }
 
-    // Owner protection
     if (targetUser.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -80,7 +79,6 @@ module.exports = {
       });
     }
 
-    // Moderator role hierarchy check
     if (targetMember.roles.highest.position >= moderator.roles.highest.position) {
       return interaction.reply({
         embeds: [
@@ -94,7 +92,6 @@ module.exports = {
       });
     }
 
-    // Bot role hierarchy check
     if (
       targetMember.roles.highest.position >=
       guild.members.me.roles.highest.position
@@ -111,13 +108,14 @@ module.exports = {
       });
     }
 
-    // Execute kick
+    /* ───────── EXECUTE KICK ───────── */
     try {
       await targetMember.kick(reason);
 
-      // ✅ LOG ONLY AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Kick",
         target: targetUser,
         moderator: interaction.user,

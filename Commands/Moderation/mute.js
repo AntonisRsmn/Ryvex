@@ -39,7 +39,7 @@ module.exports = {
     const duration = ms(timeInput);
     const reason = options.getString("reason") || "No reason provided";
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       return interaction.reply({
         embeds: [
@@ -51,7 +51,7 @@ module.exports = {
       });
     }
 
-    // Invalid duration
+    /* ───────── INVALID DURATION ───────── */
     if (!duration || duration <= 0 || duration > 2_332_800_000) {
       return interaction.reply({
         embeds: [
@@ -77,7 +77,7 @@ module.exports = {
       });
     }
 
-    // Owner protection
+    /* ───────── PROTECTIONS ───────── */
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -89,7 +89,6 @@ module.exports = {
       });
     }
 
-    // Self protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -101,8 +100,10 @@ module.exports = {
       });
     }
 
-    // Moderator role hierarchy check
-    if (targetMember.roles.highest.position >= moderator.roles.highest.position) {
+    if (
+      targetMember.roles.highest.position >=
+      moderator.roles.highest.position
+    ) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -115,7 +116,6 @@ module.exports = {
       });
     }
 
-    // Bot role hierarchy check
     if (
       targetMember.roles.highest.position >=
       guild.members.me.roles.highest.position
@@ -132,17 +132,19 @@ module.exports = {
       });
     }
 
-    // Execute mute
+    /* ───────── EXECUTE MUTE ───────── */
     try {
       await targetMember.timeout(duration, reason);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Mute",
         target: targetUser,
         moderator: interaction.user,
-        reason: `${reason} (Duration: ${timeInput})`,
+        reason,
+        duration: timeInput,
       });
 
       return interaction.reply({

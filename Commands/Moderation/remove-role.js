@@ -31,7 +31,7 @@ module.exports = {
     const targetUser = options.getUser("target");
     const role = options.getRole("role");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
       return interaction.reply({
         embeds: [
@@ -57,7 +57,7 @@ module.exports = {
       });
     }
 
-    // Owner protection
+    /* ───────── PROTECTIONS ───────── */
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -69,7 +69,6 @@ module.exports = {
       });
     }
 
-    // Self-action protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -81,7 +80,6 @@ module.exports = {
       });
     }
 
-    // Moderator role hierarchy check
     if (role.position >= moderator.roles.highest.position) {
       return interaction.reply({
         embeds: [
@@ -95,7 +93,6 @@ module.exports = {
       });
     }
 
-    // Bot role hierarchy check
     if (role.position >= guild.members.me.roles.highest.position) {
       return interaction.reply({
         embeds: [
@@ -109,7 +106,6 @@ module.exports = {
       });
     }
 
-    // Role presence check
     if (!targetMember.roles.cache.has(role.id)) {
       return interaction.reply({
         embeds: [
@@ -123,13 +119,14 @@ module.exports = {
       });
     }
 
-    // Execute role removal
+    /* ───────── EXECUTE ROLE REMOVAL ───────── */
     try {
       await targetMember.roles.remove(role);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Remove Role",
         target: targetUser,
         moderator: interaction.user,

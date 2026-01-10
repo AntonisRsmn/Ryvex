@@ -39,7 +39,7 @@ module.exports = {
     const duration = ms(timeInput);
     const reason = options.getString("reason") || "No reason provided";
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       return interaction.reply({
         embeds: [
@@ -65,7 +65,7 @@ module.exports = {
       });
     }
 
-    // Invalid duration
+    /* ───────── VALIDATION ───────── */
     if (!duration || duration <= 0 || duration > 2_332_800_000) {
       return interaction.reply({
         embeds: [
@@ -77,7 +77,6 @@ module.exports = {
       });
     }
 
-    // Owner protection
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -89,7 +88,6 @@ module.exports = {
       });
     }
 
-    // Self protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -101,7 +99,6 @@ module.exports = {
       });
     }
 
-    // Role hierarchy check
     if (
       targetMember.roles.highest.position >=
       moderator.roles.highest.position
@@ -118,12 +115,25 @@ module.exports = {
       });
     }
 
+    if (targetUser.bot) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setDescription("❌ You cannot timeout bots.")
+            .setColor("Red"),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    /* ───────── EXECUTE TIMEOUT ───────── */
     try {
       await targetMember.timeout(duration, reason);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation", // 🔥 REQUIRED FOR MOD LOG CHANNEL
         action: "Timeout",
         target: targetUser,
         moderator: interaction.user,

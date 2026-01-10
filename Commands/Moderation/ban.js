@@ -30,7 +30,7 @@ module.exports = {
     const targetUser = options.getUser("target");
     const reason = options.getString("reason") || "No reason provided";
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
       return interaction.reply({
         embeds: [
@@ -42,7 +42,7 @@ module.exports = {
       });
     }
 
-    // Self-ban protection
+    /* ───────── SAFETY CHECKS ───────── */
     if (targetUser.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -54,7 +54,6 @@ module.exports = {
       });
     }
 
-    // Owner protection
     if (targetUser.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -80,37 +79,46 @@ module.exports = {
       });
     }
 
-    // Moderator role hierarchy check
-    if (targetMember.roles.highest.position >= moderator.roles.highest.position) {
+    if (
+      targetMember.roles.highest.position >=
+      moderator.roles.highest.position
+    ) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setDescription("❌ You cannot ban a member with an equal or higher role.")
+            .setDescription(
+              "❌ You cannot ban a member with an equal or higher role."
+            )
             .setColor("Red"),
         ],
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    // Bot role hierarchy check
-    if (targetMember.roles.highest.position >= guild.members.me.roles.highest.position) {
+    if (
+      targetMember.roles.highest.position >=
+      guild.members.me.roles.highest.position
+    ) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setDescription("❌ I cannot ban this member due to role hierarchy.")
+            .setDescription(
+              "❌ I cannot ban this member due to role hierarchy."
+            )
             .setColor("Red"),
         ],
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    // Execute ban
+    /* ───────── EXECUTE BAN ───────── */
     try {
       await targetMember.ban({ reason });
 
-      // ✅ LOG ONLY AFTER SUCCESS
+      // ✅ MODERATION LOG (explicit)
       await logAction({
         guild,
+        type: "moderation",
         action: "Ban",
         target: targetUser,
         moderator: interaction.user,

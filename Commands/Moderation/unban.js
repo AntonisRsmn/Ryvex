@@ -23,7 +23,7 @@ module.exports = {
     const { guild, options, user: moderator } = interaction;
     const userId = options.getString("userid");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
       return interaction.reply({
         embeds: [
@@ -49,12 +49,14 @@ module.exports = {
       });
     }
 
+    /* ───────── EXECUTE UNBAN ───────── */
     try {
       await guild.members.unban(userId);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Unban",
         target: bannedUser.user,
         moderator,

@@ -8,7 +8,6 @@ const GuildSettingsSchema = new mongoose.Schema(
       enabled: { type: Boolean, default: false },
       channelId: { type: String, default: null },
 
-      // 🔴 THIS WAS MISSING
       messageContent: {
         type: Boolean,
         default: false, // privacy ON by default
@@ -29,7 +28,18 @@ const GuildSettingsSchema = new mongoose.Schema(
     },
 
     moderation: {
-      logActions: { type: Boolean, default: true },
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      channelId: {
+        type: String,
+        default: null,
+      },
+      logActions: {
+        type: Boolean,
+        default: true,
+      },
     },
   },
   { timestamps: true }

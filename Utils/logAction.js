@@ -1,5 +1,5 @@
+const { logEvent } = require("./logEvent");
 const { EmbedBuilder } = require("discord.js");
-const { getGuildSettings } = require("../Database/services/guildSettingsService");
 
 async function logAction({
   guild,
@@ -7,31 +7,25 @@ async function logAction({
   target,
   moderator,
   reason = "No reason provided",
+  duration,
 }) {
-  try {
-    const settings = await getGuildSettings(guild.id);
+  const description = [
+    `**Action:** ${action}`,
+    `**Target:** ${target}`,
+    `**Moderator:** ${moderator}`,
+    reason ? `**Reason:** ${reason}` : null,
+    duration ? `**Duration:** ${duration}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-    if (!settings.logging.enabled) return;
-    if (!settings.logging.channelId) return;
-
-    const channel = guild.channels.cache.get(settings.logging.channelId);
-    if (!channel) return;
-
-    const embed = new EmbedBuilder()
-      .setTitle("🛡 Moderation Log")
-      .setColor("White")
-      .addFields(
-        { name: "Action", value: action, inline: true },
-        { name: "Target", value: `${target}`, inline: true },
-        { name: "Moderator", value: `${moderator}`, inline: true },
-        { name: "Reason", value: reason }
-      )
-      .setTimestamp();
-
-    await channel.send({ embeds: [embed] });
-  } catch (error) {
-    console.error("Logging failed:", error.message);
-  }
+  await logEvent({
+    guild,
+    type: "moderation", // 🔥 THIS IS THE KEY LINE
+    title: "🛡 Moderation Log",
+    description,
+    color: "Red",
+  });
 }
 
 module.exports = { logAction };

@@ -24,7 +24,7 @@ module.exports = {
 
     const targetUser = options.getUser("target");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       return interaction.reply({
         embeds: [
@@ -50,7 +50,7 @@ module.exports = {
       });
     }
 
-    // Owner protection
+    /* ───────── PROTECTIONS ───────── */
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -64,7 +64,6 @@ module.exports = {
       });
     }
 
-    // Self protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -76,7 +75,6 @@ module.exports = {
       });
     }
 
-    // Role hierarchy check
     if (
       targetMember.roles.highest.position >=
       moderator.roles.highest.position
@@ -93,7 +91,6 @@ module.exports = {
       });
     }
 
-    // Not timed out check
     if (!targetMember.isCommunicationDisabled()) {
       return interaction.reply({
         embeds: [
@@ -105,12 +102,14 @@ module.exports = {
       });
     }
 
+    /* ───────── REMOVE TIMEOUT ───────── */
     try {
       await targetMember.timeout(null);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Remove Timeout",
         target: targetUser,
         moderator: interaction.user,

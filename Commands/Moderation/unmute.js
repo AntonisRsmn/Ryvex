@@ -21,10 +21,9 @@ module.exports = {
 
   async execute(interaction) {
     const { guild, member: moderator, options } = interaction;
-
     const targetUser = options.getUser("target");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
       return interaction.reply({
         embeds: [
@@ -50,7 +49,7 @@ module.exports = {
       });
     }
 
-    // Owner protection
+    /* ───────── SAFETY CHECKS ───────── */
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -62,7 +61,6 @@ module.exports = {
       });
     }
 
-    // Self protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -74,7 +72,6 @@ module.exports = {
       });
     }
 
-    // Role hierarchy check
     if (
       targetMember.roles.highest.position >=
       moderator.roles.highest.position
@@ -91,7 +88,6 @@ module.exports = {
       });
     }
 
-    // Not muted check
     if (!targetMember.isCommunicationDisabled()) {
       return interaction.reply({
         embeds: [
@@ -103,12 +99,14 @@ module.exports = {
       });
     }
 
+    /* ───────── EXECUTE UNMUTE ───────── */
     try {
       await targetMember.timeout(null);
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation", // 🔥 THIS IS THE IMPORTANT FIX
         action: "Unmute",
         target: targetUser,
         moderator: interaction.user,

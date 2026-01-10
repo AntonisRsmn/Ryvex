@@ -25,7 +25,7 @@ module.exports = {
     const { guild, options, user: moderator } = interaction;
     const channel = options.getChannel("channel");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
       return interaction.reply({
         embeds: [
@@ -37,7 +37,7 @@ module.exports = {
       });
     }
 
-    // Already unlocked check
+    /* ───────── ALREADY UNLOCKED CHECK ───────── */
     if (
       channel
         .permissionsFor(guild.roles.everyone)
@@ -53,15 +53,17 @@ module.exports = {
       });
     }
 
+    /* ───────── EXECUTE UNLOCK ───────── */
     try {
       await channel.permissionOverwrites.edit(
         guild.roles.everyone,
         { SendMessages: null }
       );
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation", // 🔥 THIS IS THE FIX
         action: "Channel Unlock",
         target: channel,
         moderator,

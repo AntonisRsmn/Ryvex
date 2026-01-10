@@ -31,7 +31,7 @@ module.exports = {
     const channel = options.getChannel("channel");
     const reason = options.getString("reason") || "No reason provided";
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
       return interaction.reply({
         embeds: [
@@ -43,12 +43,10 @@ module.exports = {
       });
     }
 
-    // Already locked check
-    if (
-      !channel
-        .permissionsFor(guild.roles.everyone)
-        .has(PermissionFlagsBits.SendMessages)
-    ) {
+    /* ───────── ALREADY LOCKED CHECK ───────── */
+    const everyonePerms = channel.permissionsFor(guild.roles.everyone);
+
+    if (!everyonePerms || !everyonePerms.has(PermissionFlagsBits.SendMessages)) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -59,6 +57,7 @@ module.exports = {
       });
     }
 
+    /* ───────── EXECUTE LOCK ───────── */
     try {
       await channel.permissionOverwrites.edit(
         guild.roles.everyone,
@@ -66,9 +65,10 @@ module.exports = {
         { reason }
       );
 
-      // ✅ LOG AFTER SUCCESS
+      /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
+        type: "moderation",
         action: "Channel Lock",
         target: channel,
         moderator,
@@ -82,10 +82,6 @@ module.exports = {
               `🔒 ${channel} has been locked.\n**Reason:** ${reason}`
             )
             .setColor("White")
-            .setFooter({
-              text: `By ${interaction.user.username}`,
-              iconURL: interaction.user.displayAvatarURL(),
-            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

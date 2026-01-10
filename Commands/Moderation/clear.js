@@ -5,6 +5,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { logAction } = require("../../Utils/logAction");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("clear")
@@ -25,14 +27,12 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const { channel, guild, options } = interaction;
+    const { channel, guild, member: moderator, options } = interaction;
     const amount = options.getInteger("amount");
     const target = options.getUser("target");
 
-    // 1️⃣ Bot permission check
-    if (
-      !guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)
-    ) {
+    /* ───────── BOT PERMISSION CHECK ───────── */
+    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -81,7 +81,23 @@ module.exports = {
     try {
       const deleted = await channel.bulkDelete(toDelete, true);
 
-      await interaction.reply({
+      /* ───────── MODERATION LOG ───────── */
+      await logAction({
+        guild,
+        type: "moderation",
+        action: "Clear Messages",
+        moderator: interaction.user,
+        target: target ?? null,
+        reason: target
+          ? `Cleared ${deleted.size} messages from ${target.tag}`
+          : `Cleared ${deleted.size} messages in #${channel.name}`,
+        extra: {
+          channel: channel.name,
+          count: deleted.size,
+        },
+      });
+
+      return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setDescription(

@@ -26,7 +26,7 @@ module.exports = {
     .addSubcommandGroup(group =>
       group
         .setName("logging")
-        .setDescription("Logging settings")
+        .setDescription("General logging settings")
 
         .addSubcommand(cmd =>
           cmd.setName("enable").setDescription("Enable logging")
@@ -39,7 +39,7 @@ module.exports = {
         .addSubcommand(cmd =>
           cmd
             .setName("channel")
-            .setDescription("Set logging channel")
+            .setDescription("Set general log channel")
             .addChannelOption(opt =>
               opt
                 .setName("channel")
@@ -65,6 +65,32 @@ module.exports = {
                   { name: "Status", value: "status" }
                 )
             )
+        )
+    )
+
+    // ───────── MODERATION LOGS ─────────
+    .addSubcommandGroup(group =>
+      group
+        .setName("moderation")
+        .setDescription("Moderation logging settings")
+
+        .addSubcommand(cmd =>
+          cmd
+            .setName("channel")
+            .setDescription("Set moderation log channel")
+            .addChannelOption(opt =>
+              opt
+                .setName("channel")
+                .setDescription("Moderation log channel")
+                .addChannelTypes(ChannelType.GuildText)
+                .setRequired(true)
+            )
+        )
+
+        .addSubcommand(cmd =>
+          cmd
+            .setName("disable")
+            .setDescription("Disable separate moderation logs (use general logs)")
         )
     )
 
@@ -121,16 +147,27 @@ module.exports = {
     if (sub === "view") {
       const settings = await getGuildSettings(guildId);
 
-      // 🔧 AUTO-MIGRATION (CRITICAL FIX)
+      // 🔧 SAFE hydration (NO WRITES)
+      const moderation = {
+        enabled: Boolean(settings.moderation?.enabled),
+        channelId: settings.moderation?.channelId ?? null,
+      };
+
+      // 🔧 Auto-migrate privacy flag
       if (typeof settings.logging.messageContent !== "boolean") {
         await updateGuildSettings(guildId, {
-          "logging.messageContent": false, // privacy ON by default
+          "logging.messageContent": false,
         });
         settings.logging.messageContent = false;
       }
 
       const loggingChannel = settings.logging.channelId
         ? guild.channels.cache.get(settings.logging.channelId)
+        : null;
+
+      const moderationChannel =
+      moderation.enabled && moderation.channelId
+        ? guild.channels.cache.get(moderation.channelId)
         : null;
 
       const welcomeChannel = settings.welcome.channelId
@@ -148,7 +185,7 @@ module.exports = {
         .setColor("White")
         .addFields(
           {
-            name: "📄 Logging",
+            name: "📄 General Logging",
             value: [
               `Enabled: **${settings.logging.enabled ? "Yes" : "No"}**`,
               `Channel: ${loggingChannel ?? "Not set"}`,
@@ -157,6 +194,13 @@ module.exports = {
                   ? "OFF (content logged)"
                   : "ON (content hidden)"
               }**`,
+            ].join("\n"),
+          },
+          {
+            name: "🛡 Moderation Logs",
+            value: [
+              `Separate Channel: **${moderation.enabled ? "Yes" : "No"}**`,
+              `Channel: ${moderationChannel ?? "Using general logs"}`,
             ].join("\n"),
           },
           {
@@ -179,7 +223,7 @@ module.exports = {
 
     const embed = new EmbedBuilder().setColor("White").setTimestamp();
 
-    /* ───────── LOGGING HANDLERS ───────── */
+    /* ───────── LOGGING ───────── */
     if (group === "logging") {
       if (sub === "enable") {
         await updateGuildSettings(guildId, { "logging.enabled": true });
@@ -236,7 +280,34 @@ module.exports = {
       }
     }
 
-    /* ───────── WELCOME HANDLERS ───────── */
+    /* ───────── MODERATION ───────── */
+    if (group === "moderation") {
+      if (sub === "channel") {
+        const channel = interaction.options.getChannel("channel");
+
+        await updateGuildSettings(guildId, {
+          "moderation.channelId": channel.id,
+          "moderation.enabled": true,
+        });
+
+        embed.setDescription(
+          `🛡 Moderation logs channel set to ${channel}`
+        );
+      }
+
+      if (sub === "disable") {
+        await updateGuildSettings(guildId, {
+          "moderation.channelId": null,
+          "moderation.enabled": false,
+        });
+
+        embed.setDescription(
+          "🛡 Separate moderation logs disabled.\nUsing general logs instead."
+        );
+      }
+    }
+
+    /* ───────── WELCOME ───────── */
     if (group === "welcome") {
       if (sub === "enable") {
         await updateGuildSettings(guildId, { "welcome.enabled": true });

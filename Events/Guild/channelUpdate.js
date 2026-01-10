@@ -1,4 +1,4 @@
-const { ChannelType, AuditLogEvent } = require("discord.js");
+const { ChannelType, AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
@@ -20,7 +20,7 @@ module.exports = {
       return;
     }
 
-    // ───────── DETECT CHANGES ─────────
+    /* ───────── DETECT CHANGES ───────── */
     const changes = [];
 
     if (oldChannel.name !== newChannel.name) {
@@ -48,14 +48,16 @@ module.exports = {
       changes.push("**Slowmode updated**");
     }
 
-    if (oldChannel.permissionOverwrites.cache.size !== newChannel.permissionOverwrites.cache.size) {
+    if (
+      oldChannel.permissionOverwrites.cache.size !==
+      newChannel.permissionOverwrites.cache.size
+    ) {
       changes.push("**Permissions updated**");
     }
 
-    // If nothing meaningful changed → do nothing
-    if (changes.length === 0) return;
+    if (!changes.length) return;
 
-    // ───────── CHANNEL TYPE LABEL ─────────
+    /* ───────── CHANNEL TYPE LABEL ───────── */
     let typeLabel = "Channel";
 
     switch (newChannel.type) {
@@ -76,29 +78,41 @@ module.exports = {
         break;
     }
 
-    // ───────── AUDIT LOG LOOKUP ─────────
+    /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
     let executor = "Unknown";
 
-    try {
-      const logs = await guild.fetchAuditLogs({
-        type: AuditLogEvent.ChannelUpdate,
-        limit: 1,
-      });
+    // 🔐 Permission guard (CRITICAL FIX)
+    const me = guild.members.me;
+    const canViewAuditLog =
+      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-      const entry = logs.entries.first();
+    if (canViewAuditLog) {
+      try {
+        const logs = await guild.fetchAuditLogs({
+          type: AuditLogEvent.ChannelUpdate,
+          limit: 1,
+        });
 
-      if (
-        entry &&
-        entry.target?.id === newChannel.id &&
-        Date.now() - entry.createdTimestamp < 5000
-      ) {
-        executor = entry.executor.tag;
+        const entry = logs.entries.first();
+
+        if (
+          entry &&
+          entry.target?.id === newChannel.id &&
+          Date.now() - entry.createdTimestamp < 5000
+        ) {
+          executor = entry.executor?.tag ?? "Unknown";
+        }
+      } catch (err) {
+        // 🔇 Silence permission errors, log others if needed
+        if (err.code !== 50013) {
+          console.error("ChannelUpdate audit log error:", err);
+        }
       }
-    } catch (error) {
-      console.error("ChannelUpdate audit log fetch failed:", error.message);
+    } else {
+      executor = "Bot / Integration";
     }
 
-    // ───────── LOG EVENT ─────────
+    /* ───────── LOG EVENT ───────── */
     await logEvent({
       guild,
       title: `${typeLabel} Updated`,
@@ -109,6 +123,7 @@ module.exports = {
         ...changes,
       ].join("\n"),
       color: "Yellow",
+      type: "moderation",
     });
   },
 };

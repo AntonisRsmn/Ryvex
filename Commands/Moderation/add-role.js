@@ -31,7 +31,7 @@ module.exports = {
     const targetUser = options.getUser("target");
     const role = options.getRole("role");
 
-    // Bot permission check
+    /* ───────── BOT PERMISSION CHECK ───────── */
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
       return interaction.reply({
         embeds: [
@@ -57,7 +57,7 @@ module.exports = {
       });
     }
 
-    // Owner protection
+    /* ───────── SAFETY CHECKS ───────── */
     if (targetMember.id === guild.ownerId) {
       return interaction.reply({
         embeds: [
@@ -69,7 +69,6 @@ module.exports = {
       });
     }
 
-    // Self-role modification protection
     if (targetMember.id === moderator.id) {
       return interaction.reply({
         embeds: [
@@ -81,7 +80,6 @@ module.exports = {
       });
     }
 
-    // Moderator role hierarchy check
     if (role.position >= moderator.roles.highest.position) {
       return interaction.reply({
         embeds: [
@@ -95,7 +93,6 @@ module.exports = {
       });
     }
 
-    // Bot role hierarchy check
     if (role.position >= guild.members.me.roles.highest.position) {
       return interaction.reply({
         embeds: [
@@ -109,29 +106,34 @@ module.exports = {
       });
     }
 
-    // Already has role
     if (targetMember.roles.cache.has(role.id)) {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setDescription(`❌ ${targetUser.tag} already has the ${role.name} role.`)
+            .setDescription(
+              `❌ ${targetUser.tag} already has the **${role.name}** role.`
+            )
             .setColor("Red"),
         ],
         flags: MessageFlags.Ephemeral,
       });
     }
 
-    // Execute role add
+    /* ───────── EXECUTE ACTION ───────── */
     try {
       await targetMember.roles.add(role);
 
-      // ✅ LOG AFTER SUCCESS
+      // ✅ MODERATION LOG (explicit)
       await logAction({
         guild,
-        action: "Add Role",
+        type: "moderation",
+        action: "Role Added",
         target: targetUser,
         moderator: interaction.user,
-        reason: `Role added: ${role.name}`,
+        reason: `Added role: ${role.name}`,
+        extra: {
+          Role: role.name,
+        },
       });
 
       return interaction.reply({
