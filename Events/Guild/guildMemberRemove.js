@@ -1,4 +1,4 @@
-const { AuditLogEvent } = require("discord.js");
+const { AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 const { logEvent } = require("../../Utils/logEvent");
 
@@ -17,39 +17,53 @@ module.exports = {
     if (!settings.logging?.enabled || !memberLeaveEnabled) return;
 
     let action = "Left the server";
-    let actor = "Self / Unconfirmed";
+    let actor = "Self";
     let color = "Orange";
 
-    try {
-      const logs = await guild.fetchAuditLogs({ limit: 5 });
+    /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
+    const me = guild.members.me;
+    const canViewAuditLog =
+      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-      const entry = logs.entries.find(
-        e =>
-          e.target?.id === user.id &&
-          Date.now() - e.createdTimestamp < 5000 &&
-          (e.action === AuditLogEvent.MemberKick ||
-           e.action === AuditLogEvent.MemberBanAdd)
-      );
+    if (canViewAuditLog) {
+      try {
+        const logs = await guild.fetchAuditLogs({
+          limit: 5,
+        });
 
-      if (entry) {
-        if (entry.action === AuditLogEvent.MemberKick) {
-          action = "Kicked from the server";
-          color = "Red";
+        const entry = logs.entries.find(
+          e =>
+            e.target?.id === user.id &&
+            Date.now() - e.createdTimestamp < 5000 &&
+            (
+              e.action === AuditLogEvent.MemberKick ||
+              e.action === AuditLogEvent.MemberBanAdd
+            )
+        );
+
+        if (entry) {
+          if (entry.action === AuditLogEvent.MemberKick) {
+            action = "Kicked from the server";
+            color = "Red";
+          }
+
+          if (entry.action === AuditLogEvent.MemberBanAdd) {
+            action = "Banned from the server";
+            color = "Red";
+          }
+
+          actor = entry.executor?.bot
+            ? "Bot / Integration"
+            : entry.executor?.tag ?? "Unknown";
         }
-
-        if (entry.action === AuditLogEvent.MemberBanAdd) {
-          action = "Banned from the server";
-          color = "Red";
-        }
-
-        actor = entry.executor?.bot
-          ? "Bot / Integration"
-          : `Moderator (${entry.executor.tag})`;
+      } catch {
+        // Best-effort only — silent failure
       }
-    } catch (err) {
-      // audit logs are best-effort only
+    } else {
+      actor = "Unknown (No Audit Log Access)";
     }
 
+    /* ───────── LOG EVENT ───────── */
     await logEvent({
       guild,
       title: "🚪 Member Left",

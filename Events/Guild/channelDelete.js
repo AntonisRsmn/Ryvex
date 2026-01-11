@@ -1,4 +1,8 @@
-const { ChannelType, AuditLogEvent } = require("discord.js");
+const {
+  ChannelType,
+  AuditLogEvent,
+  PermissionFlagsBits,
+} = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
@@ -13,7 +17,6 @@ module.exports = {
 
     const settings = await getGuildSettings(guild.id);
 
-    // Allow unless explicitly disabled
     if (
       !settings.logging?.enabled ||
       settings.logging.events?.channelDelete === false
@@ -21,7 +24,7 @@ module.exports = {
       return;
     }
 
-    // ───────── CHANNEL TYPE LABEL ─────────
+    /* ───────── CHANNEL TYPE LABEL ───────── */
     let typeLabel = "Channel";
 
     switch (channel.type) {
@@ -42,29 +45,34 @@ module.exports = {
         break;
     }
 
-    // ───────── AUDIT LOG LOOKUP ─────────
+    /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
     let executor = "Unknown";
+    const me = guild.members.me;
 
-    try {
-      const logs = await guild.fetchAuditLogs({
-        type: AuditLogEvent.ChannelDelete,
-        limit: 1,
-      });
+    if (me && me.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+      try {
+        const logs = await guild.fetchAuditLogs({
+          type: AuditLogEvent.ChannelDelete,
+          limit: 1,
+        });
 
-      const entry = logs.entries.first();
+        const entry = logs.entries.first();
 
-      if (
-        entry &&
-        entry.target?.id === channel.id &&
-        Date.now() - entry.createdTimestamp < 5000
-      ) {
-        executor = `${entry.executor.tag}`;
+        if (
+          entry &&
+          entry.target?.id === channel.id &&
+          Date.now() - entry.createdTimestamp < 5000
+        ) {
+          executor = entry.executor?.tag ?? "Unknown";
+        }
+      } catch {
+        executor = "Unknown";
       }
-    } catch (error) {
-      console.error("ChannelDelete audit log fetch failed:", error.message);
+    } else {
+      executor = "Bot / Integration";
     }
 
-    // ───────── LOG EVENT ─────────
+    /* ───────── LOG EVENT ───────── */
     await logEvent({
       guild,
       title: `${typeLabel} Deleted`,

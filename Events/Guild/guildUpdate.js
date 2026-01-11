@@ -1,6 +1,8 @@
-const { AuditLogEvent } = require("discord.js");
+const { AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
-const { getGuildSettings } = require("../../Database/services/guildSettingsService");
+const {
+  getGuildSettings,
+} = require("../../Database/services/guildSettingsService");
 
 module.exports = {
   name: "guildUpdate",
@@ -8,18 +10,14 @@ module.exports = {
   async execute(oldGuild, newGuild) {
     const settings = await getGuildSettings(newGuild.id);
 
-    const enabled =
-      settings.logging?.events?.guildUpdate ?? true;
-
+    const enabled = settings.logging?.events?.guildUpdate ?? true;
     if (!settings.logging?.enabled || !enabled) return;
 
     const changes = [];
 
     /* ───────── NAME CHANGE ───────── */
     if (oldGuild.name !== newGuild.name) {
-      changes.push(
-        `**Name:** ${oldGuild.name} → ${newGuild.name}`
-      );
+      changes.push(`**Name:** ${oldGuild.name} → ${newGuild.name}`);
     }
 
     /* ───────── ICON CHANGE ───────── */
@@ -63,24 +61,36 @@ module.exports = {
     // No meaningful changes → do nothing
     if (!changes.length) return;
 
-    /* ───────── MODERATOR DETECTION ───────── */
+    /* ───────── MODERATOR DETECTION (SAFE) ───────── */
     let moderator = "Unknown";
 
-    try {
-      const logs = await newGuild.fetchAuditLogs({
-        type: AuditLogEvent.GuildUpdate,
-        limit: 1,
-      });
+    const me = newGuild.members.me;
+    const canViewAuditLog =
+      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-      const entry = logs.entries.first();
+    if (canViewAuditLog) {
+      try {
+        const logs = await newGuild.fetchAuditLogs({
+          type: AuditLogEvent.GuildUpdate,
+          limit: 1,
+        });
 
-      if (
-        entry &&
-        Date.now() - entry.createdTimestamp < 5000
-      ) {
-        moderator = entry.executor?.tag ?? "Unknown";
+        const entry = logs.entries.first();
+
+        if (
+          entry &&
+          Date.now() - entry.createdTimestamp < 5000
+        ) {
+          moderator = entry.executor?.bot
+            ? "Bot / Integration"
+            : entry.executor?.tag ?? "Unknown";
+        }
+      } catch {
+        // audit logs are best-effort
       }
-    } catch {}
+    } else {
+      moderator = "Bot / Integration";
+    }
 
     /* ───────── LOG EVENT ───────── */
     await logEvent({
@@ -92,6 +102,7 @@ module.exports = {
         ...changes,
       ].join("\n"),
       color: "Blue",
+      type: "general",
     });
   },
 };

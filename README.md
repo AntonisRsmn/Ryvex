@@ -1,6 +1,7 @@
 # 🤖 Ryvex — Advanced Discord Server Management Bot
 
-**Ryvex** is a modern, slash-command–based Discord bot designed to help server owners and moderators **manage, moderate, and monitor** their communities with clarity and control.
+**Ryvex** is a modern, slash-command–based Discord bot built for **powerful moderation, detailed logging, and server control**.
+It focuses on **clarity, auditability, and safety** for server owners and moderation teams.
 
 🌐 Website: https://ryvex.gr  
 🆘 Support: Use `/support` inside Discord
@@ -9,85 +10,122 @@
 
 ## 🌟 What Is Ryvex?
 
-Ryvex is a **multipurpose Discord bot** focused on:
+Ryvex is a **moderation-first Discord bot** designed to help communities:
 
-- 🛡️ **Moderation**
-- 🧾 **Server & activity logging**
-- 👋 **Welcome & onboarding**
-- 🎮 **Fun & utility commands**
+- 🛡️ **Moderate members safely**
+- 🧾 **Track actions with case-based logs**
+- 🔍 **Audit staff actions transparently**
+- 👋 **Onboard new members cleanly**
+- 🎮 **Provide lightweight fun & utility commands**
 
-All features are configurable **per server** using a built-in **settings system** backed by MongoDB.
+All features are configurable **per server** using a MongoDB-backed settings system.
 
-No prefixes. No clutter. Everything works through `/` slash commands.
+No prefixes. No clutter. Everything runs through `/` slash commands.
 
 ---
 
 ## ⚙️ Core Systems Overview
 
-### 🧾 Logging System (Admin-Facing)
+### 🧾 Advanced Logging System
 
-Ryvex includes a **server logging system** designed for transparency and moderation auditing.
+Ryvex includes a **fully event-based logging system** built for transparency.
 
-**What gets logged**
+#### Logged events
 - Member joins & leaves
-- Channel creation & deletion
-- Moderation actions (ban, kick, mute, timeout, etc.)
+- Member updates (roles, nicknames)
+- Message edits & deletions *(privacy-aware)*
+- Channel create / update / delete
+- Role create / update / delete
+- Server (guild) updates
+- **All moderation actions** (case-based)
 
-**What does NOT get logged**
-- Message purges (`/clear`)
-- Fun commands
-- Private interactions
+#### Privacy & Safety
+- Message content logging is **optional**
+- Audit logs are fetched **only if the bot has permission**
+- Graceful fallbacks when permissions are missing
 
-Logs are sent to a **designated log channel** configured via `/settings`.
-
-> Logging is **event-based**, not spammy, and fully optional.
-
----
-
-### 👋 Welcome System (User-Facing)
-
-The welcome system is separate from logging and is used for onboarding new members.
-
-**Features**
-- Send welcome messages to a chosen channel
-- Assign an automatic role to new members
-- Fully optional and configurable
-
-Welcome messages do **not** interfere with logging.
+Logs are automatically routed to:
+- **General logs**
+- **Moderation logs**
 
 ---
 
-### 🛡️ Moderation System
+### 🛡️ Moderation & Case System
 
-Ryvex includes a robust moderation system with **built-in safety checks**:
+Every moderation action generates a **persistent case** stored in the database.
 
-- Role hierarchy enforcement
-- Bot permission validation
-- Owner & self-action protection
-- Proper error handling
+#### Supported actions
+- Ban / Unban
+- Kick
+- Timeout / Unmute
+- Lock / Unlock channels
+- Add / Remove roles
+- Warnings *(with management tools)*
 
-Moderation actions are **logged automatically** if logging is enabled.
+Each case stores:
+- Case ID
+- Action type
+- Target & moderator
+- Reason & duration (if applicable)
+- Timestamp
+
+---
+
+### 📂 Case Management
+
+Moderators can fully manage moderation history:
+
+```
+/case view <id>
+/case edit <id> <reason>
+/case delete <id>
+```
+
+---
+
+### 🧾 Moderation Logs (`/modlog`)
+
+```
+/modlog recent
+/modlog user <member>
+```
+
+Features:
+- Paginated user history
+- Case jump references
+- Clean, readable embeds
+- Action-based formatting
+
+---
+
+### ⚠️ Warning System
+
+```
+/warn add <member> [reason]
+/warn count <member>
+/warn remove <caseId>
+/warn clear <member>
+```
+
+---
+
+### 👋 Welcome System
+
+- Welcome messages
+- Optional auto-role assignment
 
 ---
 
 ## 🔧 Server Configuration (`/settings`)
 
-Admins can configure Ryvex using:
-
-```
-/settings
-```
-
-### Available settings groups
-
-#### Logging
+### Logging
 ```
 /settings logging enable
 /settings logging disable
 /settings logging channel <channel>
 ```
 
-#### Welcome
+### Welcome
 ```
 /settings welcome enable
 /settings welcome disable
@@ -97,44 +135,32 @@ Admins can configure Ryvex using:
 
 ---
 
-## 📜 Commands Reference
+## 📜 Commands Overview
 
-### 🛡️ Moderation Commands
-- `/ban`
+### 🛡️ Moderation
+- `/ban`, `/unban`
 - `/kick`
-- `/mute`
-- `/timeout`
-- `/unmute` / `/remove-timeout`
-- `/lock` / `/unlock`
-- `/add-role` / `/remove-role`
-- `/unban`
+- `/timeout`, `/unmute`
+- `/lock`, `/unlock`
+- `/add-role`, `/remove-role`
+- `/warn`
+- `/case`
+- `/modlog`
 - `/clear`
 
-### 🎮 Fun Commands
-- `/8ball`
-- `/compliment`
-- `/meme`
-- `/gaymeter`, `/ppmeter`
-- `/rps`
+### 🎮 Fun
+- `/8ball`, `/rps`, `/meme`
 
-### ℹ️ Info & Utility
-- `/help`
-- `/botinfo`
-- `/uptime`
-- `/userinfo`
-- `/poll`
-- `/support`
-- `/website`
-- `/donate`
+### ℹ️ Info
+- `/help`, `/botinfo`, `/uptime`, `/support`
 
 ---
 
-## 🧩 Technical Details
+## 🧩 Tech
 
-- **Node.js**
-- **discord.js (API v10)**
-- **MongoDB**
-- Slash commands only
+- Node.js
+- discord.js (API v10)
+- MongoDB
 
 ---
 

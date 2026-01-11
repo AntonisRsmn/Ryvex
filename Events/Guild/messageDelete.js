@@ -1,6 +1,8 @@
-const { AuditLogEvent } = require("discord.js");
+const { AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
-const { getGuildSettings } = require("../../Database/services/guildSettingsService");
+const {
+  getGuildSettings,
+} = require("../../Database/services/guildSettingsService");
 
 module.exports = {
   name: "messageDelete",
@@ -14,42 +16,46 @@ module.exports = {
     const enabled = settings.logging.events?.messageDelete ?? true;
     if (!enabled) return;
 
-    // Fetch partial message if needed
+    /* ───────── FETCH PARTIAL MESSAGE ───────── */
     if (message.partial) {
       try {
         await message.fetch();
       } catch {
-        // continue safely
+        // message may no longer exist — continue safely
       }
     }
 
     // Ignore bot-authored messages
     if (message.author?.bot) return;
 
-    /* ───────── DELETED BY DETECTION ───────── */
+    /* ───────── DELETED BY DETECTION (SAFE) ───────── */
     let deletedBy = "Self / Unconfirmed";
 
-    try {
-      const logs = await message.guild.fetchAuditLogs({
-        type: AuditLogEvent.MessageDelete,
-        limit: 5,
-      });
+    const me = message.guild.members.me;
+    const canViewAuditLog =
+      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-      const entry = logs.entries.find(
-        e =>
-          e.target?.id === message.author?.id &&
-          Date.now() - e.createdTimestamp < 5000
-      );
+    if (canViewAuditLog) {
+      try {
+        const logs = await message.guild.fetchAuditLogs({
+          type: AuditLogEvent.MessageDelete,
+          limit: 6,
+        });
 
-      if (entry?.executor) {
-        if (entry.executor.bot) {
-          deletedBy = "Bot / Integration";
-        } else {
-          deletedBy = `Moderator (${entry.executor.tag})`;
+        const entry = logs.entries.find(
+          e =>
+            e.target?.id === message.author?.id &&
+            Date.now() - e.createdTimestamp < 5000
+        );
+
+        if (entry?.executor) {
+          deletedBy = entry.executor.bot
+            ? "Bot / Integration"
+            : `Moderator (${entry.executor.tag})`;
         }
+      } catch {
+        // audit logs are best-effort only
       }
-    } catch {
-      // ignore audit log failures
     }
 
     /* ───────── PRIVACY MODE ───────── */
@@ -70,6 +76,7 @@ module.exports = {
         `**Content:** ${content}`,
       ].join("\n"),
       color: "Red",
+      type: "general",
     });
   },
 };

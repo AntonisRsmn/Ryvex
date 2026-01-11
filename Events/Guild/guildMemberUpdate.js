@@ -1,4 +1,4 @@
-const { AuditLogEvent } = require("discord.js");
+const { AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
@@ -14,7 +14,7 @@ module.exports = {
     const guild = newMember.guild;
     if (!guild) return;
 
-    // 🔒 HARD STOP — command already logged this change
+    // 🔒 HARD STOP — already logged by command
     if (isSuppressed(guild.id, newMember.id)) return;
 
     const settings = await getGuildSettings(guild.id);
@@ -53,42 +53,43 @@ module.exports = {
 
     if (!changes.length) return;
 
-    /* ───────── MODERATOR DETECTION ───────── */
-    let moderator = null;
-    let auditEntry = null;
+    /* ───────── MODERATOR DETECTION (SAFE) ───────── */
+    let moderator = "Unknown";
 
-    try {
-      const logs = await guild.fetchAuditLogs({
-        type: AuditLogEvent.MemberUpdate,
-        limit: 6,
-      });
+    const me = guild.members.me;
+    const canViewAuditLog =
+      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-      auditEntry = logs.entries.find(
-        e =>
-          e.target?.id === newMember.id &&
-          Date.now() - e.createdTimestamp < 8000
-      );
-    } catch {
-      // ignore audit failures
+    if (canViewAuditLog) {
+      try {
+        const logs = await guild.fetchAuditLogs({
+          type: AuditLogEvent.MemberUpdate,
+          limit: 6,
+        });
+
+        const entry = logs.entries.find(
+          e =>
+            e.target?.id === newMember.id &&
+            Date.now() - e.createdTimestamp < 8000
+        );
+
+        if (entry?.executor) {
+          moderator = entry.executor.bot
+            ? "Bot / Integration"
+            : entry.executor.tag;
+        }
+      } catch {
+        // audit logs are best-effort only
+      }
     }
 
-    /* ───────── MODERATOR RESOLUTION ───────── */
-
-    if (auditEntry?.executor) {
-      // Someone (or something) caused the change
-      if (auditEntry.executor.bot) {
+    /* ───────── FALLBACKS ───────── */
+    if (moderator === "Unknown") {
+      if (nicknameChanged) {
+        moderator = `${newMember.user.tag} (self)`;
+      } else if (addedRoles.size || removedRoles.size) {
         moderator = "Bot / Integration";
-      } else {
-        moderator = auditEntry.executor.tag;
       }
-    } else if (nicknameChanged) {
-      // No audit log + nickname change → self action
-      moderator = `${newMember.user.tag} (self)`;
-    } else if (addedRoles.size || removedRoles.size) {
-      // Role change without audit log → integration / join role / automation
-      moderator = "Bot / Integration";
-    } else {
-      moderator = "Unknown";
     }
 
     /* ───────── LOG EVENT ───────── */

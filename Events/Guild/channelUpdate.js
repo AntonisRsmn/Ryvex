@@ -1,4 +1,8 @@
-const { ChannelType, AuditLogEvent, PermissionFlagsBits } = require("discord.js");
+const {
+  ChannelType,
+  AuditLogEvent,
+  PermissionFlagsBits,
+} = require("discord.js");
 const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
@@ -80,13 +84,9 @@ module.exports = {
 
     /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
     let executor = "Unknown";
-
-    // 🔐 Permission guard (CRITICAL FIX)
     const me = guild.members.me;
-    const canViewAuditLog =
-      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
-    if (canViewAuditLog) {
+    if (me && me.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
       try {
         const logs = await guild.fetchAuditLogs({
           type: AuditLogEvent.ChannelUpdate,
@@ -102,11 +102,8 @@ module.exports = {
         ) {
           executor = entry.executor?.tag ?? "Unknown";
         }
-      } catch (err) {
-        // 🔇 Silence permission errors, log others if needed
-        if (err.code !== 50013) {
-          console.error("ChannelUpdate audit log error:", err);
-        }
+      } catch {
+        executor = "Unknown";
       }
     } else {
       executor = "Bot / Integration";
