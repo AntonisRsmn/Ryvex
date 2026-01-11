@@ -4,6 +4,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("website")
@@ -13,7 +15,9 @@ module.exports = {
     try {
       const embed = new EmbedBuilder()
         .setTitle("🌐 Ryvex Website")
-        .setDescription("Visit the official Ryvex website:\n👉 https://ryvex.gr/")
+        .setDescription(
+          "Visit the official Ryvex website:\n👉 https://ryvex.gr/"
+        )
         .setColor("White")
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
@@ -21,19 +25,17 @@ module.exports = {
         })
         .setTimestamp();
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("Website command failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to display the website link.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to display the website link.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

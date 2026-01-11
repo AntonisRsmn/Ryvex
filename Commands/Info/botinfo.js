@@ -1,4 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags, } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
+
+const { respond } = require("../../Utils/respond");
+
 const cpuStat = require("cpu-stat");
 const util = require("util");
 
@@ -19,9 +26,9 @@ module.exports = {
     .setDescription("Get information about the bot."),
 
   async execute(interaction) {
-    const { client } = interaction;
-
     try {
+      const { client } = interaction;
+
       const uptime = client.uptime;
       const days = Math.floor(uptime / 86400000);
       const hours = Math.floor(uptime / 3600000) % 24;
@@ -54,19 +61,17 @@ module.exports = {
           iconURL: interaction.user.displayAvatarURL(),
         });
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("botinfo error:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to fetch bot information.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to fetch bot information.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

@@ -6,6 +6,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 const {
   getGuildSettings,
   updateGuildSettings,
@@ -17,12 +19,10 @@ module.exports = {
     .setDescription("Configure guild settings.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 
-    // ───────── VIEW ─────────
     .addSubcommand(cmd =>
       cmd.setName("view").setDescription("View current guild settings")
     )
 
-    // ───────── LOGGING ─────────
     .addSubcommandGroup(group =>
       group
         .setName("logging")
@@ -49,7 +49,6 @@ module.exports = {
             )
         )
 
-        // ───────── PRIVACY MODE ─────────
         .addSubcommand(cmd =>
           cmd
             .setName("privacy")
@@ -68,7 +67,6 @@ module.exports = {
         )
     )
 
-    // ───────── MODERATION LOGS ─────────
     .addSubcommandGroup(group =>
       group
         .setName("moderation")
@@ -90,11 +88,10 @@ module.exports = {
         .addSubcommand(cmd =>
           cmd
             .setName("disable")
-            .setDescription("Disable separate moderation logs (use general logs)")
+            .setDescription("Disable separate moderation logs")
         )
     )
 
-    // ───────── WELCOME ─────────
     .addSubcommandGroup(group =>
       group
         .setName("welcome")
@@ -135,209 +132,205 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    try {
+      const guild = interaction.guild;
+      const guildId = guild.id;
 
-    const guild = interaction.guild;
-    const guildId = guild.id;
+      const sub = interaction.options.getSubcommand();
+      const group = interaction.options.getSubcommandGroup(false);
 
-    const sub = interaction.options.getSubcommand();
-    const group = interaction.options.getSubcommandGroup(false);
+      /* ───────── VIEW ───────── */
+      if (sub === "view") {
+        const settings = await getGuildSettings(guildId);
 
-    /* ───────── VIEW ───────── */
-    if (sub === "view") {
-      const settings = await getGuildSettings(guildId);
+        // defensive defaults
+        settings.logging ??= {};
+        settings.moderation ??= {};
+        settings.welcome ??= {};
 
-      // 🔧 SAFE hydration (NO WRITES)
-      const moderation = {
-        enabled: Boolean(settings.moderation?.enabled),
-        channelId: settings.moderation?.channelId ?? null,
-      };
-
-      // 🔧 Auto-migrate privacy flag
-      if (typeof settings.logging.messageContent !== "boolean") {
-        await updateGuildSettings(guildId, {
-          "logging.messageContent": false,
-        });
-        settings.logging.messageContent = false;
-      }
-
-      const loggingChannel = settings.logging.channelId
-        ? guild.channels.cache.get(settings.logging.channelId)
-        : null;
-
-      const moderationChannel =
-      moderation.enabled && moderation.channelId
-        ? guild.channels.cache.get(moderation.channelId)
-        : null;
-
-      const welcomeChannel = settings.welcome.channelId
-        ? guild.channels.cache.get(settings.welcome.channelId)
-        : null;
-
-      const autoRole = settings.welcome.autoRoleId
-        ? guild.roles.cache.get(settings.welcome.autoRoleId)
-        : null;
-
-      const privacyOff = settings.logging.messageContent === true;
-
-      const embed = new EmbedBuilder()
-        .setTitle("⚙️ Guild Settings")
-        .setColor("White")
-        .addFields(
-          {
-            name: "📄 General Logging",
-            value: [
-              `Enabled: **${settings.logging.enabled ? "Yes" : "No"}**`,
-              `Channel: ${loggingChannel ?? "Not set"}`,
-              `Privacy Mode: **${
-                privacyOff
-                  ? "OFF (content logged)"
-                  : "ON (content hidden)"
-              }**`,
-            ].join("\n"),
-          },
-          {
-            name: "🛡 Moderation Logs",
-            value: [
-              `Separate Channel: **${moderation.enabled ? "Yes" : "No"}**`,
-              `Channel: ${moderationChannel ?? "Using general logs"}`,
-            ].join("\n"),
-          },
-          {
-            name: "👋 Welcome",
-            value: [
-              `Enabled: **${settings.welcome.enabled ? "Yes" : "No"}**`,
-              `Channel: ${welcomeChannel ?? "Not set"}`,
-              `Auto-role: ${autoRole ?? "Not set"}`,
-            ].join("\n"),
-          }
-        )
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp();
-
-      return interaction.editReply({ embeds: [embed] });
-    }
-
-    const embed = new EmbedBuilder().setColor("White").setTimestamp();
-
-    /* ───────── LOGGING ───────── */
-    if (group === "logging") {
-      if (sub === "enable") {
-        await updateGuildSettings(guildId, { "logging.enabled": true });
-        embed.setDescription("✅ Logging enabled.");
-      }
-
-      if (sub === "disable") {
-        await updateGuildSettings(guildId, { "logging.enabled": false });
-        embed.setDescription("❌ Logging disabled.");
-      }
-
-      if (sub === "channel") {
-        const channel = interaction.options.getChannel("channel");
-        await updateGuildSettings(guildId, {
-          "logging.channelId": channel.id,
-          "logging.enabled": true,
-        });
-        embed.setDescription(`📄 Logging channel set to ${channel}.`);
-      }
-
-      if (sub === "privacy") {
-        const mode = interaction.options.getString("mode");
-
-        if (mode === "status") {
-          const fresh = await getGuildSettings(guildId);
-          const off = fresh.logging.messageContent === true;
-
-          embed.setDescription(
-            off
-              ? "🔓 **Privacy Mode: OFF**\nMessage content is being logged."
-              : "🔒 **Privacy Mode: ON**\nMessage content is hidden."
-          );
-
-          return interaction.editReply({ embeds: [embed] });
-        }
-
-        if (mode === "on") {
+        if (typeof settings.logging.messageContent !== "boolean") {
           await updateGuildSettings(guildId, {
             "logging.messageContent": false,
           });
-          embed.setDescription(
-            "🔒 **Privacy Mode enabled**\nMessage content will NOT be logged."
-          );
+          settings.logging.messageContent = false;
         }
 
-        if (mode === "off") {
+        const loggingChannel = settings.logging.channelId
+          ? guild.channels.cache.get(settings.logging.channelId)
+          : null;
+
+        const moderationChannel =
+          settings.moderation.enabled && settings.moderation.channelId
+            ? guild.channels.cache.get(settings.moderation.channelId)
+            : null;
+
+        const welcomeChannel = settings.welcome.channelId
+          ? guild.channels.cache.get(settings.welcome.channelId)
+          : null;
+
+        const autoRole = settings.welcome.autoRoleId
+          ? guild.roles.cache.get(settings.welcome.autoRoleId)
+          : null;
+
+        const embed = new EmbedBuilder()
+          .setTitle("⚙️ Guild Settings")
+          .setColor("White")
+          .addFields(
+            {
+              name: "📄 General Logging",
+              value: [
+                `Enabled: **${settings.logging.enabled ? "Yes" : "No"}**`,
+                `Channel: ${loggingChannel ?? "Not set"}`,
+                `Privacy Mode: **${
+                  settings.logging.messageContent
+                    ? "OFF (content logged)"
+                    : "ON (content hidden)"
+                }**`,
+              ].join("\n"),
+            },
+            {
+              name: "🛡 Moderation Logs",
+              value: [
+                `Separate Channel: **${
+                  settings.moderation.enabled ? "Yes" : "No"
+                }**`,
+                `Channel: ${moderationChannel ?? "Using general logs"}`,
+              ].join("\n"),
+            },
+            {
+              name: "👋 Welcome",
+              value: [
+                `Enabled: **${settings.welcome.enabled ? "Yes" : "No"}**`,
+                `Channel: ${welcomeChannel ?? "Not set"}`,
+                `Auto-role: ${autoRole ?? "Not set"}`,
+              ].join("\n"),
+            }
+          )
+          .setFooter({
+            text: `Requested by ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          })
+          .setTimestamp();
+
+        return respond(interaction, {
+          embeds: [embed],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const embed = new EmbedBuilder().setColor("White").setTimestamp();
+
+      /* ───────── LOGGING ───────── */
+      if (group === "logging") {
+        if (sub === "enable") {
+          await updateGuildSettings(guildId, { "logging.enabled": true });
+          embed.setDescription("✅ Logging enabled.");
+        }
+
+        if (sub === "disable") {
+          await updateGuildSettings(guildId, { "logging.enabled": false });
+          embed.setDescription("❌ Logging disabled.");
+        }
+
+        if (sub === "channel") {
+          const channel = interaction.options.getChannel("channel");
           await updateGuildSettings(guildId, {
-            "logging.messageContent": true,
+            "logging.channelId": channel.id,
+            "logging.enabled": true,
           });
-          embed.setDescription(
-            "🔓 **Privacy Mode disabled**\nMessage content WILL be logged."
-          );
+          embed.setDescription(`📄 Logging channel set to ${channel}.`);
+        }
+
+        if (sub === "privacy") {
+          const mode = interaction.options.getString("mode");
+
+          if (mode === "status") {
+            const fresh = await getGuildSettings(guildId);
+            embed.setDescription(
+              fresh.logging?.messageContent
+                ? "🔓 **Privacy Mode: OFF**"
+                : "🔒 **Privacy Mode: ON**"
+            );
+          }
+
+          if (mode === "on") {
+            await updateGuildSettings(guildId, {
+              "logging.messageContent": false,
+            });
+            embed.setDescription("🔒 Privacy Mode enabled.");
+          }
+
+          if (mode === "off") {
+            await updateGuildSettings(guildId, {
+              "logging.messageContent": true,
+            });
+            embed.setDescription("🔓 Privacy Mode disabled.");
+          }
         }
       }
+
+      /* ───────── MODERATION ───────── */
+      if (group === "moderation") {
+        if (sub === "channel") {
+          const channel = interaction.options.getChannel("channel");
+          await updateGuildSettings(guildId, {
+            "moderation.channelId": channel.id,
+            "moderation.enabled": true,
+          });
+          embed.setDescription(`🛡 Moderation logs channel set to ${channel}`);
+        }
+
+        if (sub === "disable") {
+          await updateGuildSettings(guildId, {
+            "moderation.channelId": null,
+            "moderation.enabled": false,
+          });
+          embed.setDescription("🛡 Separate moderation logs disabled.");
+        }
+      }
+
+      /* ───────── WELCOME ───────── */
+      if (group === "welcome") {
+        if (sub === "enable") {
+          await updateGuildSettings(guildId, { "welcome.enabled": true });
+          embed.setDescription("👋 Welcome system enabled.");
+        }
+
+        if (sub === "disable") {
+          await updateGuildSettings(guildId, { "welcome.enabled": false });
+          embed.setDescription("👋 Welcome system disabled.");
+        }
+
+        if (sub === "channel") {
+          const channel = interaction.options.getChannel("channel");
+          await updateGuildSettings(guildId, {
+            "welcome.channelId": channel.id,
+            "welcome.enabled": true,
+          });
+          embed.setDescription(`👋 Welcome channel set to ${channel}.`);
+        }
+
+        if (sub === "autorole") {
+          const role = interaction.options.getRole("role");
+          await updateGuildSettings(guildId, {
+            "welcome.autoRoleId": role.id,
+            "welcome.enabled": true,
+          });
+          embed.setDescription(`🎭 Auto-role set to ${role}.`);
+        }
+      }
+
+      return respond(interaction, {
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch (err) {
+      console.error("Settings command failed:", err);
+
+      return respond(interaction, {
+        content: "❌ Failed to update or fetch settings.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
-
-    /* ───────── MODERATION ───────── */
-    if (group === "moderation") {
-      if (sub === "channel") {
-        const channel = interaction.options.getChannel("channel");
-
-        await updateGuildSettings(guildId, {
-          "moderation.channelId": channel.id,
-          "moderation.enabled": true,
-        });
-
-        embed.setDescription(
-          `🛡 Moderation logs channel set to ${channel}`
-        );
-      }
-
-      if (sub === "disable") {
-        await updateGuildSettings(guildId, {
-          "moderation.channelId": null,
-          "moderation.enabled": false,
-        });
-
-        embed.setDescription(
-          "🛡 Separate moderation logs disabled.\nUsing general logs instead."
-        );
-      }
-    }
-
-    /* ───────── WELCOME ───────── */
-    if (group === "welcome") {
-      if (sub === "enable") {
-        await updateGuildSettings(guildId, { "welcome.enabled": true });
-        embed.setDescription("👋 Welcome system enabled.");
-      }
-
-      if (sub === "disable") {
-        await updateGuildSettings(guildId, { "welcome.enabled": false });
-        embed.setDescription("👋 Welcome system disabled.");
-      }
-
-      if (sub === "channel") {
-        const channel = interaction.options.getChannel("channel");
-        await updateGuildSettings(guildId, {
-          "welcome.channelId": channel.id,
-          "welcome.enabled": true,
-        });
-        embed.setDescription(`👋 Welcome channel set to ${channel}.`);
-      }
-
-      if (sub === "autorole") {
-        const role = interaction.options.getRole("role");
-        await updateGuildSettings(guildId, {
-          "welcome.autoRoleId": role.id,
-          "welcome.enabled": true,
-        });
-        embed.setDescription(`🎭 Auto-role set to ${role}.`);
-      }
-    }
-
-    return interaction.editReply({ embeds: [embed] });
   },
 };

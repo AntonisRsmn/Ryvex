@@ -4,6 +4,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("uptime")
@@ -33,19 +35,17 @@ module.exports = {
         })
         .setTimestamp();
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("Uptime command failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to fetch uptime.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to fetch uptime.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

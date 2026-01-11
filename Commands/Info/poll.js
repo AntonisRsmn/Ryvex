@@ -6,6 +6,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 // Shared poll state (require cache)
 const pollMessages = new Set();
 const POLL_EMOJIS = ["✅", "❌"];
@@ -33,27 +35,27 @@ module.exports = {
   POLL_EMOJIS,
 
   async execute(interaction) {
-    const channel = interaction.options.getChannel("channel");
-    const description = interaction.options.getString("description");
-
-    if (!channel) {
-      return interaction.reply({
-        content: "❌ Channel not found.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    const pollEmbed = new EmbedBuilder()
-      .setTitle("📊 Poll")
-      .setDescription(description)
-      .setColor("White")
-      .setFooter({
-        text: `By ${interaction.user.username}`,
-        iconURL: interaction.user.displayAvatarURL(),
-      })
-      .setTimestamp();
-
     try {
+      const channel = interaction.options.getChannel("channel");
+      const description = interaction.options.getString("description");
+
+      if (!channel) {
+        return respond(interaction, {
+          content: "❌ Channel not found.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const pollEmbed = new EmbedBuilder()
+        .setTitle("📊 Poll")
+        .setDescription(description)
+        .setColor("White")
+        .setFooter({
+          text: `By ${interaction.user.username}`,
+          iconURL: interaction.user.displayAvatarURL(),
+        })
+        .setTimestamp();
+
       const message = await channel.send({ embeds: [pollEmbed] });
 
       for (const emoji of POLL_EMOJIS) {
@@ -62,7 +64,7 @@ module.exports = {
 
       pollMessages.add(message.id);
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription(`✅ Poll sent to ${channel}.`)
@@ -73,12 +75,10 @@ module.exports = {
     } catch (error) {
       console.error("[Poll] Creation failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to create poll.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to create poll.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

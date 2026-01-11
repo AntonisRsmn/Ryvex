@@ -4,6 +4,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("8ball")
@@ -42,14 +44,14 @@ module.exports = {
         "You may rely on it.",
       ];
 
-      const response =
+      const answer =
         responses[Math.floor(Math.random() * responses.length)];
 
       const embed = new EmbedBuilder()
         .setTitle("🎱 Magic 8-Ball")
         .addFields(
           { name: "Question", value: question },
-          { name: "Answer", value: response }
+          { name: "Answer", value: answer }
         )
         .setColor("White")
         .setFooter({
@@ -58,19 +60,17 @@ module.exports = {
         })
         .setTimestamp();
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("8ball command failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to get an answer from the 8-ball.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to get an answer from the 8-ball.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

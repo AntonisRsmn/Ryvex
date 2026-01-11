@@ -3,8 +3,10 @@ const {
   EmbedBuilder,
   PermissionFlagsBits,
   MessageFlags,
+  ChannelType,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
@@ -27,77 +29,97 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const { channel, guild, member: moderator, options } = interaction;
-    const amount = options.getInteger("amount");
-    const target = options.getUser("target");
-
-    /* ───────── BOT PERMISSION CHECK ───────── */
-    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ I don't have permission to manage messages.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    let messages;
     try {
-      messages = await channel.messages.fetch({ limit: 100 });
-    } catch {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ Failed to fetch messages from this channel.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
+      const { channel, guild, options } = interaction;
 
-    let toDelete;
+      if (!guild) {
+        return respond(interaction, {
+          content: "❌ This command can only be used in servers.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
-    if (target) {
-      toDelete = messages
-        .filter(msg => msg.author.id === target.id)
-        .first(amount);
-    } else {
-      toDelete = messages.first(amount);
-    }
+      if (
+        channel.type !== ChannelType.GuildText &&
+        channel.type !== ChannelType.GuildAnnouncement &&
+        !channel.isThread()
+      ) {
+        return respond(interaction, {
+          content: "❌ This channel does not support message deletion.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
-    if (!toDelete.length) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ No messages found to delete.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
+      const amount = options.getInteger("amount");
+      const target = options.getUser("target");
 
-    try {
-      const deleted = await channel.bulkDelete(toDelete, true);
+      if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ I don't have permission to manage messages.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
-      /* ───────── MODERATION LOG ───────── */
+      let messages;
+      try {
+        messages = await channel.messages.fetch({ limit: 100 });
+      } catch {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ Failed to fetch messages from this channel.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const toDelete = target
+        ? messages.filter(m => m.author?.id === target.id).first(amount)
+        : messages.first(amount);
+
+      if (!Array.isArray(toDelete) || toDelete.length === 0) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ No messages found to delete.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      let deleted;
+      try {
+        deleted = await channel.bulkDelete(toDelete, true);
+      } catch {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription(
+                "❌ Failed to delete messages. They may be too old or I lack permissions."
+              )
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
       await logAction({
         guild,
-        type: "moderation",
         action: "Clear Messages",
         moderator: interaction.user,
         target: target ?? null,
         reason: target
           ? `Cleared ${deleted.size} messages from ${target.tag}`
           : `Cleared ${deleted.size} messages in #${channel.name}`,
-        extra: {
-          channel: channel.name,
-          count: deleted.size,
-        },
       });
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription(
@@ -113,12 +135,10 @@ module.exports = {
     } catch (error) {
       console.error("Clear failed:", error);
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(
-              "❌ Failed to delete messages. Some may be too old or I lack permissions."
-            )
+            .setDescription("❌ An unexpected error occurred while clearing messages.")
             .setColor("Red"),
         ],
         flags: MessageFlags.Ephemeral,

@@ -6,6 +6,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
@@ -22,39 +23,40 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const { guild, options, user: moderator } = interaction;
-    const channel = options.getChannel("channel");
-
-    /* ───────── BOT PERMISSION CHECK ───────── */
-    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ I don't have permission to manage channels.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    /* ───────── ALREADY UNLOCKED CHECK ───────── */
-    if (
-      channel
-        .permissionsFor(guild.roles.everyone)
-        .has(PermissionFlagsBits.SendMessages)
-    ) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription(`❌ ${channel} is already unlocked.`)
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    /* ───────── EXECUTE UNLOCK ───────── */
     try {
+      const { guild, options, user: moderator } = interaction;
+      const channel = options.getChannel("channel");
+
+      /* ───────── BOT PERMISSION CHECK ───────── */
+      if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ I don't have permission to manage channels.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      /* ───────── ALREADY UNLOCKED CHECK ───────── */
+      const everyonePerms = channel.permissionsFor(guild.roles.everyone);
+
+      if (
+        everyonePerms &&
+        everyonePerms.has(PermissionFlagsBits.SendMessages)
+      ) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription(`❌ ${channel} is already unlocked.`)
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      /* ───────── EXECUTE UNLOCK ───────── */
       await channel.permissionOverwrites.edit(
         guild.roles.everyone,
         { SendMessages: null }
@@ -63,14 +65,14 @@ module.exports = {
       /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
-        type: "moderation", // 🔥 THIS IS THE FIX
+        type: "moderation",
         action: "Channel Unlock",
         target: channel,
         moderator,
         reason: "Channel unlocked",
       });
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription(`🔓 ${channel} has been unlocked.`)
@@ -86,7 +88,7 @@ module.exports = {
     } catch (error) {
       console.error("Unlock failed:", error);
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription("❌ Failed to unlock the channel.")

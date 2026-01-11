@@ -9,49 +9,51 @@ module.exports = {
     if (!message.guild) return;
 
     const settings = await getGuildSettings(message.guild.id);
+    if (!settings.logging?.enabled) return;
 
-    const messageDeleteEnabled =
-      settings.logging?.events?.messageDelete ?? true;
+    const enabled = settings.logging.events?.messageDelete ?? true;
+    if (!enabled) return;
 
-    if (!settings.logging?.enabled || !messageDeleteEnabled) return;
-
-    // Fetch partial if needed
+    // Fetch partial message if needed
     if (message.partial) {
       try {
         await message.fetch();
       } catch {
-        // Still log without content
+        // continue safely
       }
     }
 
-    // Ignore bot messages
+    // Ignore bot-authored messages
     if (message.author?.bot) return;
 
-    /* ───────── DELETER DETECTION (BEST-EFFORT) ───────── */
-    let deletedBy = "Unknown / Self";
+    /* ───────── DELETED BY DETECTION ───────── */
+    let deletedBy = "Self / Unconfirmed";
 
     try {
       const logs = await message.guild.fetchAuditLogs({
         type: AuditLogEvent.MessageDelete,
-        limit: 1,
+        limit: 5,
       });
 
-      const entry = logs.entries.first();
+      const entry = logs.entries.find(
+        e =>
+          e.target?.id === message.author?.id &&
+          Date.now() - e.createdTimestamp < 5000
+      );
 
-      if (
-        entry &&
-        entry.executor &&
-        Date.now() - entry.createdTimestamp < 3000
-      ) {
-        deletedBy = `Moderator (${entry.executor.tag})`;
+      if (entry?.executor) {
+        if (entry.executor.bot) {
+          deletedBy = "Bot / Integration";
+        } else {
+          deletedBy = `Moderator (${entry.executor.tag})`;
+        }
       }
     } catch {
-      // Ignore audit log failures
+      // ignore audit log failures
     }
 
     /* ───────── PRIVACY MODE ───────── */
     const showContent = Boolean(settings.logging?.messageContent);
-
     const content =
       showContent && message.content
         ? message.content.slice(0, 1000)

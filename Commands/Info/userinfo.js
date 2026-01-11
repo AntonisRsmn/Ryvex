@@ -4,6 +4,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("userinfo")
@@ -19,10 +21,12 @@ module.exports = {
       const user =
         interaction.options.getUser("user") || interaction.user;
 
-      const member = await interaction.guild.members.fetch(user.id).catch(() => null);
+      const member = await interaction.guild.members
+        .fetch(user.id)
+        .catch(() => null);
 
       if (!member) {
-        return interaction.reply({
+        return respond(interaction, {
           content: "❌ User not found in this server.",
           flags: MessageFlags.Ephemeral,
         });
@@ -43,15 +47,23 @@ module.exports = {
         .addFields(
           { name: "User", value: `${user}`, inline: true },
           { name: "ID", value: user.id, inline: true },
-          { name: "Nickname", value: member.nickname ?? "None", inline: true },
+          {
+            name: "Nickname",
+            value: member.nickname ?? "None",
+            inline: true,
+          },
           {
             name: "Joined Server",
-            value: `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>`,
+            value: `<t:${Math.floor(
+              member.joinedAt.getTime() / 1000
+            )}:R>`,
             inline: true,
           },
           {
             name: "Account Created",
-            value: `<t:${Math.floor(user.createdAt.getTime() / 1000)}:R>`,
+            value: `<t:${Math.floor(
+              user.createdAt.getTime() / 1000
+            )}:R>`,
             inline: true,
           },
           { name: "Roles", value: roles, inline: false }
@@ -62,19 +74,17 @@ module.exports = {
         })
         .setTimestamp();
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("Userinfo command failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Failed to fetch user information.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Failed to fetch user information.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

@@ -6,6 +6,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
@@ -27,38 +28,41 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const { guild, options, user: moderator } = interaction;
-    const channel = options.getChannel("channel");
-    const reason = options.getString("reason") || "No reason provided";
-
-    /* ───────── BOT PERMISSION CHECK ───────── */
-    if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ I don't have permission to manage channels.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    /* ───────── ALREADY LOCKED CHECK ───────── */
-    const everyonePerms = channel.permissionsFor(guild.roles.everyone);
-
-    if (!everyonePerms || !everyonePerms.has(PermissionFlagsBits.SendMessages)) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription(`❌ ${channel} is already locked.`)
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    /* ───────── EXECUTE LOCK ───────── */
     try {
+      const { guild, options, user: moderator } = interaction;
+      const channel = options.getChannel("channel");
+      const reason = options.getString("reason") || "No reason provided";
+
+      /* ───────── BOT PERMISSION CHECK ───────── */
+      if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ I don't have permission to manage channels.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      /* ───────── ALREADY LOCKED CHECK ───────── */
+      const everyonePerms = channel.permissionsFor(guild.roles.everyone);
+
+      if (
+        !everyonePerms ||
+        !everyonePerms.has(PermissionFlagsBits.SendMessages)
+      ) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription(`❌ ${channel} is already locked.`)
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      /* ───────── EXECUTE LOCK ───────── */
       await channel.permissionOverwrites.edit(
         guild.roles.everyone,
         { SendMessages: false },
@@ -75,7 +79,7 @@ module.exports = {
         reason,
       });
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription(
@@ -89,7 +93,7 @@ module.exports = {
     } catch (error) {
       console.error("Lock failed:", error);
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription("❌ Failed to lock the channel.")

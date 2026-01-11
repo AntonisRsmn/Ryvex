@@ -5,6 +5,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
 
 module.exports = {
@@ -20,37 +21,37 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const { guild, options, user: moderator } = interaction;
-    const userId = options.getString("userid");
-
-    /* ───────── BOT PERMISSION CHECK ───────── */
-    if (!guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ I don't have permission to unban members.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    let bannedUser;
     try {
-      bannedUser = await guild.bans.fetch(userId);
-    } catch {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setDescription("❌ This user is not banned or the ID is invalid.")
-            .setColor("Red"),
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
+      const { guild, options, user: moderator } = interaction;
+      const userId = options.getString("userid");
 
-    /* ───────── EXECUTE UNBAN ───────── */
-    try {
+      /* ───────── BOT PERMISSION CHECK ───────── */
+      if (!guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ I don't have permission to unban members.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      let bannedUser;
+      try {
+        bannedUser = await guild.bans.fetch(userId);
+      } catch {
+        return respond(interaction, {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription("❌ This user is not banned or the ID is invalid.")
+              .setColor("Red"),
+          ],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      /* ───────── EXECUTE UNBAN ───────── */
       await guild.members.unban(userId);
 
       /* ───────── MODERATION LOG ───────── */
@@ -63,7 +64,7 @@ module.exports = {
         reason: "Unbanned via command",
       });
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription(
@@ -77,7 +78,7 @@ module.exports = {
     } catch (error) {
       console.error("Unban failed:", error);
 
-      return interaction.reply({
+      return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setDescription("❌ Failed to unban the user.")

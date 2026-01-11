@@ -4,6 +4,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const { respond } = require("../../Utils/respond");
+
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
@@ -14,7 +16,9 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      const res = await fetch("https://www.reddit.com/r/shitposting/random/.json");
+      const res = await fetch(
+        "https://www.reddit.com/r/shitposting/random/.json"
+      );
       const data = await res.json();
 
       if (
@@ -22,7 +26,7 @@ module.exports = {
         !data[0]?.data?.children?.length ||
         !data[0].data.children[0]?.data
       ) {
-        return interaction.reply({
+        return respond(interaction, {
           content: "❌ Couldn't fetch a meme right now. Try again later!",
           flags: MessageFlags.Ephemeral,
         });
@@ -41,19 +45,17 @@ module.exports = {
         })
         .setTimestamp();
 
-      await interaction.reply({
+      return respond(interaction, {
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("Meme command failed:", error);
 
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ Couldn't fetch a meme right now. Try again later!",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return respond(interaction, {
+        content: "❌ Couldn't fetch a meme right now. Try again later!",
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

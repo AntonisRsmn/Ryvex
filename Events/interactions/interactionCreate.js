@@ -1,7 +1,4 @@
-const {
-  EmbedBuilder,
-  MessageFlags,
-} = require("discord.js");
+const { EmbedBuilder, MessageFlags } = require("discord.js");
 
 module.exports = {
   name: "interactionCreate",
@@ -11,7 +8,7 @@ module.exports = {
 
     const client = interaction.client;
 
-    // Guild-only command protection
+    // Guild-only command protection (this is allowed here)
     if (!interaction.guild) {
       const embed = new EmbedBuilder()
         .setTitle("Ryvex™")
@@ -26,28 +23,16 @@ module.exports = {
     }
 
     const command = client.commands.get(interaction.commandName);
-
-    if (!command) {
-      return interaction.reply({
-        content: "❌ This command is outdated or unavailable.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
+    if (!command) return;
 
     try {
       await command.execute(interaction);
     } catch (error) {
+      // IMPORTANT: log only — NEVER reply here
       console.error(
         `Error executing command ${interaction.commandName}:`,
         error
       );
-
-      if (!interaction.replied) {
-        await interaction.reply({
-          content: "❌ An error occurred while executing this command.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
     }
   },
 };

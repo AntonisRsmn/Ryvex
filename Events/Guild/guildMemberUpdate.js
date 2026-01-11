@@ -3,6 +3,9 @@ const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
 } = require("../../Database/services/guildSettingsService");
+const {
+  isSuppressed,
+} = require("../../Utils/memberUpdateSuppressor");
 
 module.exports = {
   name: "guildMemberUpdate",
@@ -10,6 +13,9 @@ module.exports = {
   async execute(oldMember, newMember) {
     const guild = newMember.guild;
     if (!guild) return;
+
+    // 🔒 HARD STOP — command already logged this change
+    if (isSuppressed(guild.id, newMember.id)) return;
 
     const settings = await getGuildSettings(guild.id);
     const enabled = settings.logging?.events?.memberUpdate ?? true;
@@ -38,60 +44,51 @@ module.exports = {
     }
 
     /* ───────── NICKNAME CHANGE ───────── */
-    if (oldMember.nickname !== newMember.nickname) {
+    const nicknameChanged = oldMember.nickname !== newMember.nickname;
+    if (nicknameChanged) {
       changes.push(
         `**Nickname:** ${oldMember.nickname ?? "None"} → ${newMember.nickname ?? "None"}`
       );
     }
 
-    // Nothing meaningful changed
     if (!changes.length) return;
 
     /* ───────── MODERATOR DETECTION ───────── */
     let moderator = null;
+    let auditEntry = null;
 
     try {
       const logs = await guild.fetchAuditLogs({
         type: AuditLogEvent.MemberUpdate,
-        limit: 5,
+        limit: 6,
       });
 
-      const entry = logs.entries.find(
+      auditEntry = logs.entries.find(
         e =>
           e.target?.id === newMember.id &&
           Date.now() - e.createdTimestamp < 8000
       );
-
-      if (entry?.executor) {
-        moderator = entry.executor.bot
-          ? "Bot / Integration"
-          : entry.executor.tag;
-      }
-
-      // 🚫 PREVENT DUPLICATES:
-      // If role change AND audit executor exists,
-      // it was already logged by a mod command → STOP
-      if ((addedRoles.size || removedRoles.size) && entry?.executor) {
-        return;
-      }
     } catch {
-      // ignore audit failures safely
+      // ignore audit failures
     }
 
-    /* ───────── FALLBACK LOGIC ───────── */
-    if (!moderator) {
-      // Self nickname change
-      if (oldMember.nickname !== newMember.nickname) {
-        moderator = `${newMember.user.tag} (self)`;
-      }
-      // Automated role changes (join roles, bots, integrations)
-      else if (addedRoles.size || removedRoles.size) {
+    /* ───────── MODERATOR RESOLUTION ───────── */
+
+    if (auditEntry?.executor) {
+      // Someone (or something) caused the change
+      if (auditEntry.executor.bot) {
         moderator = "Bot / Integration";
+      } else {
+        moderator = auditEntry.executor.tag;
       }
-      // Last-resort fallback
-      else {
-        moderator = "Unknown";
-      }
+    } else if (nicknameChanged) {
+      // No audit log + nickname change → self action
+      moderator = `${newMember.user.tag} (self)`;
+    } else if (addedRoles.size || removedRoles.size) {
+      // Role change without audit log → integration / join role / automation
+      moderator = "Bot / Integration";
+    } else {
+      moderator = "Unknown";
     }
 
     /* ───────── LOG EVENT ───────── */
@@ -105,7 +102,7 @@ module.exports = {
         ...changes,
       ].join("\n"),
       color: "Blue",
-      type: "general", // 👈 stays GENERAL (not moderation)
+      type: "general",
     });
   },
 };

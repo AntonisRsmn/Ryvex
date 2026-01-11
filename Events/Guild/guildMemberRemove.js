@@ -7,60 +7,59 @@ module.exports = {
 
   async execute(member) {
     const { guild, user } = member;
+    if (!guild) return;
+
     const settings = await getGuildSettings(guild.id);
 
-    /* ───────── DEFAULT-ON EVENT TOGGLE ───────── */
     const memberLeaveEnabled =
       settings.logging?.events?.memberLeave ?? true;
 
     if (!settings.logging?.enabled || !memberLeaveEnabled) return;
 
-    /* ───────── AVOID DUPLICATES (kick / ban) ───────── */
-    let wasModerated = false;
+    let action = "Left the server";
+    let actor = "Self / Unconfirmed";
+    let color = "Orange";
 
     try {
-      // Check for kick
-      const kickLogs = await guild.fetchAuditLogs({
-        type: AuditLogEvent.MemberKick,
-        limit: 1,
-      });
+      const logs = await guild.fetchAuditLogs({ limit: 5 });
 
-      const kickLog = kickLogs.entries.first();
-      if (
-        kickLog &&
-        kickLog.target?.id === user.id &&
-        Date.now() - kickLog.createdTimestamp < 5000
-      ) {
-        wasModerated = true;
-      }
+      const entry = logs.entries.find(
+        e =>
+          e.target?.id === user.id &&
+          Date.now() - e.createdTimestamp < 5000 &&
+          (e.action === AuditLogEvent.MemberKick ||
+           e.action === AuditLogEvent.MemberBanAdd)
+      );
 
-      // Check for ban
-      const banLogs = await guild.fetchAuditLogs({
-        type: AuditLogEvent.MemberBanAdd,
-        limit: 1,
-      });
+      if (entry) {
+        if (entry.action === AuditLogEvent.MemberKick) {
+          action = "Kicked from the server";
+          color = "Red";
+        }
 
-      const banLog = banLogs.entries.first();
-      if (
-        banLog &&
-        banLog.target?.id === user.id &&
-        Date.now() - banLog.createdTimestamp < 5000
-      ) {
-        wasModerated = true;
+        if (entry.action === AuditLogEvent.MemberBanAdd) {
+          action = "Banned from the server";
+          color = "Red";
+        }
+
+        actor = entry.executor?.bot
+          ? "Bot / Integration"
+          : `Moderator (${entry.executor.tag})`;
       }
     } catch (err) {
-      console.error("Audit log check failed:", err.message);
+      // audit logs are best-effort only
     }
 
-    // If kicked or banned → do NOT log as leave
-    if (wasModerated) return;
-
-    /* ───────── VOLUNTARY LEAVE LOG ───────── */
     await logEvent({
       guild,
-      title: "👋 Member Left",
-      description: `${user.tag} left the server.`,
-      color: "Orange",
+      title: "🚪 Member Left",
+      description: [
+        `**Member:** ${user.tag}`,
+        `**Action:** ${action}`,
+        `**By:** ${actor}`,
+      ].join("\n"),
+      color,
+      type: "general",
     });
   },
 };
