@@ -1,7 +1,7 @@
 # 🤖 Ryvex — Advanced Discord Server Management Bot
 
-**Ryvex** is a modern, slash-command–based Discord bot built for **powerful moderation, detailed logging, and server control**.
-It focuses on **clarity, auditability, and safety** for server owners and moderation teams.
+**Ryvex** is a modern, slash-command–based Discord bot built for **powerful moderation, detailed logging, and full server control**.
+It is designed with a strong focus on **clarity, auditability, stability, and moderator accountability**.
 
 🌐 Website: https://ryvex.gr  
 🆘 Support: Use `/support` inside Discord
@@ -10,57 +10,58 @@ It focuses on **clarity, auditability, and safety** for server owners and modera
 
 ## 🌟 What Is Ryvex?
 
-Ryvex is a **moderation-first Discord bot** designed to help communities:
+Ryvex is a **moderation-first Discord bot** that helps server owners and staff:
 
-- 🛡️ **Moderate members safely**
-- 🧾 **Track actions with case-based logs**
-- 🔍 **Audit staff actions transparently**
-- 👋 **Onboard new members cleanly**
+- 🛡️ **Moderate members safely and consistently**
+- 🧾 **Track all actions using a case-based system**
+- 🔍 **Audit moderator activity transparently**
+- 👋 **Onboard new members with welcome tools**
 - 🎮 **Provide lightweight fun & utility commands**
 
-All features are configurable **per server** using a MongoDB-backed settings system.
+All systems are configurable **per server** using a MongoDB-backed settings service.
 
-No prefixes. No clutter. Everything runs through `/` slash commands.
+No prefixes. No clutter. Everything works through modern `/` slash commands.
 
 ---
 
 ## ⚙️ Core Systems Overview
 
-### 🧾 Advanced Logging System
+## 🧾 Advanced Logging System
 
-Ryvex includes a **fully event-based logging system** built for transparency.
+Ryvex includes a **robust, event-driven logging system** designed for real moderation workflows.
 
-#### Logged events
+### Logged Events
 - Member joins & leaves
 - Member updates (roles, nicknames)
 - Message edits & deletions *(privacy-aware)*
 - Channel create / update / delete
 - Role create / update / delete
 - Server (guild) updates
-- **All moderation actions** (case-based)
+- **All moderation actions (case-based)**
 
-#### Privacy & Safety
+### Privacy & Safety
 - Message content logging is **optional**
-- Audit logs are fetched **only if the bot has permission**
+- Audit logs are fetched **only if permissions allow**
 - Graceful fallbacks when permissions are missing
+- No crashes or spam when audit logs are unavailable
 
-Logs are automatically routed to:
+Logs are automatically separated into:
 - **General logs**
 - **Moderation logs**
 
 ---
 
-### 🛡️ Moderation & Case System
+## 🛡️ Moderation & Case System
 
-Every moderation action generates a **persistent case** stored in the database.
+Every moderation action creates a **persistent moderation case** stored in the database.
 
-#### Supported actions
+### Supported Actions
 - Ban / Unban
 - Kick
 - Timeout / Unmute
 - Lock / Unlock channels
 - Add / Remove roles
-- Warnings *(with management tools)*
+- Warnings *(fully managed)*
 
 Each case stores:
 - Case ID
@@ -71,9 +72,7 @@ Each case stores:
 
 ---
 
-### 📂 Case Management
-
-Moderators can fully manage moderation history:
+## 📂 Case Management Commands
 
 ```
 /case view <id>
@@ -83,22 +82,16 @@ Moderators can fully manage moderation history:
 
 ---
 
-### 🧾 Moderation Logs (`/modlog`)
+## 🧾 Moderation Logs (`/modlog`)
 
 ```
 /modlog recent
 /modlog user <member>
 ```
 
-Features:
-- Paginated user history
-- Case jump references
-- Clean, readable embeds
-- Action-based formatting
-
 ---
 
-### ⚠️ Warning System
+## ⚠️ Warning System
 
 ```
 /warn add <member> [reason]
@@ -109,33 +102,23 @@ Features:
 
 ---
 
-### 👋 Welcome System
+## 👋 Welcome System
 
 - Welcome messages
 - Optional auto-role assignment
 
 ---
 
-## 🔧 Server Configuration (`/settings`)
+## 🔧 Configuration
 
-### Logging
 ```
-/settings logging enable
-/settings logging disable
-/settings logging channel <channel>
-```
-
-### Welcome
-```
-/settings welcome enable
-/settings welcome disable
-/settings welcome channel <channel>
-/settings welcome autorole <role>
+/settings
+/setup
 ```
 
 ---
 
-## 📜 Commands Overview
+## 📜 Command Categories
 
 ### 🛡️ Moderation
 - `/ban`, `/unban`
@@ -143,20 +126,25 @@ Features:
 - `/timeout`, `/unmute`
 - `/lock`, `/unlock`
 - `/add-role`, `/remove-role`
-- `/warn`
-- `/case`
-- `/modlog`
 - `/clear`
 
-### 🎮 Fun
-- `/8ball`, `/rps`, `/meme`
+### 🧾 Records
+- `/case`
+- `/modlog`
+- `/warn`
 
-### ℹ️ Info
-- `/help`, `/botinfo`, `/uptime`, `/support`
+### ⚙️ Configuration
+- `/settings`
+- `/setup`
+
+### 🎮 Fun
+- `/8ball`
+- `/rps`
+- `/meme`
 
 ---
 
-## 🧩 Tech
+## 🧩 Tech Stack
 
 - Node.js
 - discord.js (API v10)

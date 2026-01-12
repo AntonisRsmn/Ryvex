@@ -20,7 +20,8 @@ module.exports = {
         info: "📝",
         moderation: "🛠",
         fun: "🎮",
-        music: "🎶",
+        audit:"📁",
+        config: "⚙️",
       };
 
       const client = interaction.client;
