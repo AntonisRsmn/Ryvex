@@ -3,6 +3,9 @@ const { logEvent } = require("../../Utils/logEvent");
 const {
   getGuildSettings,
 } = require("../../Database/services/guildSettingsService");
+const {
+  isChannelSuppressed,
+} = require("../../Utils/messageDeleteSuppressor");
 
 module.exports = {
   name: "messageDelete",
@@ -10,32 +13,29 @@ module.exports = {
   async execute(message) {
     if (!message.guild) return;
 
+    // 🚫 IGNORE deletes from /clear
+    if (isChannelSuppressed(message.channel.id)) return;
+
     const settings = await getGuildSettings(message.guild.id);
     if (!settings.logging?.enabled) return;
 
     const enabled = settings.logging.events?.messageDelete ?? true;
     if (!enabled) return;
 
-    /* ───────── FETCH PARTIAL MESSAGE ───────── */
     if (message.partial) {
       try {
         await message.fetch();
       } catch {
-        // message may no longer exist — continue safely
+        return;
       }
     }
 
-    // Ignore bot-authored messages
     if (message.author?.bot) return;
 
-    /* ───────── DELETED BY DETECTION (SAFE) ───────── */
     let deletedBy = "Self / Unconfirmed";
 
     const me = message.guild.members.me;
-    const canViewAuditLog =
-      me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
-
-    if (canViewAuditLog) {
+    if (me?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
       try {
         const logs = await message.guild.fetchAuditLogs({
           type: AuditLogEvent.MessageDelete,
@@ -53,19 +53,15 @@ module.exports = {
             ? "Bot / Integration"
             : `Moderator (${entry.executor.tag})`;
         }
-      } catch {
-        // audit logs are best-effort only
-      }
+      } catch {}
     }
 
-    /* ───────── PRIVACY MODE ───────── */
-    const showContent = Boolean(settings.logging?.messageContent);
+    const showContent = Boolean(settings.logging.messageContent);
     const content =
       showContent && message.content
         ? message.content.slice(0, 1000)
         : "*Hidden (privacy mode)*";
 
-    /* ───────── LOG EVENT ───────── */
     await logEvent({
       guild: message.guild,
       title: "🗑 Message Deleted",

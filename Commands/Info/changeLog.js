@@ -1,103 +1,121 @@
 const {
   SlashCommandBuilder,
   EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   MessageFlags,
 } = require("discord.js");
 
-const changelogData = require("../../Utils/changelogData");
-const {
-  getGuildSettings,
-  updateGuildSettings,
-} = require("../../Database/services/guildSettingsService");
+const changeLog = require("../../Data/changeLog");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("changelog")
-    .setDescription("View the latest Ryvex updates for your server."),
+    .setDescription("View Ryvex update history")
+
+    .addSubcommand(sub =>
+      sub
+        .setName("latest")
+        .setDescription("View the latest update")
+    )
+
+    .addSubcommand(sub =>
+      sub
+        .setName("all")
+        .setDescription("Browse all updates")
+    ),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const guildId = interaction.guild.id;
-    const settings = await getGuildSettings(guildId);
-
-    const latest = changelogData[0];
-    const lastSeen = settings.lastSeenChangelogVersion;
-
-    // ───────── DETERMINE WHAT TO SHOW ─────────
-    let updatesToShow = [];
-
-    if (!lastSeen) {
-      updatesToShow = [latest];
-    } else {
-      const lastIndex = changelogData.findIndex(
-        c => c.version === lastSeen
-      );
-
-      updatesToShow =
-        lastIndex === -1
-          ? [latest]
-          : changelogData.slice(0, lastIndex);
+    if (!changeLog.length) {
+      return interaction.editReply("❌ No changeLog data available.");
     }
 
-    // ───────── NO NEW UPDATES ─────────
-    if (!updatesToShow.length) {
+    const sub = interaction.options.getSubcommand();
+
+    /* ───────── LATEST ───────── */
+    if (sub === "latest") {
+      const latest = changeLog[0];
+
       const embed = new EmbedBuilder()
-        .setTitle("🚀 Ryvex Changelog")
-        .setColor("Green")
+        .setTitle(`🚀 Ryvex v${latest.version}`)
+        .setColor("Blue")
         .setDescription(
-          `You're fully up to date 🎉\n\n**Latest version:** v${latest.version}`
+          [
+            `📅 **Release Date:** ${latest.date}`,
+            "",
+            ...latest.changes.map(c => `• ${c}`),
+          ].join("\n")
         )
-        .setFooter({ text: "No new updates for this server" })
-        .setTimestamp();
+        .setFooter({ text: "Use /changeLog all to see previous updates" });
 
       return interaction.editReply({ embeds: [embed] });
     }
 
-    // ───────── BUILD CHANGELOG EMBED ─────────
-    const embed = new EmbedBuilder()
-      .setTitle("🚀 Ryvex Update")
-      .setColor("Blue")
-      .setTimestamp();
+    /* ───────── PAGINATED VIEW ───────── */
+    let page = 0;
+    const totalPages = changeLog.length;
 
-    for (const entry of updatesToShow) {
-      const lines = [];
+    const buildEmbed = () => {
+      const entry = changeLog[page];
 
-      if (entry.sections.new?.length) {
-        lines.push(
-          `✨ **New**\n${entry.sections.new.map(x => `• ${x}`).join("\n")}`
-        );
+      return new EmbedBuilder()
+        .setTitle(`🚀 Ryvex v${entry.version}`)
+        .setColor("Blue")
+        .setDescription(
+          [
+            `📅 **Release Date:** ${entry.date}`,
+            "",
+            ...entry.changes.map(c => `• ${c}`),
+          ].join("\n")
+        )
+        .setFooter({
+          text: `Version ${page + 1} / ${totalPages}`,
+        });
+    };
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("prev")
+        .setLabel("◀")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("next")
+        .setLabel("▶")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(totalPages === 1)
+    );
+
+    const message = await interaction.editReply({
+      embeds: [buildEmbed()],
+      components: [row],
+    });
+
+    const collector = message.createMessageComponentCollector({
+      time: 60_000,
+    });
+
+    collector.on("collect", async i => {
+      if (i.user.id !== interaction.user.id) {
+        return i.reply({
+          content: "❌ This menu isn't for you.",
+          ephemeral: true,
+        });
       }
 
-      if (entry.sections.improvements?.length) {
-        lines.push(
-          `🛠 **Improvements**\n${entry.sections.improvements
-            .map(x => `• ${x}`)
-            .join("\n")}`
-        );
-      }
+      if (i.customId === "prev") page--;
+      if (i.customId === "next") page++;
 
-      if (entry.sections.notes?.length) {
-        lines.push(
-          `📌 **Notes**\n${entry.sections.notes.map(x => `• ${x}`).join("\n")}`
-        );
-      }
+      row.components[0].setDisabled(page === 0);
+      row.components[1].setDisabled(page === totalPages - 1);
 
-      embed.addFields({
-        name: `v${entry.version} — ${entry.date}`,
-        value: lines.join("\n\n"),
+      await i.update({
+        embeds: [buildEmbed()],
+        components: [row],
       });
-    }
-
-    embed.setFooter({
-      text: "Marked as read for this server",
     });
-
-    // ───────── SAVE LAST SEEN VERSION ─────────
-    await updateGuildSettings(guildId, {
-      lastSeenChangelogVersion: latest.version,
-    });
-
-    return interaction.editReply({ embeds: [embed] });
   },
 };

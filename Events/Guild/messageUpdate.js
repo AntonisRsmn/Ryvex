@@ -1,5 +1,7 @@
 const { logEvent } = require("../../Utils/logEvent");
-const { getGuildSettings } = require("../../Database/services/guildSettingsService");
+const {
+  getGuildSettings,
+} = require("../../Database/services/guildSettingsService");
 
 module.exports = {
   name: "messageUpdate",
@@ -7,7 +9,7 @@ module.exports = {
   async execute(oldMessage, newMessage) {
     if (!oldMessage.guild) return;
 
-    // Fetch partials
+    // ───────── FETCH PARTIALS ─────────
     if (oldMessage.partial) {
       try {
         await oldMessage.fetch();
@@ -24,7 +26,10 @@ module.exports = {
       }
     }
 
+    // Ignore bot messages
     if (oldMessage.author?.bot) return;
+
+    // Ignore no-op edits
     if (oldMessage.content === newMessage.content) return;
 
     const settings = await getGuildSettings(oldMessage.guild.id);
@@ -34,6 +39,16 @@ module.exports = {
 
     const showContent = settings.logging.messageContent === true;
 
+    // ───────── AUTHOR SAFE RESOLUTION ─────────
+    let authorLabel = "Unknown User";
+
+    if (oldMessage.author) {
+      authorLabel = `${oldMessage.author.tag}`;
+    } else if (oldMessage.webhookId) {
+      authorLabel = "Webhook";
+    }
+
+    // ───────── CONTENT HANDLING ─────────
     const before =
       showContent && oldMessage.content?.length
         ? oldMessage.content
@@ -44,11 +59,12 @@ module.exports = {
         ? newMessage.content
         : "*Hidden (privacy mode)*";
 
+    // ───────── LOG EVENT ─────────
     await logEvent({
       guild: oldMessage.guild,
       title: "✏️ Message Edited",
       description: [
-        `**Author:** ${oldMessage.author.tag}`,
+        `**Author:** ${authorLabel}`,
         `**Channel:** ${oldMessage.channel}`,
         `**Before:** ${before}`,
         `**After:** ${after}`,

@@ -4,6 +4,10 @@ const {
   Partials,
   Collection,
   EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  PermissionFlagsBits,
 } = require("discord.js");
 
 const mongoose = require("mongoose");
@@ -11,72 +15,132 @@ const { loadEvents } = require("./Handlers/eventHandler");
 const { loadCommands } = require("./Handlers/commandHandler");
 const config = require("./config.json");
 
+/* ───────── CLIENT ───────── */
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, // REQUIRED for join/leave
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.MessageContent, // REQUIRED for message content logging
-
+    GatewayIntentBits.MessageContent,
   ],
   partials: [
     Partials.User,
     Partials.Message,
     Partials.GuildMember,
-    Partials.ThreadMember,
     Partials.Channel,
     Partials.Reaction,
   ],
 });
 
-// Collections
 client.commands = new Collection();
 
-// Mention handler
-client.on("messageCreate", (message) => {
+/* ───────── BOT MENTION HANDLER ───────── */
+client.on("messageCreate", async (message) => {
   if (message.author.bot || !message.guild) return;
 
+  // Ignore mass mentions
   if (
-    message.content.includes("@here") ||
-    message.content.includes("@everyone")
+    message.content.includes("@everyone") ||
+    message.content.includes("@here")
   ) return;
 
-  if (
-    message.content.match(new RegExp(`^<@!?${client.user.id}>(\\s|$)`))
-  ) {
-    const embed = new EmbedBuilder()
-      .setColor("White")
-      .setDescription(
-        "👀 **Need assistance?**\n🤖 Use `/help` or join our [Support Server](https://discord.gg/JDDSbxKDne)"
-      )
-      .setTimestamp();
-
-    message.channel.send({ embeds: [embed] }).catch(() => {});
+  // Only exact bot mention
+  if (!message.content.match(new RegExp(`^<@!?${client.user.id}>(\\s|$)`))) {
+    return;
   }
+
+  const perms = message.member.permissions;
+
+  const isAdmin = perms.has(PermissionFlagsBits.Administrator);
+
+  const isModerator =
+    isAdmin ||
+    perms.has(PermissionFlagsBits.ModerateMembers) ||
+    perms.has(PermissionFlagsBits.ManageGuild) ||
+    perms.has(PermissionFlagsBits.ManageRoles) ||
+    perms.has(PermissionFlagsBits.ManageChannels);
+
+  const embed = new EmbedBuilder()
+    .setColor("White")
+    .setTitle("👋 Hey! I’m Ryvex")
+    .setDescription(
+      [
+        "I help servers with **moderation, logging, and case management**.",
+        "",
+        "🔧 **Get started:** `/setup`",
+        isModerator ? "⚙️ **Server settings:** `/settings`" : null,
+        "🧾 **Latest updates:** `/changelog latest`",
+        "📖 **All commands:** `/help`",
+        "",
+        "💬 Need help? Join the **Support Server** below 👇",
+      ]
+        .filter(Boolean)
+        .join("\n")
+    )
+    .setFooter({
+      text: "Tip: Ryvex works entirely with slash commands (/)",
+    })
+    .setTimestamp();
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setLabel("🔧 Setup")
+      .setStyle(ButtonStyle.Primary)
+      .setCustomId("open_setup"),
+
+    ...(isModerator
+      ? [
+          new ButtonBuilder()
+            .setLabel("⚙️ Settings")
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("open_settings"),
+        ]
+      : []),
+
+    new ButtonBuilder()
+      .setLabel("🧾 Changelog")
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId("open_changelog"),
+
+    new ButtonBuilder()
+      .setLabel("💬 Support")
+      .setStyle(ButtonStyle.Link)
+      .setURL("https://discord.gg/JDDSbxKDne")
+  );
+
+  const reply = await message.channel
+    .send({
+      embeds: [embed],
+      components: [row],
+    })
+    .catch(() => null);
+
+  if (!reply) return;
+
+  // Auto-delete after 30s
+  setTimeout(() => {
+    reply.delete().catch(() => {});
+  }, 30_000);
 });
 
-// 🚨 IMPORTANT ORDER 🚨
+/* ───────── STARTUP ───────── */
 (async () => {
   try {
-    // 1️⃣ Load handlers FIRST
     loadEvents(client);
     loadCommands(client);
 
-    // 2️⃣ Connect MongoDB
     await mongoose.connect(config.mongoUri, {
       serverSelectionTimeoutMS: 5000,
     });
+
     console.log("MongoDB connected.");
 
-    // 3️⃣ Login LAST
     await client.login(config.token);
   } catch (error) {
     console.error("Failed to start bot:", error);
     process.exit(1);
   }
 })();
-
 
 module.exports = client;

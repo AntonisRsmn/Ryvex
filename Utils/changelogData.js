@@ -1,24 +1,22 @@
-// Utils/changelogData.js
-
 module.exports = [
   {
-    version: "1.9.0",
+    version: "1.9.1",
     date: "2026-01-10",
-    sections: {
-      new: [
-        "Case management system (/case view, edit, delete)",
-        "Moderation history & logs (/modlog recent, /modlog user)",
-        "Upgraded warning system (/warn add, count, remove, clear)"
-      ],
-      improvements: [
-        "Cleaner moderation log embeds",
-        "Action-based log colors",
-        "Pagination for moderation history",
-        "Safer audit-log handling"
-      ],
-      notes: [
-        "Run /setup to review new configuration options"
-      ]
-    }
-  }
+    changes: [
+      "🛡 Case-based moderation system",
+      "📂 /case view, edit & delete",
+      "🧾 /modlog recent & /modlog user with pagination",
+      "⚠ Upgraded warning system (/warn add, count, remove, clear)",
+      "🔍 Improved audit log detection & fallbacks",
+    ],
+  },
+  {
+    version: "1.9.0",
+    date: "2025-12-20",
+    changes: [
+      "Initial public release",
+      "Core moderation commands",
+      "Basic logging system",
+    ],
+  },
 ];

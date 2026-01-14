@@ -8,8 +8,10 @@ const { respond } = require("../../Utils/respond");
 
 const cpuStat = require("cpu-stat");
 const util = require("util");
-
 const cpuUsage = util.promisify(cpuStat.usagePercent);
+
+// 🔹 changeLog (single source of truth)
+const changeLog = require("../../Data/changeLog");
 
 function formatBytes(bytes, decimals = 2) {
   if (!bytes) return "0 B";
@@ -29,12 +31,17 @@ module.exports = {
     try {
       const { client } = interaction;
 
+      /* ───────── VERSION ───────── */
+      const currentVersion = changeLog[0]?.version ?? "Unknown";
+
+      /* ───────── UPTIME ───────── */
       const uptime = client.uptime;
       const days = Math.floor(uptime / 86400000);
       const hours = Math.floor(uptime / 3600000) % 24;
       const minutes = Math.floor(uptime / 60000) % 60;
       const seconds = Math.floor(uptime / 1000) % 60;
 
+      /* ───────── STATS ───────── */
       const cpu = await cpuUsage();
       const memoryUsage = formatBytes(process.memoryUsage().heapUsed);
 
@@ -43,7 +50,7 @@ module.exports = {
         .setColor("White")
         .addFields(
           { name: "Developer", value: "Rusman", inline: true },
-          { name: "Bot Username", value: client.user.username, inline: true },
+          { name: "Version", value: `v${currentVersion}`, inline: true },
           { name: "Bot ID", value: client.user.id, inline: true },
           { name: "Node.js", value: process.version, inline: true },
           { name: "Ping", value: `${client.ws.ping} ms`, inline: true },
@@ -55,11 +62,10 @@ module.exports = {
             inline: true,
           }
         )
-        .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        });
+          text: "Use /changeLog latest to see what’s new",
+        })
+        .setTimestamp();
 
       return respond(interaction, {
         embeds: [embed],
