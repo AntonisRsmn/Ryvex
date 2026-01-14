@@ -8,6 +8,7 @@ const {
 
 const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
+const { suppress } = require("../../Utils/actionSuppressor"); // ✅ NEW
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -62,6 +63,9 @@ module.exports = {
         });
       }
 
+      /* ───────── SUPPRESS GENERAL LOGS ───────── */
+      suppress(channel.id); // ✅ CRITICAL FIX
+
       /* ───────── EXECUTE LOCK ───────── */
       await channel.permissionOverwrites.edit(
         guild.roles.everyone,
@@ -79,13 +83,32 @@ module.exports = {
         reason,
       });
 
+      /* ───────── SUCCESS UX ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(
-              `🔒 ${channel} has been locked.\n**Reason:** ${reason}`
-            )
+            .setTitle("🔒 Channel Locked")
             .setColor("White")
+            .addFields(
+              {
+                name: "📍 Channel",
+                value: `${channel}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${moderator}`,
+                inline: true,
+              },
+              {
+                name: "📝 Reason",
+                value: reason,
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

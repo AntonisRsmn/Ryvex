@@ -64,13 +64,32 @@ module.exports = {
         reason: "Unbanned via command",
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(
-              `✅ Successfully unbanned **${bannedUser.user.tag}**.`
-            )
+            .setTitle("🔓 Member Unbanned")
             .setColor("White")
+            .addFields(
+              {
+                name: "👤 User",
+                value: `${bannedUser.user.tag}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${moderator}`,
+                inline: true,
+              },
+              {
+                name: "📝 Reason",
+                value: "Unbanned via command",
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

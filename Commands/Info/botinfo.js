@@ -5,12 +5,11 @@ const {
 } = require("discord.js");
 
 const { respond } = require("../../Utils/respond");
-
 const cpuStat = require("cpu-stat");
 const util = require("util");
 const cpuUsage = util.promisify(cpuStat.usagePercent);
 
-// 🔹 changeLog (single source of truth)
+// 🔹 Single source of truth
 const changeLog = require("../../Data/changeLog");
 
 function formatBytes(bytes, decimals = 2) {
@@ -22,48 +21,74 @@ function formatBytes(bytes, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
+function formatUptime(ms) {
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor(ms / 3600000) % 24;
+  const minutes = Math.floor(ms / 60000) % 60;
+  const seconds = Math.floor(ms / 1000) % 60;
+  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("botinfo")
-    .setDescription("Get information about the bot."),
+    .setDescription("View system status and bot information."),
 
   async execute(interaction) {
     try {
       const { client } = interaction;
 
       /* ───────── VERSION ───────── */
-      const currentVersion = changeLog[0]?.version ?? "Unknown";
+      const version = changeLog[0]?.version ?? "Unknown";
 
       /* ───────── UPTIME ───────── */
-      const uptime = client.uptime;
-      const days = Math.floor(uptime / 86400000);
-      const hours = Math.floor(uptime / 3600000) % 24;
-      const minutes = Math.floor(uptime / 60000) % 60;
-      const seconds = Math.floor(uptime / 1000) % 60;
+      const uptimeFormatted = formatUptime(client.uptime);
 
-      /* ───────── STATS ───────── */
+      /* ───────── PING ───────── */
+      const gatewayPing = Math.round(client.ws.ping);
+      const apiPing = Date.now() - interaction.createdTimestamp;
+
+      let latencyStatus = "🟢 Healthy";
+      let color = "Green";
+
+      if (apiPing >= 250) {
+        latencyStatus = "🔴 High Latency";
+        color = "Red";
+      } else if (apiPing >= 150) {
+        latencyStatus = "🟡 Moderate";
+        color = "Orange";
+      }
+
+      /* ───────── SYSTEM STATS ───────── */
       const cpu = await cpuUsage();
-      const memoryUsage = formatBytes(process.memoryUsage().heapUsed);
+      const memory = formatBytes(process.memoryUsage().heapUsed);
 
       const embed = new EmbedBuilder()
-        .setTitle(`${client.user.username} — Bot Information`)
-        .setColor("White")
+        .setTitle(`🤖 ${client.user.username} — System Overview`)
+        .setColor(color)
+        .setDescription(
+          [
+            `**Status:** ${latencyStatus}`,
+            "",
+            "📡 **Latency**",
+            `• 🌐 Gateway: **${gatewayPing} ms**`,
+            `• 📬 API: **${apiPing} ms**`,
+            "",
+            "⏱️ **Uptime**",
+            `• ${uptimeFormatted}`,
+            "",
+            "🖥️ **System**",
+            `• CPU Usage: **${cpu.toFixed(2)}%**`,
+            `• Memory Usage: **${memory}**`,
+          ].join("\n")
+        )
         .addFields(
-          { name: "Developer", value: "Rusman", inline: true },
-          { name: "Version", value: `v${currentVersion}`, inline: true },
-          { name: "Bot ID", value: client.user.id, inline: true },
+          { name: "Version", value: `v${version}`, inline: true },
           { name: "Node.js", value: process.version, inline: true },
-          { name: "Ping", value: `${client.ws.ping} ms`, inline: true },
-          { name: "CPU Usage", value: `${cpu.toFixed(2)}%`, inline: true },
-          { name: "Memory Usage", value: memoryUsage, inline: true },
-          {
-            name: "Uptime",
-            value: `${days}d ${hours}h ${minutes}m ${seconds}s`,
-            inline: true,
-          }
+          { name: "Bot ID", value: client.user.id, inline: true }
         )
         .setFooter({
-          text: "Use /changeLog latest to see what’s new",
+          text: "Use /changelog latest to see what’s new",
         })
         .setTimestamp();
 

@@ -148,16 +148,37 @@ module.exports = {
         duration: timeInput,
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
             .setTitle("⏳ Member Timed Out")
-            .setDescription(`Successfully timed out ${targetUser}.`)
-            .addFields(
-              { name: "Duration", value: timeInput, inline: true },
-              { name: "Reason", value: reason, inline: true }
-            )
             .setColor("White")
+            .addFields(
+              {
+                name: "👤 Member",
+                value: `${targetUser}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${interaction.user}`,
+                inline: true,
+              },
+              {
+                name: "⏱ Duration",
+                value: timeInput,
+                inline: true,
+              },
+              {
+                name: "📝 Reason",
+                value: reason,
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

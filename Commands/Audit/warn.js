@@ -84,13 +84,13 @@ module.exports = {
           new EmbedBuilder()
             .setTitle("⚠ Warning Issued")
             .setColor("Yellow")
-            .setDescription(
-              [
-                `👤 **Member:** ${target}`,
-                `📄 **Reason:** ${reason}`,
-                `⚠ **Total Warnings:** ${warnCount}`,
-              ].join("\n")
+            .addFields(
+              { name: "👤 Member", value: `${target}`, inline: true },
+              { name: "👮 Moderator", value: `${moderator}`, inline: true },
+              { name: "📝 Reason", value: reason, inline: false },
+              { name: "📊 Total Warnings", value: `${warnCount}`, inline: true }
             )
+            .setFooter({ text: "Ryvex • Moderation Action" })
             .setTimestamp(),
         ],
       });
@@ -107,9 +107,15 @@ module.exports = {
       });
 
       if (!warnCount) {
-        return interaction.editReply(
-          `ℹ **${target.tag}** has no warnings.`
-        );
+        return interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("ℹ No Warnings Found")
+              .setColor("Green")
+              .setDescription(`👤 **Member:** ${target}\n✅ This member has no warnings.`)
+              .setTimestamp(),
+          ],
+        });
       }
 
       await ModAction.deleteMany({
@@ -131,15 +137,17 @@ module.exports = {
           new EmbedBuilder()
             .setTitle("🧹 Warnings Cleared")
             .setColor("Green")
-            .setDescription(
-              `👤 **Member:** ${target}\n🧹 **Warnings Cleared:** ${warnCount}`
+            .addFields(
+              { name: "👤 Member", value: `${target}`, inline: true },
+              { name: "🧹 Cleared", value: `${warnCount} warning(s)`, inline: true }
             )
+            .setFooter({ text: "Ryvex • Moderation Action" })
             .setTimestamp(),
         ],
       });
     }
 
-    /* ───────── COUNT (WITH CASE LINKS) ───────── */
+    /* ───────── COUNT ───────── */
     if (sub === "count") {
       const target = interaction.options.getUser("target");
 
@@ -155,9 +163,9 @@ module.exports = {
         return interaction.editReply({
           embeds: [
             new EmbedBuilder()
-              .setTitle("⚠ Warning Count")
+              .setTitle("⚠ Warning Overview")
               .setColor("Green")
-              .setDescription(`👤 **Member:** ${target}\n✅ No warnings found.`)
+              .setDescription(`👤 **Member:** ${target}\n✅ No warnings on record.`)
               .setTimestamp(),
           ],
         });
@@ -168,14 +176,14 @@ module.exports = {
       return interaction.editReply({
         embeds: [
           new EmbedBuilder()
-            .setTitle("⚠ Warning Count")
+            .setTitle("⚠ Warning Overview")
             .setColor("Orange")
             .setDescription(
               [
                 `👤 **Member:** ${target}`,
                 `⚠ **Total Warnings:** ${warns.length}`,
                 "",
-                "**Recent Warning Cases:**",
+                "🧾 **Recent Cases:**",
                 ...recent.map(
                   w => `• **#${w.caseId}** → \`/case view ${w.caseId}\``
                 ),
@@ -198,9 +206,15 @@ module.exports = {
       });
 
       if (!record) {
-        return interaction.editReply(
-          `❌ No warning found with case ID **#${caseId}**.`
-        );
+        return interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("❌ Warning Not Found")
+              .setColor("Red")
+              .setDescription(`No warning exists with case ID **#${caseId}**.`)
+              .setTimestamp(),
+          ],
+        });
       }
 
       await record.deleteOne();
@@ -218,9 +232,11 @@ module.exports = {
           new EmbedBuilder()
             .setTitle("🗑 Warning Removed")
             .setColor("Green")
-            .setDescription(
-              `🗑 **Removed warning case #${caseId}**\n👤 **Member:** ${record.targetTag}`
+            .addFields(
+              { name: "👤 Member", value: record.targetTag, inline: true },
+              { name: "🧾 Case ID", value: `#${caseId}`, inline: true }
             )
+            .setFooter({ text: "Ryvex • Moderation Action" })
             .setTimestamp(),
         ],
       });

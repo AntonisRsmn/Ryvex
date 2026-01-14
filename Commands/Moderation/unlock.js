@@ -72,14 +72,31 @@ module.exports = {
         reason: "Channel unlocked",
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(`🔓 ${channel} has been unlocked.`)
+            .setTitle("🔓 Channel Unlocked")
             .setColor("White")
+            .addFields(
+              {
+                name: "📍 Channel",
+                value: `${channel}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${moderator}`,
+                inline: true,
+              },
+              {
+                name: "📝 Status",
+                value: "Members can send messages again.",
+                inline: false,
+              }
+            )
             .setFooter({
-              text: `By ${interaction.user.username}`,
-              iconURL: interaction.user.displayAvatarURL(),
+              text: "Ryvex • Moderation Action",
             })
             .setTimestamp(),
         ],

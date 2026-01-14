@@ -9,16 +9,29 @@ const { respond } = require("../../Utils/respond");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("website")
-    .setDescription("Get the Ryvex website."),
+    .setDescription("Visit the official Ryvex™ website."),
 
   async execute(interaction) {
     try {
       const embed = new EmbedBuilder()
-        .setTitle("🌐 Ryvex Website")
-        .setDescription(
-          "Visit the official Ryvex website:\n👉 https://ryvex.gr/"
-        )
+        .setTitle("🌐 Ryvex™ Official Website")
         .setColor("White")
+        .setDescription(
+          [
+            "Welcome to the **Ryvex™ Website** 👋",
+            "",
+            "On our website you can find:",
+            "• 📘 Information about Ryvex features",
+            "• ⚙️ Guides & setup instructions",
+            "• 🧠 Future updates and improvements",
+            "• 💡 Project details & vision",
+            "",
+            "👉 **Visit here:**",
+            "🔗 https://ryvex.gr/",
+            "",
+            "Thank you for supporting Ryvex ❤️",
+          ].join("\n")
+        )
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),

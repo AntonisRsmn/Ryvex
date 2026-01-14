@@ -1,6 +1,9 @@
 const { AuditLogEvent, PermissionFlagsBits } = require("discord.js");
 const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 const { logEvent } = require("../../Utils/logEvent");
+const {
+  isMemberRemoveSuppressed,
+} = require("../../Utils/memberRemoveSuppressor");
 
 module.exports = {
   name: "guildMemberRemove",
@@ -9,8 +12,12 @@ module.exports = {
     const { guild, user } = member;
     if (!guild) return;
 
-    const settings = await getGuildSettings(guild.id);
+    // 🚫 SUPPRESSION CHECK (COMMAND-BASED KICK / BAN)
+    if (isMemberRemoveSuppressed(guild.id, user.id)) {
+      return;
+    }
 
+    const settings = await getGuildSettings(guild.id);
     const memberLeaveEnabled =
       settings.logging?.events?.memberLeave ?? true;
 
@@ -20,16 +27,13 @@ module.exports = {
     let actor = "Self";
     let color = "Orange";
 
-    /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
     const me = guild.members.me;
     const canViewAuditLog =
       me && me.permissions.has(PermissionFlagsBits.ViewAuditLog);
 
     if (canViewAuditLog) {
       try {
-        const logs = await guild.fetchAuditLogs({
-          limit: 5,
-        });
+        const logs = await guild.fetchAuditLogs({ limit: 5 });
 
         const entry = logs.entries.find(
           e =>
@@ -57,13 +61,10 @@ module.exports = {
             : entry.executor?.tag ?? "Unknown";
         }
       } catch {
-        // Best-effort only — silent failure
+        // silent
       }
-    } else {
-      actor = "Unknown (No Audit Log Access)";
     }
 
-    /* ───────── LOG EVENT ───────── */
     await logEvent({
       guild,
       title: "🚪 Member Left",

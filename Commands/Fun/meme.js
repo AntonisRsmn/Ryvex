@@ -6,42 +6,59 @@ const {
 
 const { respond } = require("../../Utils/respond");
 
+// node-fetch (dynamic import safe)
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("meme")
-    .setDescription("Send a random meme."),
+    .setDescription("Get a random meme from Reddit 😂"),
 
   async execute(interaction) {
     try {
+      // Use multiple subreddits for better reliability
+      const subreddits = [
+        "memes",
+        "dankmemes",
+        "shitposting",
+        "wholesomememes",
+      ];
+
+      const subreddit =
+        subreddits[Math.floor(Math.random() * subreddits.length)];
+
       const res = await fetch(
-        "https://www.reddit.com/r/shitposting/random/.json"
+        `https://www.reddit.com/r/${subreddit}/random/.json`,
+        { headers: { "User-Agent": "RyvexBot/1.0" } }
       );
+
       const data = await res.json();
 
+      const post =
+        data?.[0]?.data?.children?.[0]?.data;
+
+      // Validate meme
       if (
-        !Array.isArray(data) ||
-        !data[0]?.data?.children?.length ||
-        !data[0].data.children[0]?.data
+        !post ||
+        post.over_18 ||
+        !post.url ||
+        post.is_video ||
+        post.url.endsWith(".gifv")
       ) {
         return respond(interaction, {
-          content: "❌ Couldn't fetch a meme right now. Try again later!",
+          content: "😕 Couldn't find a good meme. Try again!",
           flags: MessageFlags.Ephemeral,
         });
       }
 
-      const meme = data[0].data.children[0].data;
-
       const embed = new EmbedBuilder()
-        .setTitle(meme.title)
-        .setImage(meme.url)
-        .setURL(`https://reddit.com${meme.permalink}`)
+        .setTitle("😂 Meme Time")
+        .setDescription(`**${post.title}**`)
+        .setImage(post.url)
         .setColor("White")
         .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
+          text: `From r/${subreddit} • 👍 ${post.ups ?? 0}`,
         })
         .setTimestamp();
 
@@ -53,7 +70,7 @@ module.exports = {
       console.error("Meme command failed:", error);
 
       return respond(interaction, {
-        content: "❌ Couldn't fetch a meme right now. Try again later!",
+        content: "❌ Failed to fetch a meme. Reddit might be down.",
         flags: MessageFlags.Ephemeral,
       });
     }

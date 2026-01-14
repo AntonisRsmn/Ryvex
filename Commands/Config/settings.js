@@ -19,7 +19,7 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 
     .addSubcommand(cmd =>
-      cmd.setName("view").setDescription("View current guild settings")
+      cmd.setName("view").setDescription("View current guild configuration")
     )
 
     /* ───────── LOGGING ───────── */
@@ -28,15 +28,15 @@ module.exports = {
         .setName("logging")
         .setDescription("General logging settings")
         .addSubcommand(cmd =>
-          cmd.setName("enable").setDescription("Enable logging")
+          cmd.setName("enable").setDescription("Enable server logging")
         )
         .addSubcommand(cmd =>
-          cmd.setName("disable").setDescription("Disable logging")
+          cmd.setName("disable").setDescription("Disable server logging")
         )
         .addSubcommand(cmd =>
           cmd
             .setName("channel")
-            .setDescription("Set general log channel")
+            .setDescription("Set the general log channel")
             .addChannelOption(opt =>
               opt
                 .setName("channel")
@@ -55,9 +55,9 @@ module.exports = {
                 .setDescription("Privacy mode")
                 .setRequired(true)
                 .addChoices(
-                  { name: "ON (hide message content)", value: "on" },
-                  { name: "OFF (log message content)", value: "off" },
-                  { name: "Status", value: "status" }
+                  { name: "🔒 ON (hide content)", value: "on" },
+                  { name: "🔓 OFF (log content)", value: "off" },
+                  { name: "ℹ Status", value: "status" }
                 )
             )
         )
@@ -67,7 +67,7 @@ module.exports = {
     .addSubcommandGroup(group =>
       group
         .setName("moderation")
-        .setDescription("Moderation logging settings")
+        .setDescription("Moderation log settings")
         .addSubcommand(cmd =>
           cmd
             .setName("channel")
@@ -119,9 +119,7 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await interaction.deferReply({
-      flags: MessageFlags.Ephemeral,
-    });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
       const guild = interaction.guild;
@@ -129,7 +127,6 @@ module.exports = {
       const sub = interaction.options.getSubcommand();
       const group = interaction.options.getSubcommandGroup(false);
 
-      /* ───────── VIEW ───────── */
       /* ───────── VIEW ───────── */
 if (sub === "view") {
   const settings = await getGuildSettings(guildId);
@@ -229,19 +226,21 @@ if (sub === "view") {
   });
 }
 
-
       /* ───────── LOGGING ───────── */
       if (group === "logging") {
-        const embed = new EmbedBuilder().setColor("White").setTimestamp();
+        const embed = new EmbedBuilder()
+          .setTitle("📄 Logging Settings Updated")
+          .setColor("White")
+          .setTimestamp();
 
         if (sub === "enable") {
           await updateGuildSettings(guildId, { "logging.enabled": true });
-          embed.setDescription("✅ Logging enabled.");
+          embed.setDescription("✅ General logging has been **enabled**.");
         }
 
         if (sub === "disable") {
           await updateGuildSettings(guildId, { "logging.enabled": false });
-          embed.setDescription("❌ Logging disabled.");
+          embed.setDescription("❌ General logging has been **disabled**.");
         }
 
         if (sub === "channel") {
@@ -250,25 +249,18 @@ if (sub === "view") {
             "logging.channelId": channel.id,
             "logging.enabled": true,
           });
-          embed.setDescription(`📄 Logging channel set to ${channel}.`);
+          embed.setDescription(`📄 Log channel set to ${channel}.`);
         }
 
         if (sub === "privacy") {
           const mode = interaction.options.getString("mode");
 
-          if (!mode) {
-            return respond(interaction, {
-              content:
-                "❌ Please choose a privacy mode.\nUse: `/settings logging privacy <on|off|status>`",
-            });
-          }
-
           if (mode === "status") {
             const fresh = await getGuildSettings(guildId);
             embed.setDescription(
               fresh.logging?.messageContent
-                ? "🔓 **Privacy Mode: OFF** (content is logged)"
-                : "🔒 **Privacy Mode: ON** (content is hidden)"
+                ? "🔓 **Privacy OFF** — message content is logged."
+                : "🔒 **Privacy ON** — message content is hidden."
             );
           }
 
@@ -276,14 +268,14 @@ if (sub === "view") {
             await updateGuildSettings(guildId, {
               "logging.messageContent": false,
             });
-            embed.setDescription("🔒 Privacy Mode enabled.");
+            embed.setDescription("🔒 Privacy mode **enabled**.");
           }
 
           if (mode === "off") {
             await updateGuildSettings(guildId, {
               "logging.messageContent": true,
             });
-            embed.setDescription("🔓 Privacy Mode disabled.");
+            embed.setDescription("🔓 Privacy mode **disabled**.");
           }
         }
 
@@ -292,7 +284,10 @@ if (sub === "view") {
 
       /* ───────── MODERATION ───────── */
       if (group === "moderation") {
-        const embed = new EmbedBuilder().setColor("White").setTimestamp();
+        const embed = new EmbedBuilder()
+          .setTitle("🛡 Moderation Settings Updated")
+          .setColor("White")
+          .setTimestamp();
 
         if (sub === "channel") {
           const channel = interaction.options.getChannel("channel");
@@ -300,7 +295,7 @@ if (sub === "view") {
             "moderation.enabled": true,
             "moderation.channelId": channel.id,
           });
-          embed.setDescription(`🛡 Moderation log channel set to ${channel}.`);
+          embed.setDescription(`🛡 Moderation logs set to ${channel}.`);
         }
 
         if (sub === "disable") {
@@ -308,7 +303,7 @@ if (sub === "view") {
             "moderation.enabled": false,
             "moderation.channelId": null,
           });
-          embed.setDescription("🛡 Separate moderation logs disabled.");
+          embed.setDescription("🛡 Separate moderation logs **disabled**.");
         }
 
         return respond(interaction, { embeds: [embed] });
@@ -316,16 +311,19 @@ if (sub === "view") {
 
       /* ───────── WELCOME ───────── */
       if (group === "welcome") {
-        const embed = new EmbedBuilder().setColor("White").setTimestamp();
+        const embed = new EmbedBuilder()
+          .setTitle("👋 Welcome Settings Updated")
+          .setColor("White")
+          .setTimestamp();
 
         if (sub === "enable") {
           await updateGuildSettings(guildId, { "welcome.enabled": true });
-          embed.setDescription("👋 Welcome system enabled.");
+          embed.setDescription("👋 Welcome system **enabled**.");
         }
 
         if (sub === "disable") {
           await updateGuildSettings(guildId, { "welcome.enabled": false });
-          embed.setDescription("👋 Welcome system disabled.");
+          embed.setDescription("👋 Welcome system **disabled**.");
         }
 
         if (sub === "channel") {
@@ -351,7 +349,7 @@ if (sub === "view") {
     } catch (err) {
       console.error("Settings command failed:", err);
       return respond(interaction, {
-        content: "❌ Failed to update or fetch settings.",
+        content: "❌ Failed to update or retrieve server settings.",
       });
     }
   },

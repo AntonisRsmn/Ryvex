@@ -124,12 +124,12 @@ module.exports = {
 
       /* ───────── EXECUTE ACTION ───────── */
 
-      // 🔒 CRITICAL LINE — prevents duplicate guildMemberUpdate logs
+      // 🔒 Prevent duplicate guildMemberUpdate logs
       suppressMemberUpdate(guild.id, targetUser.id);
 
       await targetMember.roles.add(role);
 
-      // ✅ MODERATION LOG (only ONE log now)
+      // 🛡 MODERATION LOG
       await logAction({
         guild,
         action: "Role Added",
@@ -138,11 +138,32 @@ module.exports = {
         reason: `Added role: ${role.name}`,
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(`✅ Successfully added ${role} to ${targetUser}.`)
+            .setTitle("➕ Role Added")
             .setColor("White")
+            .addFields(
+              {
+                name: "👤 Member",
+                value: `${targetUser}`,
+                inline: true,
+              },
+              {
+                name: "🎭 Role",
+                value: `${role}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${interaction.user}`,
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

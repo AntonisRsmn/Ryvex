@@ -13,7 +13,7 @@ const {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("remove-timeout")
+    .setName("untimeout")
     .setDescription("Remove the timeout from a member.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addUserOption(option =>
@@ -54,14 +54,12 @@ module.exports = {
         });
       }
 
-      /* ───────── PROTECTIONS ───────── */
+      /* ───────── SAFETY CHECKS ───────── */
       if (targetMember.id === guild.ownerId) {
         return respond(interaction, {
           embeds: [
             new EmbedBuilder()
-              .setDescription(
-                "❌ You cannot remove the timeout from the server owner."
-              )
+              .setDescription("❌ You cannot untimeout the server owner.")
               .setColor("Red"),
           ],
           flags: MessageFlags.Ephemeral,
@@ -72,7 +70,7 @@ module.exports = {
         return respond(interaction, {
           embeds: [
             new EmbedBuilder()
-              .setDescription("❌ You cannot remove your own timeout.")
+              .setDescription("❌ You cannot untimeout yourself.")
               .setColor("Red"),
           ],
           flags: MessageFlags.Ephemeral,
@@ -109,29 +107,50 @@ module.exports = {
       /* ───────── SUPPRESS MEMBER UPDATE EVENT ───────── */
       suppressMemberUpdate(guild.id, targetUser.id);
 
-      /* ───────── REMOVE TIMEOUT ───────── */
+      /* ───────── EXECUTE UNTIMEOUT ───────── */
       await targetMember.timeout(null);
 
       /* ───────── MODERATION LOG ───────── */
       await logAction({
         guild,
-        action: "Remove Timeout",
+        action: "Untimeout",
         target: targetUser,
         moderator: interaction.user,
         reason: "Timeout removed",
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(`✅ Timeout removed from ${targetUser}.`)
+            .setTitle("🔊 Timeout Removed")
             .setColor("White")
+            .addFields(
+              {
+                name: "👤 Member",
+                value: `${targetUser}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${interaction.user}`,
+                inline: true,
+              },
+              {
+                name: "📝 Reason",
+                value: "Timeout removed",
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
-      console.error("Remove-timeout failed:", error);
+      console.error("Untimeout failed:", error);
 
       return respond(interaction, {
         embeds: [

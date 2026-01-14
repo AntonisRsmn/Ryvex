@@ -36,6 +36,7 @@ module.exports = {
       const targetUser = options.getUser("target");
       const role = options.getRole("role");
 
+      /* ───────── BOT PERMISSION CHECK ───────── */
       if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
         return respond(interaction, {
           embeds: [
@@ -61,6 +62,7 @@ module.exports = {
         });
       }
 
+      /* ───────── SAFETY CHECKS ───────── */
       if (
         targetMember.id === guild.ownerId ||
         targetMember.id === moderator.id
@@ -94,7 +96,7 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setDescription(
-                `❌ ${targetUser.tag} does not have the ${role.name} role.`
+                `❌ ${targetUser.tag} does not have the **${role.name}** role.`
               )
               .setColor("Red"),
           ],
@@ -102,24 +104,48 @@ module.exports = {
         });
       }
 
-      // 🔕 SUPPRESS MEMBER UPDATE EVENT
+      /* ───────── EXECUTE ACTION ───────── */
+
+      // 🔕 Prevent duplicate guildMemberUpdate logs
       suppressMemberUpdate(guild.id, targetUser.id);
 
       await targetMember.roles.remove(role);
 
+      // 🛡 MODERATION LOG
       await logAction({
         guild,
-        action: "Remove Role",
+        action: "Role Removed",
         target: targetUser,
         moderator: interaction.user,
-        reason: `Role removed: ${role.name}`,
+        reason: `Removed role: ${role.name}`,
       });
 
+      /* ───────── SUCCESS UX (IMPROVED) ───────── */
       return respond(interaction, {
         embeds: [
           new EmbedBuilder()
-            .setDescription(`✅ Successfully removed ${role} from ${targetUser}.`)
+            .setTitle("➖ Role Removed")
             .setColor("White")
+            .addFields(
+              {
+                name: "👤 Member",
+                value: `${targetUser}`,
+                inline: true,
+              },
+              {
+                name: "🎭 Role",
+                value: `${role}`,
+                inline: true,
+              },
+              {
+                name: "👮 Moderator",
+                value: `${interaction.user}`,
+                inline: false,
+              }
+            )
+            .setFooter({
+              text: "Ryvex • Moderation Action",
+            })
             .setTimestamp(),
         ],
         flags: MessageFlags.Ephemeral,

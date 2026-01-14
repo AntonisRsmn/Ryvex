@@ -3,10 +3,10 @@ const {
   AuditLogEvent,
   PermissionFlagsBits,
 } = require("discord.js");
+
 const { logEvent } = require("../../Utils/logEvent");
-const {
-  getGuildSettings,
-} = require("../../Database/services/guildSettingsService");
+const { getGuildSettings } = require("../../Database/services/guildSettingsService");
+const { isSuppressed } = require("../../Utils/actionSuppressor"); // ✅ NEW
 
 module.exports = {
   name: "channelUpdate",
@@ -14,6 +14,9 @@ module.exports = {
   async execute(oldChannel, newChannel) {
     const guild = newChannel.guild;
     if (!guild) return;
+
+    /* ───────── SUPPRESSION CHECK ───────── */
+    if (isSuppressed(newChannel.id)) return; // ✅ FIX
 
     const settings = await getGuildSettings(guild.id);
 
@@ -82,7 +85,7 @@ module.exports = {
         break;
     }
 
-    /* ───────── AUDIT LOG LOOKUP (SAFE) ───────── */
+    /* ───────── AUDIT LOG LOOKUP ───────── */
     let executor = "Unknown";
     const me = guild.members.me;
 
@@ -109,7 +112,7 @@ module.exports = {
       executor = "Bot / Integration";
     }
 
-    /* ───────── LOG EVENT ───────── */
+    /* ───────── GENERAL LOG ───────── */
     await logEvent({
       guild,
       title: `${typeLabel} Updated`,
@@ -120,6 +123,7 @@ module.exports = {
         ...changes,
       ].join("\n"),
       color: "Yellow",
+      type: "general",
     });
   },
 };

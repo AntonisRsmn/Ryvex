@@ -13,7 +13,7 @@ module.exports = {
     .addStringOption(option =>
       option
         .setName("question")
-        .setDescription("The question you want to ask.")
+        .setDescription("What do you want to ask?")
         .setRequired(true)
     ),
 
@@ -22,26 +22,20 @@ module.exports = {
       const question = interaction.options.getString("question");
 
       const responses = [
-        "As I see it, yes.",
-        "Ask again later.",
-        "Better not tell you now.",
-        "Cannot predict now.",
-        "Concentrate and ask again.",
-        "Don’t count on it.",
-        "It is certain.",
-        "It is decidedly so.",
-        "Most likely.",
-        "My reply is no.",
-        "My sources say no.",
-        "Outlook not so good.",
-        "Outlook good.",
-        "Reply hazy, try again.",
-        "Signs point to yes.",
-        "Very doubtful.",
-        "Without a doubt.",
-        "Yes.",
-        "Yes – definitely.",
-        "You may rely on it.",
+        "🟢 It is certain.",
+        "🟢 Without a doubt.",
+        "🟢 Yes — definitely.",
+        "🟢 You may rely on it.",
+        "🟢 Outlook looks good.",
+        "🟡 Ask again later.",
+        "🟡 Cannot predict now.",
+        "🟡 Reply hazy, try again.",
+        "🟡 Better not tell you now.",
+        "🔴 Don’t count on it.",
+        "🔴 My reply is no.",
+        "🔴 My sources say no.",
+        "🔴 Outlook not so good.",
+        "🔴 Very doubtful.",
       ];
 
       const answer =
@@ -49,13 +43,20 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setTitle("🎱 Magic 8-Ball")
-        .addFields(
-          { name: "Question", value: question },
-          { name: "Answer", value: answer }
-        )
         .setColor("White")
+        .setDescription(
+          [
+            "✨ *The magic 8-ball has spoken…*",
+            "",
+            `❓ **Your Question**`,
+            `> ${question}`,
+            "",
+            `🔮 **Answer**`,
+            `> ${answer}`,
+          ].join("\n")
+        )
         .setFooter({
-          text: `Requested by ${interaction.user.username}`,
+          text: `Asked by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
         })
         .setTimestamp();
@@ -68,7 +69,7 @@ module.exports = {
       console.error("8ball command failed:", error);
 
       return respond(interaction, {
-        content: "❌ Failed to get an answer from the 8-ball.",
+        content: "❌ The magic 8-ball is silent right now. Try again later.",
         flags: MessageFlags.Ephemeral,
       });
     }

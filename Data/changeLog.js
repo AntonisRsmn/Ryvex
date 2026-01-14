@@ -18,6 +18,26 @@
 
 module.exports = [
   {
+    version: "1.9.3",
+    date: "2026-01-15",
+    changes: [
+      "✨ Major UX overhaul across commands with cleaner, more consistent embeds",
+      "🧭 Redesigned `/help` command with improved layout, spacing, and emoji-enhanced categories",
+      "🎨 Improved embed readability for `/donate`, `/support`, `/website`, `/userinfo`, and `/poll`",
+      "🎮 Upgraded fun commands UX (`/8ball`, `/compliment`, `/gaymeter`, `/ppmeter`, `/rps`, `/meme`)",
+      "🛡️ Improved success embeds for all moderation commands (lock, unlock, clear, warn, roles, bans, kicks)",
+      "📋 Added structured moderation feedback (member, moderator, reason, duration where applicable)",
+      "🧾 Fixed duplicate logging issues between General Logs and Moderation Logs",
+      "🚫 `/kick` and `/ban` no longer trigger General Logs — moderation logs only",
+      "🧠 Improved event suppression logic to prevent unwanted log spam",
+      "⚙️ Restored `/settings view` dashboard-style embed with clear system status indicators",
+      "🔐 Improved permission checks and error handling for moderation actions",
+      "🧹 Removed redundant moderation commands in favor of Discord-native timeout system",
+      "🧠 Internal refactors for better stability, reliability, and maintainability"
+    ],
+  },
+
+  {
     version: "1.9.2",
     date: "2026-01-14",
     changes: [

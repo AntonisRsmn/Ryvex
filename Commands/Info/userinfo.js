@@ -9,11 +9,11 @@ const { respond } = require("../../Utils/respond");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("userinfo")
-    .setDescription("Get information about a member.")
+    .setDescription("View detailed information about a server member.")
     .addUserOption(option =>
       option
         .setName("user")
-        .setDescription("User to get info about.")
+        .setDescription("Select a user (defaults to yourself).")
     ),
 
   async execute(interaction) {
@@ -27,7 +27,7 @@ module.exports = {
 
       if (!member) {
         return respond(interaction, {
-          content: "❌ User not found in this server.",
+          content: "❌ This user is not a member of the server.",
           flags: MessageFlags.Ephemeral,
         });
       }
@@ -36,37 +36,42 @@ module.exports = {
         member.roles.cache
           .filter(role => role.id !== interaction.guild.id)
           .map(role => role.toString())
-          .join(" ") || "None";
+          .join(", ") || "None";
 
       const embed = new EmbedBuilder()
-        .setAuthor({
-          name: user.tag,
-          iconURL: user.displayAvatarURL(),
-        })
+        .setTitle("👤 User Information")
         .setColor("White")
+        .setThumbnail(user.displayAvatarURL({ size: 256 }))
         .addFields(
-          { name: "User", value: `${user}`, inline: true },
-          { name: "ID", value: user.id, inline: true },
           {
-            name: "Nickname",
+            name: "📛 User",
+            value: `${user.tag}`,
+            inline: true,
+          },
+          {
+            name: "🆔 User ID",
+            value: user.id,
+            inline: true,
+          },
+          {
+            name: "🏷 Nickname",
             value: member.nickname ?? "None",
             inline: true,
           },
           {
-            name: "Joined Server",
-            value: `<t:${Math.floor(
-              member.joinedAt.getTime() / 1000
-            )}:R>`,
+            name: "📅 Account Created",
+            value: `<t:${Math.floor(user.createdAt.getTime() / 1000)}:R>`,
             inline: true,
           },
           {
-            name: "Account Created",
-            value: `<t:${Math.floor(
-              user.createdAt.getTime() / 1000
-            )}:R>`,
+            name: "📥 Joined Server",
+            value: `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>`,
             inline: true,
           },
-          { name: "Roles", value: roles, inline: false }
+          {
+            name: "🎭 Roles",
+            value: roles,
+          }
         )
         .setFooter({
           text: `Requested by ${interaction.user.username}`,

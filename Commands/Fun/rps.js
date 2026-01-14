@@ -9,17 +9,17 @@ const { respond } = require("../../Utils/respond");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("rps")
-    .setDescription("Play rock, paper, scissors against the bot.")
+    .setDescription("Play Rock, Paper, Scissors against Ryvex 🤖")
     .addStringOption(option =>
       option
         .setName("choice")
-        .setDescription("Choose rock, paper, or scissors.")
+        .setDescription("Choose your move")
+        .setRequired(true)
         .addChoices(
           { name: "🗻 Rock", value: "rock" },
           { name: "🧻 Paper", value: "paper" },
           { name: "✂ Scissors", value: "scissors" }
         )
-        .setRequired(true)
     ),
 
   async execute(interaction) {
@@ -34,30 +34,37 @@ module.exports = {
 
       const keys = Object.keys(choices);
       const botChoiceKey = keys[Math.floor(Math.random() * keys.length)];
-      const botChoice = choices[botChoiceKey];
 
-      let result;
+      let outcome;
+      let color;
 
       if (userChoice === botChoiceKey) {
-        result = "🤝 It's a tie!";
+        outcome = "🤝 **It's a tie!**";
+        color = "Grey";
       } else if (
         (userChoice === "rock" && botChoiceKey === "scissors") ||
         (userChoice === "paper" && botChoiceKey === "rock") ||
         (userChoice === "scissors" && botChoiceKey === "paper")
       ) {
-        result = "🎉 You won!";
+        outcome = "🎉 **You win!**";
+        color = "Green";
       } else {
-        result = "😢 You lost!";
+        outcome = "😢 **You lose!**";
+        color = "Red";
       }
 
       const embed = new EmbedBuilder()
         .setTitle("✊ Rock • Paper • Scissors")
-        .setDescription(result)
-        .addFields(
-          { name: "Your choice", value: choices[userChoice], inline: true },
-          { name: "My choice", value: botChoice, inline: true }
+        .setColor(color)
+        .setDescription(
+          [
+            outcome,
+            "",
+            "### 🧠 Choices",
+            `👤 **You:** ${choices[userChoice]}`,
+            `🤖 **Ryvex:** ${choices[botChoiceKey]}`,
+          ].join("\n")
         )
-        .setColor("White")
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),

@@ -97,15 +97,37 @@ module.exports = {
       },
     });
 
+    /* ───────── SUCCESS UX (IMPROVED) ───────── */
     return respond(interaction, {
       embeds: [
         new EmbedBuilder()
+          .setTitle("🧹 Messages Cleared")
           .setColor("White")
-          .setDescription(
-            target
-              ? `✅ Deleted **${deleted.size}** messages from **${target.tag}**.`
-              : `✅ Deleted **${deleted.size}** messages from this channel.`
+          .addFields(
+            {
+              name: "📍 Channel",
+              value: `${channel}`,
+              inline: true,
+            },
+            {
+              name: "🗑 Messages Deleted",
+              value: `${deleted.size}`,
+              inline: true,
+            },
+            {
+              name: "👮 Moderator",
+              value: `${moderator}`,
+              inline: false,
+            },
+            {
+              name: "🎯 Target",
+              value: target ? `${target}` : "All users",
+              inline: false,
+            }
           )
+          .setFooter({
+            text: "Ryvex • Moderation Action",
+          })
           .setTimestamp(),
       ],
       flags: MessageFlags.Ephemeral,
