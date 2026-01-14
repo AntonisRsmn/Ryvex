@@ -1,17 +1,37 @@
-const suppressedChannels = new Set();
+const suppressedDeletes = new Map();
 
-function suppressChannel(channelId) {
-  suppressedChannels.add(channelId);
+/**
+ * Suppress the next N messageDelete events in a guild
+ */
+function suppressNextDeletes(guildId, count) {
+  if (!count || count <= 0) return;
 
-  // Auto-release after 5 seconds
-  setTimeout(() => suppressedChannels.delete(channelId), 5000);
+  const current = suppressedDeletes.get(guildId) ?? 0;
+  suppressedDeletes.set(guildId, current + count);
+
+  // Safety cleanup (5s)
+  setTimeout(() => {
+    suppressedDeletes.delete(guildId);
+  }, 5000);
 }
 
-function isChannelSuppressed(channelId) {
-  return suppressedChannels.has(channelId);
+/**
+ * Consume one suppression if available
+ */
+function shouldSuppressDelete(guildId) {
+  const remaining = suppressedDeletes.get(guildId);
+  if (!remaining || remaining <= 0) return false;
+
+  if (remaining === 1) {
+    suppressedDeletes.delete(guildId);
+  } else {
+    suppressedDeletes.set(guildId, remaining - 1);
+  }
+
+  return true;
 }
 
 module.exports = {
-  suppressChannel,
-  isChannelSuppressed,
+  suppressNextDeletes,
+  shouldSuppressDelete,
 };

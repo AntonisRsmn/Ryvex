@@ -1,11 +1,9 @@
-const { EmbedBuilder } = require("discord.js");
 const { logEvent } = require("./logEvent");
 const ModAction = require("../Database/models/ModAction");
 
 /* ───────── CASE ID ───────── */
 async function getNextCaseId(guildId) {
-  const last = await ModAction
-    .findOne({ guildId })
+  const last = await ModAction.findOne({ guildId })
     .sort({ caseId: -1 })
     .select("caseId")
     .lean();
@@ -25,7 +23,6 @@ async function logAction({
 }) {
   if (!guild || !action || !target || !moderator) return;
 
-  /* ───────── SAVE TO DATABASE ───────── */
   const caseId = await getNextCaseId(guild.id);
 
   const record = await ModAction.create({
@@ -43,7 +40,7 @@ async function logAction({
     },
   });
 
-  /* ───────── COLOR BY ACTION ───────── */
+  /* ───────── COLOR MAP ───────── */
   const colorMap = {
     Warn: "Yellow",
     "Remove Warning": "Green",
@@ -59,53 +56,24 @@ async function logAction({
 
   const embedColor = colorMap[action] ?? "Red";
 
-  /* ───────── EMBED ───────── */
-  const embed = new EmbedBuilder()
-    .setTitle(`🛡 Moderation Case #${record.caseId}`)
-    .setColor(embedColor)
-    .addFields(
-      {
-        name: "⚔ Action",
-        value: action,
-        inline: true,
-      },
-      {
-        name: "👤 Target",
-        value: record.targetTag,
-        inline: true,
-      },
-      {
-        name: "🛠 Moderator",
-        value: record.moderatorTag,
-        inline: true,
-      },
-      {
-        name: "📄 Reason",
-        value: reason,
-        inline: false,
-      }
-    )
-    .setFooter({
-      text: "Ryvex • Moderation System",
-    })
-    .setTimestamp();
+  const lines = [
+    `**⚔ Action:** ${action}`,
+    `**👤 Target:** ${record.targetTag}`,
+    `**🛠 Moderator:** ${record.moderatorTag}`,
+    `**📄 Reason:** ${reason}`,
+  ];
 
   if (record.extra?.duration) {
-    embed.addFields({
-      name: "⏳ Duration",
-      value: record.extra.duration,
-      inline: false,
-    });
+    lines.push(`**⏳ Duration:** ${record.extra.duration}`);
   }
 
-  /* ───────── SEND TO MOD LOG ───────── */
+  lines.push(`**🧾 Case ID:** ${record.caseId}`);
+
   await logEvent({
     guild,
     type: "moderation",
-    title: embed.data.title,
-    description: embed.data.fields
-      .map(f => `**${f.name}:** ${f.value}`)
-      .join("\n"),
+    title: `🛡 Moderation Case #${record.caseId}`,
+    description: lines.join("\n"),
     color: embedColor,
   });
 }

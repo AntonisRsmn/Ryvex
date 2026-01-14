@@ -15,22 +15,18 @@ module.exports = {
     .setDescription("View Ryvex update history")
 
     .addSubcommand(sub =>
-      sub
-        .setName("latest")
-        .setDescription("View the latest update")
+      sub.setName("latest").setDescription("View the latest update")
     )
 
     .addSubcommand(sub =>
-      sub
-        .setName("all")
-        .setDescription("Browse all updates")
+      sub.setName("all").setDescription("Browse all updates")
     ),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     if (!changeLog.length) {
-      return interaction.editReply("❌ No changeLog data available.");
+      return interaction.editReply("❌ No changelog data available.");
     }
 
     const sub = interaction.options.getSubcommand();
@@ -49,7 +45,7 @@ module.exports = {
             ...latest.changes.map(c => `• ${c}`),
           ].join("\n")
         )
-        .setFooter({ text: "Use /changeLog all to see previous updates" });
+        .setFooter({ text: "Use /changelog all to see previous updates" });
 
       return interaction.editReply({ embeds: [embed] });
     }
@@ -71,9 +67,7 @@ module.exports = {
             ...entry.changes.map(c => `• ${c}`),
           ].join("\n")
         )
-        .setFooter({
-          text: `Version ${page + 1} / ${totalPages}`,
-        });
+        .setFooter({ text: `Version ${page + 1} / ${totalPages}` });
     };
 
     const row = new ActionRowBuilder().addComponents(
@@ -101,21 +95,34 @@ module.exports = {
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({
-          content: "❌ This menu isn't for you.",
-          ephemeral: true,
+          content: "❌ This menu isn’t for you.",
+          flags: MessageFlags.Ephemeral,
         });
       }
+
+      // ✅ ACK IMMEDIATELY (no race condition)
+      await i.deferUpdate().catch(() => {});
 
       if (i.customId === "prev") page--;
       if (i.customId === "next") page++;
 
+      page = Math.max(0, Math.min(page, totalPages - 1));
+
       row.components[0].setDisabled(page === 0);
       row.components[1].setDisabled(page === totalPages - 1);
 
-      await i.update({
+      await interaction.editReply({
         embeds: [buildEmbed()],
         components: [row],
-      });
+      }).catch(() => {});
+    });
+
+    collector.on("end", async () => {
+      row.components.forEach(btn => btn.setDisabled(true));
+
+      await interaction.editReply({
+        components: [row],
+      }).catch(() => {});
     });
   },
 };

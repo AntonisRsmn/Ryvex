@@ -8,218 +8,203 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+const {
+  getGuildSettings,
+} = require("../../Database/services/guildSettingsService");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("setup")
-    .setDescription("Step-by-step guide to configure Ryvex for your server.")
+    .setDescription("Guided setup and status overview for Ryvex.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    const guildId = interaction.guild.id;
+    const settings = await getGuildSettings(guildId);
+
+    /* ───────── STATUS HELPERS ───────── */
+    const yesNo = v => (v ? "✅ Yes" : "❌ No");
+    const setUnset = v => (v ? "✅ Set" : "❌ Not set");
+
+    const loggingEnabled = settings.logging?.enabled === true;
+    const loggingChannelSet = Boolean(settings.logging?.channelId);
+    const moderationEnabled = settings.moderation?.enabled === true;
+    const moderationChannelSet = Boolean(settings.moderation?.channelId);
+    const privacyMode =
+      settings.logging?.messageContent === true ? "🔓 OFF" : "🔒 ON";
+    const welcomeEnabled = settings.welcome?.enabled === true;
+
+    /* ───────── VISUAL STATUS ───────── */
+    const loggingStatus =
+      loggingEnabled && loggingChannelSet
+        ? "✅ Fully configured"
+        : loggingEnabled
+        ? "⚠️ Enabled, channel missing"
+        : "❌ Not configured";
+
+    const moderationStatus =
+      moderationEnabled && moderationChannelSet
+        ? "✅ Fully configured"
+        : moderationEnabled
+        ? "⚠️ Enabled, channel missing"
+        : "❌ Not configured";
+
+    /* ───────── PAGES ───────── */
     const pages = [
-      /* ───────── PAGE 1 ───────── */
       new EmbedBuilder()
-        .setTitle("🚀 Ryvex — Server Setup Guide")
+        .setTitle("🚀 Ryvex — Setup Overview")
         .setColor("Blue")
         .setDescription(
           [
             "Welcome to **Ryvex** 👋",
             "",
-            "This guide will help you configure:",
-            "• Logging",
-            "• Moderation & cases",
-            "• Warnings",
-            "• Welcome system",
+            "This guide helps you:",
+            "• Verify what’s already configured",
+            "• See what is **required** vs **optional**",
+            "• Know exactly what to do next",
             "",
-            "You only need to do this **once per server**.",
+            "You only need to complete setup **once per server**.",
           ].join("\n")
         ),
 
-      /* ───────── PAGE 2 ───────── */
       new EmbedBuilder()
-        .setTitle("🔐 Required Permissions")
+        .setTitle("🧩 Current Setup Status")
+        .setColor("Purple")
+        .setDescription(
+          [
+            "**Logging**",
+            `• Status: **${loggingStatus}**`,
+            "",
+            "**Moderation Logs**",
+            `• Status: **${moderationStatus}**`,
+            "",
+            "**Privacy**",
+            `• Message content logging: ${privacyMode}`,
+            "",
+            "**Welcome System**",
+            `• Enabled: ${yesNo(welcomeEnabled)}`,
+          ].join("\n")
+        )
+        .setFooter({ text: "Red ❌ = required action missing" }),
+
+      new EmbedBuilder()
+        .setTitle("🔴 Required Setup")
+        .setColor("Red")
+        .setDescription(
+          [
+            "**You must complete these steps:**",
+            "",
+            "1️⃣ Enable logging",
+            "`/settings logging enable`",
+            "",
+            "2️⃣ Set a log channel",
+            "`/settings logging channel <channel>`",
+            "",
+            "> Without this, Ryvex **cannot log events**.",
+          ].join("\n")
+        ),
+
+      new EmbedBuilder()
+        .setTitle("🟡 Recommended Setup")
         .setColor("Orange")
         .setDescription(
           [
-            "Make sure **Ryvex’s role**:",
-            "• Is above roles it manages",
+            "**Strongly recommended:**",
             "",
-            "**Required permissions:**",
-            "• View Audit Log",
-            "• Manage Roles",
-            "• Manage Channels",
-            "• Moderate Members",
-            "• Ban Members",
-            "• Kick Members",
-            "• Send Messages",
-            "• Embed Links",
+            "• Separate moderation logs",
+            "`/settings moderation channel <channel>`",
             "",
-            "> Missing permissions will cause commands or logs to fail.",
+            "• Privacy mode",
+            "`/settings logging privacy on | off`",
+            "",
+            "> Privacy mode is **ON by default**.",
           ].join("\n")
         ),
 
-      /* ───────── PAGE 3 ───────── */
-      new EmbedBuilder()
-        .setTitle("🧾 Logging System")
-        .setColor("Green")
-        .setDescription(
-          [
-            "The logging system records important server activity.",
-            "",
-            "**Enable logging:**",
-            "`/settings logging enable`",
-            "",
-            "**Set log channel:**",
-            "`/settings logging channel <channel>`",
-            "",
-            "**Logged events:**",
-            "• Member joins & leaves",
-            "• Channel / role / server updates",
-            "• Message edits & deletions",
-            "• All moderation actions",
-          ].join("\n")
-        ),
-
-      /* ───────── PAGE 4 ───────── */
       new EmbedBuilder()
         .setTitle("🛡️ Moderation & Case System")
-        .setColor("Red")
+        .setColor("DarkRed")
         .setDescription(
           [
             "Every moderation action creates a **case**.",
             "",
-            "**Examples:**",
+            "Examples:",
             "• `/warn add`",
             "• `/timeout`",
             "• `/kick`",
             "• `/ban`",
             "",
-            "**Each case stores:**",
-            "• Case ID",
-            "• Action",
-            "• Target",
-            "• Moderator",
-            "• Reason & duration",
+            "Review cases:",
+            "• `/case view <id>`",
+            "• `/modlog user <member>`",
           ].join("\n")
         ),
 
-      /* ───────── PAGE 5 ───────── */
       new EmbedBuilder()
-        .setTitle("📂 Case Management")
-        .setColor("Purple")
-        .setDescription(
-          [
-            "**View a case:**",
-            "`/case view <id>`",
-            "",
-            "**Edit a reason:**",
-            "`/case edit <id> <new reason>`",
-            "",
-            "**Delete a case:**",
-            "`/case delete <id>`",
-            "",
-            "> Deleted cases are permanently removed.",
-          ].join("\n")
-        ),
-
-      /* ───────── PAGE 6 ───────── */
-      new EmbedBuilder()
-        .setTitle("📜 Mod Logs & History")
-        .setColor("DarkRed")
-        .setDescription(
-          [
-            "**Recent cases:**",
-            "`/modlog recent`",
-            "",
-            "**User history:**",
-            "`/modlog user <member>`",
-            "",
-            "Includes:",
-            "• Case ID",
-            "• Action",
-            "• Moderator",
-            "• Jump hint to `/case view`",
-          ].join("\n")
-        ),
-
-      /* ───────── PAGE 7 ───────── */
-      new EmbedBuilder()
-        .setTitle("⚠️ Warning System")
-        .setColor("Yellow")
-        .setDescription(
-          [
-            "**Warning commands:**",
-            "`/warn add <member>`",
-            "`/warn count <member>`",
-            "`/warn clear <member>`",
-            "`/warn remove <caseId>`",
-            "",
-            "Warnings:",
-            "• Are moderation cases",
-            "• Appear in mod logs",
-            "• Can be managed individually",
-          ].join("\n")
-        ),
-
-      /* ───────── PAGE 8 ───────── */
-      new EmbedBuilder()
-        .setTitle("👋 Welcome System")
+        .setTitle("👋 Optional Systems")
         .setColor("White")
         .setDescription(
           [
-            "**Enable welcome system:**",
+            "**Welcome system**",
             "`/settings welcome enable`",
-            "",
-            "**Set channel:**",
             "`/settings welcome channel <channel>`",
-            "",
-            "**Auto role:**",
             "`/settings welcome autorole <role>`",
             "",
-            "Welcome messages do **not** affect logging.",
+            "Optional features do **not** affect logging.",
           ].join("\n")
         ),
 
-      /* ───────── PAGE 9 ───────── */
       new EmbedBuilder()
-        .setTitle("✅ Setup Complete")
+        .setTitle("✅ When Is Setup Complete?")
         .setColor("Green")
         .setDescription(
           [
-            "Your server is now fully configured 🎉",
+            "Setup is complete when:",
             "",
-            "**Final checklist:**",
-            "☑ Logging enabled",
-            "☑ Log channels set",
-            "☑ Bot role positioned correctly",
-            "☑ Moderation tested",
+            "☑ Logging is enabled",
+            "☑ At least one log channel is set",
+            "☑ Ryvex has required permissions",
             "",
-            "Need help?",
-            "• `/help`",
-            "• Support server",
+            "You can re-run `/setup` anytime.",
           ].join("\n")
         ),
     ];
 
     let page = 0;
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("prev")
-        .setLabel("◀ Previous")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("next")
-        .setLabel("Next ▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(pages.length === 1)
-    );
+    const buildRow = () =>
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("prev")
+          .setLabel("◀ Previous")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === 0),
+
+        new ButtonBuilder()
+          .setCustomId("next")
+          .setLabel("Next ▶")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === pages.length - 1),
+
+        new ButtonBuilder()
+          .setCustomId("close")
+          .setLabel("✖ Close")
+          .setStyle(ButtonStyle.Danger)
+      );
+
+    const applyFooter = () => {
+      pages[page].setFooter({
+        text: `Page ${page + 1} / ${pages.length}`,
+      });
+    };
+
+    applyFooter();
 
     const message = await interaction.editReply({
       embeds: [pages[page]],
-      components: [row],
+      components: [buildRow()],
     });
 
     const collector = message.createMessageComponentCollector({
@@ -234,16 +219,34 @@ module.exports = {
         });
       }
 
-      if (i.customId === "prev") page--;
-      if (i.customId === "next") page++;
+      if (!i.deferred && !i.replied) {
+        await i.deferUpdate().catch(() => {});
+      }
 
-      row.components[0].setDisabled(page === 0);
-      row.components[1].setDisabled(page === pages.length - 1);
+      if (i.customId === "close") {
+        collector.stop("closed");
+        return;
+      }
 
-      await i.update({
+      if (i.customId === "prev" && page > 0) page--;
+      if (i.customId === "next" && page < pages.length - 1) page++;
+
+      applyFooter();
+
+      await interaction.editReply({
         embeds: [pages[page]],
-        components: [row],
+        components: [buildRow()],
       });
+    });
+
+    collector.on("end", async () => {
+      const disabledRow = new ActionRowBuilder().addComponents(
+        ...buildRow().components.map(b => b.setDisabled(true))
+      );
+
+      await interaction.editReply({
+        components: [disabledRow],
+      }).catch(() => {});
     });
   },
 };

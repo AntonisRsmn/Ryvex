@@ -18,8 +18,24 @@
 
 module.exports = [
   {
-    version: "1.9.1",
+    version: "1.9.2",
     date: "2026-01-14",
+    changes: [
+      "🐛 Fixed duplicate logs when using `/clear` (general + moderation logs firing together)",
+      "🗑️ Fixed missing General Logs for messages deleted manually from Discord",
+      "🧠 Improved suppression logic so moderation commands don’t trigger General Logs",
+      "🕵️ Improved audit log detection for identifying who deleted a message",
+      "📄 Corrected routing between General Logs and Moderation Logs",
+      "🔒 Made message logging fully privacy-aware (respects privacy mode reliably)",
+      "⚠️ Fixed interaction lifecycle errors (Unknown interaction / InteractionNotReplied)",
+      "🛠️ Improved stability of `/settings` commands (no more silent failures)",
+      "✨ Added UX improvements to `/settings view` with clearer status feedback"
+    ],
+  },
+
+  {
+    version: "1.9.1",
+    date: "2026-01-13",
     changes: [
       "🧾 Introduced full case-based moderation system",
       "📂 Added /case view, edit, and delete commands",

@@ -8,7 +8,7 @@ const {
 
 const { respond } = require("../../Utils/respond");
 const { logAction } = require("../../Utils/logAction");
-const { suppressChannel } = require("../../Utils/messageDeleteSuppressor");
+const { suppressNextDeletes } = require("../../Utils/messageDeleteSuppressor");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -78,7 +78,7 @@ module.exports = {
     }
 
     // 🔕 SUPPRESS messageDelete GENERAL LOGS
-    suppressChannel(channel.id);
+    suppressNextDeletes(guild.id, messages.length);
 
     const deleted = await channel.bulkDelete(messages, true);
 

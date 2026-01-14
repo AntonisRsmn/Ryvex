@@ -8,6 +8,18 @@ const {
 const ModAction = require("../../Database/models/ModAction");
 const { logAction } = require("../../Utils/logAction");
 
+/* ───────── ACTION META ───────── */
+const ACTION_META = {
+  Warn: { icon: "⚠️", color: "Yellow" },
+  Timeout: { icon: "⏳", color: "Orange" },
+  "Auto Timeout": { icon: "⏳", color: "Orange" },
+  Kick: { icon: "👢", color: "DarkOrange" },
+  Ban: { icon: "🔨", color: "DarkRed" },
+  Unban: { icon: "♻️", color: "Green" },
+  "Edit Case": { icon: "✏️", color: "Blue" },
+  "Delete Case": { icon: "🗑️", color: "DarkGrey" },
+};
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("case")
@@ -65,17 +77,40 @@ module.exports = {
 
     /* ───────── VIEW ───────── */
     if (sub === "view") {
+      const meta = ACTION_META[record.action] ?? {
+        icon: "🛡️",
+        color: "Red",
+      };
+
       const embed = new EmbedBuilder()
-        .setTitle(`🛡 Moderation Case #${record.caseId}`)
-        .setColor("Red")
+        .setTitle(
+          `${meta.icon} Moderation Case #${record.caseId}`
+        )
+        .setColor(meta.color)
         .addFields(
-          { name: "⚙ Action", value: record.action, inline: true },
-          { name: "👤 Target", value: record.targetTag, inline: true },
-          { name: "🛠 Moderator", value: record.moderatorTag, inline: true },
-          { name: "📄 Reason", value: record.reason || "No reason provided" }
+          {
+            name: "⚔ Action",
+            value: record.action,
+            inline: true,
+          },
+          {
+            name: "👤 Target",
+            value: `${record.targetTag}\n\`${record.targetId}\``,
+            inline: true,
+          },
+          {
+            name: "🛠 Moderator",
+            value: `${record.moderatorTag}\n\`${record.moderatorId}\``,
+            inline: true,
+          },
+          {
+            name: "📄 Reason",
+            value: record.reason || "*No reason provided*",
+            inline: false,
+          }
         )
         .setFooter({
-          text: `Case ID: ${record.caseId}`,
+          text: `Case ID ${record.caseId} • Created`,
         })
         .setTimestamp(record.createdAt);
 
@@ -83,6 +118,7 @@ module.exports = {
         embed.addFields({
           name: "⏳ Duration",
           value: record.extra.duration,
+          inline: false,
         });
       }
 
@@ -108,7 +144,7 @@ module.exports = {
       });
 
       return interaction.editReply(
-        `✏ **Case #${caseId} reason updated successfully.**`
+        `✏️ **Case #${caseId} updated successfully.**`
       );
     }
 
@@ -125,7 +161,7 @@ module.exports = {
       });
 
       return interaction.editReply(
-        `🗑 **Case #${caseId} has been permanently deleted.**`
+        `🗑️ **Case #${caseId} has been permanently deleted.**`
       );
     }
   },

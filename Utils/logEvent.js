@@ -1,16 +1,20 @@
 const { EmbedBuilder } = require("discord.js");
-const { getGuildSettings, updateGuildSettings } = require("../Database/services/guildSettingsService");
+const {
+  getGuildSettings,
+  updateGuildSettings,
+} = require("../Database/services/guildSettingsService");
 
 async function logEvent({
   guild,
   title,
   description,
   color = "Grey",
-  type = "general", // "general" | "moderation"
+  type = "general",
+  components = [],
 }) {
   const settings = await getGuildSettings(guild.id);
 
-  // 🔧 Auto-migrate moderation object (GLOBAL SAFETY NET)
+  // Safety backfill
   if (!settings.moderation) {
     await updateGuildSettings(guild.id, {
       "moderation.enabled": false,
@@ -27,7 +31,6 @@ async function logEvent({
 
   let channelId = settings.logging.channelId;
 
-  // 🛡 moderation override with safe fallback
   if (
     type === "moderation" &&
     settings.moderation.enabled === true &&
@@ -45,9 +48,18 @@ async function logEvent({
     .setTitle(title)
     .setDescription(description)
     .setColor(color)
+    .setFooter({
+      text:
+        type === "moderation"
+          ? "Ryvex • Moderation Logs"
+          : "Ryvex • General Logs",
+    })
     .setTimestamp();
 
-  channel.send({ embeds: [embed] }).catch(() => {});
+  channel.send({
+    embeds: [embed],
+    components,
+  }).catch(() => {});
 }
 
 module.exports = { logEvent };

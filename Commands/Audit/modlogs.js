@@ -12,26 +12,24 @@ const ModAction = require("../../Database/models/ModAction");
 
 const PAGE_SIZE = 5;
 
+/* ───────── ACTION META ───────── */
+const ACTION_META = {
+  Warn: "⚠️",
+  Timeout: "⏳",
+  "Auto Timeout": "⏳",
+  Kick: "👢",
+  Ban: "🔨",
+  Unban: "♻️",
+  "Clear Messages": "🧹",
+  "Edit Case": "✏️",
+  "Delete Case": "🗑️",
+};
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("modlog")
     .setDescription("View moderation logs.")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-
-    // 🔹 RECENT (WITH ACTION FILTER)
-    .addSubcommand(sub =>
-      sub
-        .setName("recent")
-        .setDescription("View recent moderation cases")
-        .addStringOption(opt =>
-          opt
-            .setName("action")
-            .setDescription("Filter by action (warn, kick, ban, timeout, etc.)")
-            .setRequired(false)
-        )
-    )
-
-    // 🔹 USER HISTORY (PAGINATED)
     .addSubcommand(sub =>
       sub
         .setName("user")
@@ -45,142 +43,102 @@ module.exports = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const guildId = interaction.guild.id;
-    const sub = interaction.options.getSubcommand();
+    const user = interaction.options.getUser("member");
 
-    /* ───────── RECENT ───────── */
-    if (sub === "recent") {
-      const actionFilter = interaction.options.getString("action");
+    const cases = await ModAction.find({
+      guildId,
+      targetId: user.id,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
-      const query = { guildId };
-      if (actionFilter) {
-        query.action = new RegExp(`^${actionFilter}$`, "i");
-      }
-
-      const cases = await ModAction.find(query)
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .lean();
-
-      if (!cases.length) {
-        return interaction.editReply("❌ No moderation cases found.");
-      }
-
-      const embed = new EmbedBuilder()
-        .setTitle(
-          actionFilter
-            ? `🛡 Recent ${actionFilter} Cases`
-            : "🛡 Recent Moderation Cases"
-        )
-        .setColor("Red")
-        .setDescription(
-          cases
-            .map(
-              c =>
-                [
-                  `**#${c.caseId} • ${c.action}**`,
-                  `👤 **Target:** ${c.targetTag}`,
-                  `🛠 **Moderator:** ${c.moderatorTag}`,
-                  `🔎 \`/case view ${c.caseId}\``,
-                ].join("\n")
-            )
-            .join("\n\n")
-        )
-        .setFooter({
-          text: "Tip: /modlog recent action:<name>",
-        })
-        .setTimestamp();
-
-      return interaction.editReply({ embeds: [embed] });
+    if (!cases.length) {
+      return interaction.editReply(
+        `❌ No moderation history found for **${user.tag}**.`
+      );
     }
 
-    /* ───────── USER PAGINATED ───────── */
-    if (sub === "user") {
-      const user = interaction.options.getUser("member");
+    let page = 0;
+    const totalPages = Math.ceil(cases.length / PAGE_SIZE);
 
-      const cases = await ModAction.find({
-        guildId,
-        targetId: user.id,
-      })
-        .sort({ createdAt: -1 })
-        .lean();
-
-      if (!cases.length) {
-        return interaction.editReply(
-          `❌ No moderation history found for **${user.tag}**.`
-        );
-      }
-
-      let page = 0;
-      const totalPages = Math.ceil(cases.length / PAGE_SIZE);
-
-      const buildEmbed = () => {
-        const slice = cases.slice(
-          page * PAGE_SIZE,
-          page * PAGE_SIZE + PAGE_SIZE
-        );
-
-        return new EmbedBuilder()
-          .setTitle(`🛡 Moderation History — ${user.tag}`)
-          .setColor("Red")
-          .setDescription(
-            slice
-              .map(
-                c =>
-                  [
-                    `**#${c.caseId} • ${c.action}**`,
-                    `🛠 ${c.moderatorTag}`,
-                    `🔎 \`/case view ${c.caseId}\``,
-                  ].join("\n")
-              )
-              .join("\n\n")
-          )
-          .setFooter({
-            text: `Page ${page + 1} / ${totalPages}`,
-          })
-          .setTimestamp();
-      };
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("prev")
-          .setLabel("◀")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("next")
-          .setLabel("▶")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(totalPages === 1)
+    const buildEmbed = () => {
+      const slice = cases.slice(
+        page * PAGE_SIZE,
+        page * PAGE_SIZE + PAGE_SIZE
       );
 
-      const message = await interaction.editReply({
-        embeds: [buildEmbed()],
-        components: [row],
-      });
+      const description = slice
+        .map(c => {
+          const icon = ACTION_META[c.action] ?? "❓";
+          return [
+            `**${icon} #${c.caseId} • ${c.action}**`,
+            `🛠 ${c.moderatorTag}`,
+            `🔎 \`/case view ${c.caseId}\``,
+          ].join("\n");
+        })
+        .join("\n\n");
 
-      const collector = message.createMessageComponentCollector({
-        time: 60_000,
-      });
+      return new EmbedBuilder()
+        .setTitle(`🛡 Moderation History — ${user.tag}`)
+        .setColor("Red")
+        .setDescription(description)
+        .setFooter({ text: `Page ${page + 1} / ${totalPages}` })
+        .setTimestamp();
+    };
 
-      collector.on("collect", async i => {
-        if (i.user.id !== interaction.user.id) {
-          return i.reply({
-            content: "❌ This menu isn't for you.",
-            ephemeral: true,
-          });
-        }
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("prev")
+        .setLabel("◀")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("next")
+        .setLabel("▶")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(totalPages === 1)
+    );
 
-        if (i.customId === "prev") page--;
-        if (i.customId === "next") page++;
+    const message = await interaction.editReply({
+      embeds: [buildEmbed()],
+      components: [row],
+    });
 
-        row.components[0].setDisabled(page === 0);
-        row.components[1].setDisabled(page >= totalPages - 1);
+    const collector = message.createMessageComponentCollector({
+      time: 60_000,
+    });
 
-        await i.update({
+    collector.on("collect", async i => {
+      if (i.user.id !== interaction.user.id) {
+        return i.reply({
+          content: "❌ This menu isn’t for you.",
+          ephemeral: true,
+        });
+      }
+
+      if (!i.deferred && !i.replied) {
+        await i.deferUpdate().catch(() => {});
+      }
+
+      if (i.customId === "prev") page--;
+      if (i.customId === "next") page++;
+
+      page = Math.max(0, Math.min(page, totalPages - 1));
+
+      row.components[0].setDisabled(page === 0);
+      row.components[1].setDisabled(page === totalPages - 1);
+
+      await interaction
+        .editReply({
           embeds: [buildEmbed()],
           components: [row],
-        });
-      });
-    }
+        })
+        .catch(() => {});
+    });
+
+    collector.on("end", async () => {
+      row.components.forEach(b => b.setDisabled(true));
+      await interaction.editReply({ components: [row] }).catch(() => {});
+    });
   },
 };

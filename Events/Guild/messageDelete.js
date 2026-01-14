@@ -4,7 +4,7 @@ const {
   getGuildSettings,
 } = require("../../Database/services/guildSettingsService");
 const {
-  isChannelSuppressed,
+  shouldSuppressDelete,
 } = require("../../Utils/messageDeleteSuppressor");
 
 module.exports = {
@@ -13,8 +13,10 @@ module.exports = {
   async execute(message) {
     if (!message.guild) return;
 
-    // 🚫 IGNORE deletes from /clear
-    if (isChannelSuppressed(message.channel.id)) return;
+    // 🔕 Suppress deletes caused by /clear (count-based)
+    if (shouldSuppressDelete(message.guild.id)) {
+      return;
+    }
 
     const settings = await getGuildSettings(message.guild.id);
     if (!settings.logging?.enabled) return;
@@ -22,6 +24,7 @@ module.exports = {
     const enabled = settings.logging.events?.messageDelete ?? true;
     if (!enabled) return;
 
+    // Fetch partials safely
     if (message.partial) {
       try {
         await message.fetch();
@@ -34,6 +37,7 @@ module.exports = {
 
     let deletedBy = "Self / Unconfirmed";
 
+    // 🔍 Audit log lookup (safe, permission-gated)
     const me = message.guild.members.me;
     if (me?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
       try {
@@ -53,9 +57,12 @@ module.exports = {
             ? "Bot / Integration"
             : `Moderator (${entry.executor.tag})`;
         }
-      } catch {}
+      } catch {
+        // Best-effort only
+      }
     }
 
+    // 🔒 Privacy-aware content handling
     const showContent = Boolean(settings.logging.messageContent);
     const content =
       showContent && message.content
