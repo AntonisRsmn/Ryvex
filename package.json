@@ -193,7 +193,7 @@
     "tr46": "^5.0.0",
     "ts-mixer": "^6.0.4",
     "tslib": "^2.6.2",
-    "tuf-js": "^1.1.7",
+    "tuf-js": "^4.1.0",
     "type-fest": "^2.19.0",
     "typedarray-to-buffer": "^3.1.5",
     "undici": "^7.10.0",
