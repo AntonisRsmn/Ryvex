@@ -19,19 +19,20 @@
 module.exports = [
   {
     version: "1.9.4",
-    date: "2026-01-22",
+    date: "2026-01-23",
     changes: [
-      "🛡️ Introduced full AutoMod system (spam, links, bad words)",
-      "⚙️ Added AutoMod presets (Soft / Medium / Strict)",
-      "🎛️ Added `/automod filters` subcommand to individually toggle spam, link, and bad-word protection",
-      "📍 Channel-based AutoMod bypass rules",
-      "🧩 Role-based AutoMod bypass system",
-      "⚖️ Configurable punishment system with warn-only & timed timeouts",
-      "🤬 Custom bad-words management with enable/disable",
-      "📊 Unified `/automod status` dashboard with full system visibility",
-      "🧭 Integrated AutoMod overview into `/setup` guided configuration",
-      "✨ Improved setup UX to ensure servers are correctly configured",
-      "🧠 Stability and performance improvements across AutoMod checks"
+      "🛡️ Introduced a fully rebuilt AutoMod system (spam, links, bad words)",
+      "⚙️ Added AutoMod presets: Soft / Medium / Strict",
+      "🎛️ Added `/automod filters` subcommand to toggle spam, link, and bad-word filters individually",
+      "📍 Implemented channel-based AutoMod bypass rules",
+      "🧩 Added role-based AutoMod bypass system",
+      "⚖️ Introduced configurable punishment escalation with warn-only and timed timeouts",
+      "⏱️ Added progressive timeout escalation with sticky maximum punishment",
+      "🤬 Added custom bad-words management with enable / disable support",
+      "📊 Unified `/automod status` dashboard with full AutoMod visibility",
+      "🧭 Integrated AutoMod configuration overview into the `/setup` guided flow",
+      "🧹 Improved AutoMod spam cleanup with reduced General Log noise",
+      "🧠 Stability, performance, and reliability improvements across AutoMod checks"
     ],
   },
 

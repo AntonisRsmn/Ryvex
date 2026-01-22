@@ -61,7 +61,9 @@ async function getTotalAutoModWarns(guildId, memberId) {
   return ModAction.countDocuments({
     guildId,
     targetId: memberId,
-    action: { $regex: "^AutoMod" },
+    action: {
+      $in: ["AutoModSpam", "AutoModLinks", "AutoModBadWords"],
+    }
   });
 }
 
@@ -72,9 +74,18 @@ async function punish(member, totalWarns, punishments, reason) {
   if (punishments.warnOnly) return;
   if (totalWarns < punishments.timeoutAfter) return;
 
-  const duration =
-    punishments.durations?.get(String(totalWarns)) ??
-    punishments.durations?.get(String(punishments.timeoutAfter));
+  // Convert Map → sorted numeric keys
+  const entries = [...punishments.durations.entries()]
+    .map(([w, ms]) => [Number(w), ms])
+    .sort((a, b) => a[0] - b[0]);
+
+  // Find highest matching punishment ≤ totalWarns
+  let duration = null;
+  for (const [warnLevel, ms] of entries) {
+    if (totalWarns >= warnLevel) {
+      duration = ms;
+    }
+  }
 
   if (!duration) return;
 

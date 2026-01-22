@@ -8,6 +8,13 @@ const {
 const { logAction } = require("../../Utils/logAction");
 const ModAction = require("../../Database/models/ModAction");
 
+/* ───────── AUTOMOD ACTIONS ───────── */
+const AUTOMOD_ACTIONS = [
+  "AutoModSpam",
+  "AutoModLinks",
+  "AutoModBadWords",
+];
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("warn")
@@ -73,7 +80,7 @@ module.exports = {
         reason,
       });
 
-      const warnCount = await ModAction.countDocuments({
+      const manualWarns = await ModAction.countDocuments({
         guildId: guild.id,
         targetId: target.id,
         action: "Warn",
@@ -88,7 +95,7 @@ module.exports = {
               { name: "👤 Member", value: `${target}`, inline: true },
               { name: "👮 Moderator", value: `${moderator}`, inline: true },
               { name: "📝 Reason", value: reason, inline: false },
-              { name: "📊 Total Warnings", value: `${warnCount}`, inline: true }
+              { name: "📊 Manual Warnings", value: `${manualWarns}`, inline: true }
             )
             .setFooter({ text: "Ryvex • Moderation Action" })
             .setTimestamp(),
@@ -100,19 +107,19 @@ module.exports = {
     if (sub === "clear") {
       const target = interaction.options.getUser("target");
 
-      const warnCount = await ModAction.countDocuments({
+      const manualWarns = await ModAction.countDocuments({
         guildId: guild.id,
         targetId: target.id,
         action: "Warn",
       });
 
-      if (!warnCount) {
+      if (!manualWarns) {
         return interaction.editReply({
           embeds: [
             new EmbedBuilder()
               .setTitle("ℹ No Warnings Found")
               .setColor("Green")
-              .setDescription(`👤 **Member:** ${target}\n✅ This member has no warnings.`)
+              .setDescription(`👤 **Member:** ${target}\n✅ This member has no manual warnings.`)
               .setTimestamp(),
           ],
         });
@@ -129,7 +136,7 @@ module.exports = {
         action: "Clear Warnings",
         target,
         moderator,
-        reason: `Cleared ${warnCount} warning(s)`,
+        reason: `Cleared ${manualWarns} manual warning(s)`,
       });
 
       return interaction.editReply({
@@ -139,7 +146,7 @@ module.exports = {
             .setColor("Green")
             .addFields(
               { name: "👤 Member", value: `${target}`, inline: true },
-              { name: "🧹 Cleared", value: `${warnCount} warning(s)`, inline: true }
+              { name: "🧹 Cleared", value: `${manualWarns} manual warning(s)`, inline: true }
             )
             .setFooter({ text: "Ryvex • Moderation Action" })
             .setTimestamp(),
@@ -147,19 +154,25 @@ module.exports = {
       });
     }
 
-    /* ───────── COUNT ───────── */
+    /* ───────── COUNT (MANUAL + AUTOMOD) ───────── */
     if (sub === "count") {
       const target = interaction.options.getUser("target");
 
-      const warns = await ModAction.find({
+      const manualWarns = await ModAction.countDocuments({
         guildId: guild.id,
         targetId: target.id,
         action: "Warn",
-      })
-        .sort({ createdAt: -1 })
-        .lean();
+      });
 
-      if (!warns.length) {
+      const automodWarns = await ModAction.countDocuments({
+        guildId: guild.id,
+        targetId: target.id,
+        action: { $in: AUTOMOD_ACTIONS },
+      });
+
+      const total = manualWarns + automodWarns;
+
+      if (!total) {
         return interaction.editReply({
           embeds: [
             new EmbedBuilder()
@@ -171,8 +184,6 @@ module.exports = {
         });
       }
 
-      const recent = warns.slice(0, 5);
-
       return interaction.editReply({
         embeds: [
           new EmbedBuilder()
@@ -181,28 +192,25 @@ module.exports = {
             .setDescription(
               [
                 `👤 **Member:** ${target}`,
-                `⚠ **Total Warnings:** ${warns.length}`,
                 "",
-                "🧾 **Recent Cases:**",
-                ...recent.map(
-                  w => `• **#${w.caseId}** → \`/case view ${w.caseId}\``
-                ),
+                `⚠ **Total Warnings:** ${total}`,
+                `👮 Manual Warnings: ${manualWarns}`,
+                `🤖 AutoMod Warnings: ${automodWarns}`,
               ].join("\n")
             )
-            .setFooter({ text: "Use /case view <id> for full details" })
+            .setFooter({ text: "AutoMod warnings are applied automatically" })
             .setTimestamp(),
         ],
       });
     }
 
-    /* ───────── REMOVE ───────── */
+    /* ───────── REMOVE (MANUAL ONLY) ───────── */
     if (sub === "remove") {
       const caseId = interaction.options.getInteger("caseid");
 
       const record = await ModAction.findOne({
         guildId: guild.id,
         caseId,
-        action: "Warn",
       });
 
       if (!record) {
@@ -212,6 +220,21 @@ module.exports = {
               .setTitle("❌ Warning Not Found")
               .setColor("Red")
               .setDescription(`No warning exists with case ID **#${caseId}**.`)
+              .setTimestamp(),
+          ],
+        });
+      }
+
+      if (record.action !== "Warn") {
+        return interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🚫 Cannot Remove AutoMod Warning")
+              .setColor("Red")
+              .setDescription(
+                "AutoMod warnings cannot be manually removed.\n" +
+                "They are managed automatically by the system."
+              )
               .setTimestamp(),
           ],
         });
