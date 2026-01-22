@@ -3,53 +3,46 @@ const GuildSettings = require("../models/GuildSettings");
 async function getGuildSettings(guildId) {
   const settings = await GuildSettings.findOneAndUpdate(
     { guildId },
-    {
-      $setOnInsert: {
-        guildId,
-        logging: {
-          enabled: true,
-          channelId: null,
-          messageContent: false, // 🔒 privacy ON by default
-          events: {},
-        },
-        welcome: {
-          enabled: false,
-          channelId: null,
-          autoRoleId: null,
-        },
-        moderation: {
-          logActions: true,
-        },
-      },
-    },
-    {
-      new: true,
-      upsert: true,
-    }
+    { $setOnInsert: { guildId } },
+    { new: true, upsert: true }
   );
 
-  // ───────── SAFETY BACKFILL ─────────
-  let needsSave = false;
+  let save = false;
 
-  if (!settings.logging) {
-    settings.logging = {};
-    needsSave = true;
+  if (!settings.automod) {
+    settings.automod = {};
+    save = true;
   }
 
-  if (typeof settings.logging.messageContent !== "boolean") {
-    settings.logging.messageContent = false;
-    needsSave = true;
-  }
+  settings.automod.enabled ??= false;
+  settings.automod.spam ??= false;
+  settings.automod.links ??= false;
+  settings.automod.badWords ??= false;
 
-  if (!settings.logging.events) {
-    settings.logging.events = {};
-    needsSave = true;
-  }
+  settings.automod.channels ??= {
+    ignored: [],
+    spamDisabled: [],
+    linksAllowed: [],
+    badWordsDisabled: [],
+  };
 
-  if (needsSave) {
-    await settings.save();
-  }
+  settings.automod.punishments ??= {
+    enabled: true,
+    warnOnly: false,
+    timeoutAfter: 3,
+    durations: {
+      3: 10 * 60 * 1000,
+      4: 60 * 60 * 1000,
+      5: 24 * 60 * 60 * 1000,
+    },
+  };
 
+  settings.automod.badWordsCustom ??= {
+    enabled: false,
+    words: [],
+  };
+
+  if (save) await settings.save();
   return settings;
 }
 
@@ -61,7 +54,4 @@ async function updateGuildSettings(guildId, updates) {
   );
 }
 
-module.exports = {
-  getGuildSettings,
-  updateGuildSettings,
-};
+module.exports = { getGuildSettings, updateGuildSettings };

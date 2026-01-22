@@ -15,163 +15,211 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("setup")
-    .setDescription("Guided setup and status overview for Ryvex.")
+    .setDescription("Complete setup & configuration guide for Ryvex")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const guildId = interaction.guild.id;
-    const settings = await getGuildSettings(guildId);
+    const settings = await getGuildSettings(interaction.guild.id);
 
-    /* ───────── STATUS HELPERS ───────── */
+    /* ───────── HELPERS ───────── */
     const yesNo = v => (v ? "✅ Yes" : "❌ No");
-    const setUnset = v => (v ? "✅ Set" : "❌ Not set");
+    const onOff = v => (v ? "🟢 ON" : "🔴 OFF");
+    const count = v => (Array.isArray(v) ? v.length : 0);
 
+    /* ───────── LOGGING STATUS ───────── */
     const loggingEnabled = settings.logging?.enabled === true;
-    const loggingChannelSet = Boolean(settings.logging?.channelId);
+    const loggingChannel = settings.logging?.channelId;
+    const loggingReady = loggingEnabled && Boolean(loggingChannel);
+
+    /* ───────── MODERATION STATUS ───────── */
     const moderationEnabled = settings.moderation?.enabled === true;
-    const moderationChannelSet = Boolean(settings.moderation?.channelId);
-    const privacyMode =
-      settings.logging?.messageContent === true ? "🔓 OFF" : "🔒 ON";
-    const welcomeEnabled = settings.welcome?.enabled === true;
+    const moderationChannel = settings.moderation?.channelId;
+    const moderationReady =
+      moderationEnabled && Boolean(moderationChannel);
 
-    /* ───────── VISUAL STATUS ───────── */
-    const loggingStatus =
-      loggingEnabled && loggingChannelSet
-        ? "✅ Fully configured"
-        : loggingEnabled
-        ? "⚠️ Enabled, channel missing"
-        : "❌ Not configured";
+    /* ───────── AUTOMOD STATUS ───────── */
+    const automod = settings.automod ?? {};
+    const automodEnabled = automod.enabled === true;
 
-    const moderationStatus =
-      moderationEnabled && moderationChannelSet
-        ? "✅ Fully configured"
-        : moderationEnabled
-        ? "⚠️ Enabled, channel missing"
-        : "❌ Not configured";
+    const filtersEnabled = {
+      spam: automod.spam === true,
+      links: automod.links === true,
+      badWords: automod.badWords === true,
+    };
+
+    const activeFiltersCount = Object.values(filtersEnabled).filter(Boolean).length;
+
+    const automodReady =
+      automodEnabled && activeFiltersCount > 0;
 
     /* ───────── PAGES ───────── */
     const pages = [
+      /* ───── PAGE 1: INTRO ───── */
       new EmbedBuilder()
-        .setTitle("🚀 Ryvex — Setup Overview")
+        .setTitle("🚀 Ryvex — Complete Setup Guide")
         .setColor("Blue")
         .setDescription(
           [
             "Welcome to **Ryvex** 👋",
             "",
-            "This guide helps you:",
-            "• Verify what’s already configured",
-            "• See what is **required** vs **optional**",
-            "• Know exactly what to do next",
+            "This guide shows:",
+            "• ✅ What is configured",
+            "• ⚠️ What needs attention",
+            "• 🧭 Exactly what commands to run",
             "",
-            "You only need to complete setup **once per server**.",
+            "**This is a read-only guide.**",
+            "Nothing is changed automatically.",
           ].join("\n")
         ),
 
+      /* ───── PAGE 2: LOGGING ───── */
       new EmbedBuilder()
-        .setTitle("🧩 Current Setup Status")
+        .setTitle("📜 Logging System")
+        .setColor(loggingReady ? "Green" : "Red")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Logs server activity (messages, joins, deletes, edits).",
+            "",
+            "**Current Settings**",
+            `• Enabled: ${yesNo(loggingEnabled)}`,
+            `• Log channel: ${loggingChannel ? `<#${loggingChannel}>` : "❌ Not set"}`,
+            `• Message content logging: ${
+              settings.logging?.messageContent ? "🔓 OFF" : "🔒 ON (privacy)"
+            }`,
+            "",
+            loggingReady
+              ? "✅ **Logging is fully configured**"
+              : "❌ **Logging is required for Ryvex to function properly**",
+            "",
+            "**Commands**",
+            "`/settings logging enable`",
+            "`/settings logging channel <channel>`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 3: MODERATION LOGS ───── */
+      new EmbedBuilder()
+        .setTitle("🛡 Moderation Logs")
+        .setColor(moderationReady ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Tracks moderation actions and AutoMod punishments.",
+            "",
+            "**Current Settings**",
+            `• Enabled: ${yesNo(moderationEnabled)}`,
+            `• Channel: ${moderationChannel ? `<#${moderationChannel}>` : "❌ Not set"}`,
+            "",
+            moderationReady
+              ? "✅ **Moderation logs are configured**"
+              : "⚠️ **Strongly recommended**",
+            "",
+            "**Command**",
+            "`/settings moderation channel <channel>`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 4: AUTOMOD CORE ───── */
+      new EmbedBuilder()
+        .setTitle("🤖 AutoMod — Core System")
+        .setColor(
+          automodReady ? "Green" : automodEnabled ? "Orange" : "Red"
+        )
+        .setDescription(
+          [
+            "**Purpose**",
+            "Automatically enforces rules without moderator intervention.",
+            "",
+            "**Core Status**",
+            `• AutoMod enabled: ${yesNo(automodEnabled)}`,
+            `• Active filters: **${activeFiltersCount} / 3**`,
+            "",
+            automodReady
+              ? "✅ **AutoMod is actively protecting the server**"
+              : automodEnabled
+              ? "⚠️ **AutoMod is enabled but filters are missing**"
+              : "❌ **AutoMod is disabled**",
+            "",
+            "**Commands**",
+            "`/automod enable`",
+            "`/automod preset <medium>` *(recommended)*",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 5: AUTOMOD FILTERS ───── */
+      new EmbedBuilder()
+        .setTitle("🧹 AutoMod — Filters")
+        .setColor(activeFiltersCount === 3 ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Filters Control WHAT AutoMod detects**",
+            "",
+            `🚫 **Spam Protection**`,
+            `Status: ${onOff(filtersEnabled.spam)}`,
+            "Detects message flooding in short time windows.",
+            "",
+            `🔗 **Link Protection**`,
+            `Status: ${onOff(filtersEnabled.links)}`,
+            "Blocks unsolicited links (scams, ads, phishing).",
+            "",
+            `🤬 **Bad Language Filter**`,
+            `Status: ${onOff(filtersEnabled.badWords)}`,
+            "Detects offensive words (JSON + custom list).",
+            "",
+            "**Control Commands**",
+            "`/automod filters`",
+            "`/automod preset <soft | medium | strict>`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 6: AUTOMOD ADVANCED ───── */
+      new EmbedBuilder()
+        .setTitle("⚙ AutoMod — Advanced Controls")
         .setColor("Purple")
         .setDescription(
           [
-            "**Logging**",
-            `• Status: **${loggingStatus}**`,
+            "**Punishments**",
+            `• Enabled: ${yesNo(automod.punishments?.enabled)}`,
+            `• Warn-only mode: ${yesNo(automod.punishments?.warnOnly)}`,
+            `• Timeout after: ${automod.punishments?.timeoutAfter ?? "—"} warns`,
             "",
-            "**Moderation Logs**",
-            `• Status: **${moderationStatus}**`,
+            "**Bypasses**",
+            `• Ignored channels: ${count(automod.channels?.ignored)}`,
+            `• Spam-disabled channels: ${count(automod.channels?.spamDisabled)}`,
+            `• Link-allowed channels: ${count(automod.channels?.linksAllowed)}`,
+            `• Bad-word-disabled channels: ${count(automod.channels?.badWordsDisabled)}`,
+            `• Role bypasses: ${count(automod.rolesBypass)}`,
             "",
-            "**Privacy**",
-            `• Message content logging: ${privacyMode}`,
-            "",
-            "**Welcome System**",
-            `• Enabled: ${yesNo(welcomeEnabled)}`,
-          ].join("\n")
-        )
-        .setFooter({ text: "Red ❌ = required action missing" }),
-
-      new EmbedBuilder()
-        .setTitle("🔴 Required Setup")
-        .setColor("Red")
-        .setDescription(
-          [
-            "**You must complete these steps:**",
-            "",
-            "1️⃣ Enable logging",
-            "`/settings logging enable`",
-            "",
-            "2️⃣ Set a log channel",
-            "`/settings logging channel <channel>`",
-            "",
-            "> Without this, Ryvex **cannot log events**.",
+            "**Management Commands**",
+            "`/automod status`",
+            "`/automod-channel view`",
+            "`/automod-punishment view`",
+            "`/automod-roles view`",
+            "`/automod-badwords view`",
           ].join("\n")
         ),
 
+      /* ───── PAGE 7: FINAL CHECK ───── */
       new EmbedBuilder()
-        .setTitle("🟡 Recommended Setup")
-        .setColor("Orange")
-        .setDescription(
-          [
-            "**Strongly recommended:**",
-            "",
-            "• Separate moderation logs",
-            "`/settings moderation channel <channel>`",
-            "",
-            "• Privacy mode",
-            "`/settings logging privacy on | off`",
-            "",
-            "> Privacy mode is **ON by default**.",
-          ].join("\n")
-        ),
-
-      new EmbedBuilder()
-        .setTitle("🛡️ Moderation & Case System")
-        .setColor("DarkRed")
-        .setDescription(
-          [
-            "Every moderation action creates a **case**.",
-            "",
-            "Examples:",
-            "• `/warn add`",
-            "• `/timeout`",
-            "• `/kick`",
-            "• `/ban`",
-            "",
-            "Review cases:",
-            "• `/case view <id>`",
-            "• `/modlog user <member>`",
-          ].join("\n")
-        ),
-
-      new EmbedBuilder()
-        .setTitle("👋 Optional Systems")
-        .setColor("White")
-        .setDescription(
-          [
-            "**Welcome system**",
-            "`/settings welcome enable`",
-            "`/settings welcome channel <channel>`",
-            "`/settings welcome autorole <role>`",
-            "",
-            "Optional features do **not** affect logging.",
-          ].join("\n")
-        ),
-
-      new EmbedBuilder()
-        .setTitle("✅ When Is Setup Complete?")
+        .setTitle("✅ Setup Completion Checklist")
         .setColor("Green")
         .setDescription(
           [
-            "Setup is complete when:",
+            "**Your server is fully ready when:**",
             "",
-            "☑ Logging is enabled",
-            "☑ At least one log channel is set",
-            "☑ Ryvex has required permissions",
+            `☑ Logging ready: ${yesNo(loggingReady)}`,
+            `☑ Moderation logs set: ${yesNo(moderationReady)}`,
+            `☑ AutoMod active: ${yesNo(automodReady)}`,
             "",
-            "You can re-run `/setup` anytime.",
+            "You can safely re-run `/setup` anytime.",
           ].join("\n")
         ),
     ];
 
+    /* ───────── NAVIGATION ───────── */
     let page = 0;
 
     const buildRow = () =>
@@ -181,33 +229,30 @@ module.exports = {
           .setLabel("◀ Previous")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(page === 0),
-
         new ButtonBuilder()
           .setCustomId("next")
           .setLabel("Next ▶")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(page === pages.length - 1),
-
         new ButtonBuilder()
           .setCustomId("close")
           .setLabel("✖ Close")
           .setStyle(ButtonStyle.Danger)
       );
 
-    const applyFooter = () => {
+    const applyFooter = () =>
       pages[page].setFooter({
         text: `Page ${page + 1} / ${pages.length}`,
       });
-    };
 
     applyFooter();
 
-    const message = await interaction.editReply({
+    const msg = await interaction.editReply({
       embeds: [pages[page]],
       components: [buildRow()],
     });
 
-    const collector = message.createMessageComponentCollector({
+    const collector = msg.createMessageComponentCollector({
       time: 120_000,
     });
 
@@ -219,20 +264,12 @@ module.exports = {
         });
       }
 
-      if (!i.deferred && !i.replied) {
-        await i.deferUpdate().catch(() => {});
-      }
-
-      if (i.customId === "close") {
-        collector.stop("closed");
-        return;
-      }
-
+      await i.deferUpdate().catch(() => {});
+      if (i.customId === "close") return collector.stop();
       if (i.customId === "prev" && page > 0) page--;
       if (i.customId === "next" && page < pages.length - 1) page++;
 
       applyFooter();
-
       await interaction.editReply({
         embeds: [pages[page]],
         components: [buildRow()],
@@ -243,10 +280,7 @@ module.exports = {
       const disabledRow = new ActionRowBuilder().addComponents(
         ...buildRow().components.map(b => b.setDisabled(true))
       );
-
-      await interaction.editReply({
-        components: [disabledRow],
-      }).catch(() => {});
+      await interaction.editReply({ components: [disabledRow] }).catch(() => {});
     });
   },
 };

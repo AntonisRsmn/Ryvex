@@ -1,0 +1,66 @@
+{
+  "categories": {
+    "general": {
+      "enabled": true,
+      "words": [
+        "fuck",
+        "shit",
+        "bitch",
+        "asshole",
+        "bullshit",
+        "dumbass",
+        "jackass",
+        "motherfucker",
+        "wtf",
+        "stfu",
+        "fucking",
+        "shitty"
+      ]
+    },
+
+    "harassment": {
+      "enabled": true,
+      "words": [
+        "idiot",
+        "moron",
+        "retard",
+        "loser",
+        "scumbag",
+        "trash",
+        "pieceofshit",
+        "worthless"
+      ]
+    },
+
+    "sexual": {
+      "enabled": true,
+      "words": [
+        "porn",
+        "cum",
+        "cumming",
+        "blowjob",
+        "handjob",
+        "deepthroat",
+        "orgasm"
+      ]
+    },
+
+    "threats": {
+      "enabled": true,
+      "words": [
+        "kill yourself",
+        "kys",
+        "die bitch",
+        "i will kill you"
+      ]
+    },
+
+    "slurs": {
+      "enabled": false,
+      "words": [
+        "example-slur-1",
+        "example-slur-2"
+      ]
+    }
+  }
+}

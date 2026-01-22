@@ -4,83 +4,63 @@ const GuildSettingsSchema = new mongoose.Schema(
   {
     guildId: { type: String, required: true, unique: true },
 
-    /* ───────── LOGGING SYSTEM ───────── */
     logging: {
-      enabled: {
-        type: Boolean,
-        default: true, // logging ON by default
-      },
-
-      // General logs channel
-      channelId: {
-        type: String,
-        default: null,
-      },
-
-      // Privacy control
-      messageContent: {
-        type: Boolean,
-        default: false, // 🔒 privacy ON by default
-      },
-
-      /* Event toggles */
-      events: {
-        memberJoin: { type: Boolean, default: true },
-        memberLeave: { type: Boolean, default: true },
-        memberUpdate: { type: Boolean, default: true },
-
-        messageDelete: { type: Boolean, default: true },
-        messageEdit: { type: Boolean, default: true },
-
-        channelCreate: { type: Boolean, default: true },
-        channelUpdate: { type: Boolean, default: true },
-        channelDelete: { type: Boolean, default: true },
-
-        roleCreate: { type: Boolean, default: true },
-        roleUpdate: { type: Boolean, default: true },
-        roleDelete: { type: Boolean, default: true },
-
-        guildUpdate: { type: Boolean, default: true },
-      },
+      enabled: { type: Boolean, default: true },
+      channelId: { type: String, default: null },
+      messageContent: { type: Boolean, default: false },
+      events: { type: Object, default: {} },
     },
 
-    /* ───────── MODERATION LOGS ───────── */
     moderation: {
-      enabled: {
-        type: Boolean,
-        default: true,
-      },
-
-      // Separate moderation log channel
-      channelId: {
-        type: String,
-        default: null,
-      },
-
-      logActions: {
-        type: Boolean,
-        default: true,
-      },
+      enabled: { type: Boolean, default: true },
+      channelId: { type: String, default: null },
+      logActions: { type: Boolean, default: true },
     },
 
-    /* ───────── WELCOME SYSTEM ───────── */
     welcome: {
       enabled: { type: Boolean, default: false },
       channelId: { type: String, default: null },
       autoRoleId: { type: String, default: null },
     },
 
-    /* ───────── META / UTILS ───────── */
-    meta: {
-      setupCompleted: {
-        type: Boolean,
-        default: false,
+    automod: {
+      enabled: { type: Boolean, default: false },
+
+      spam: { type: Boolean, default: false },
+      links: { type: Boolean, default: false },
+      badWords: { type: Boolean, default: false },
+
+      channels: {
+        ignored: { type: [String], default: [] },
+        spamDisabled: { type: [String], default: [] },
+        linksAllowed: { type: [String], default: [] },
+        badWordsDisabled: { type: [String], default: [] },
       },
 
-      version: {
-        type: String,
-        default: "1.9.1",
+      punishments: {
+        enabled: { type: Boolean, default: true },
+        warnOnly: { type: Boolean, default: false },
+        timeoutAfter: { type: Number, default: 3 },
+        durations: {
+          type: Map,
+          of: Number,
+          default: {
+            3: 10 * 60 * 1000,
+            4: 60 * 60 * 1000,
+            5: 24 * 60 * 60 * 1000,
+          },
+        },
       },
+
+      badWordsCustom: {
+        enabled: { type: Boolean, default: false },
+        words: { type: [String], default: [] },
+      },
+    },
+
+    meta: {
+      setupCompleted: { type: Boolean, default: false },
+      version: { type: String, default: "1.9.1" },
     },
   },
   { timestamps: true }
