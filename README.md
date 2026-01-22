@@ -1,149 +1,96 @@
-# 🤖 **Ryvex** — Moderation You Can Audit, Trust, and Scale
+# 🤖 Ryvex — Professional Discord Moderation, Done Right
 
-**Ryvex** is a **moderation-first Discord bot** built for servers that take **staff accountability, transparency, and stability** seriously.
+**Ryvex** is a **moderation-first Discord bot** built for servers that value  
+**accountability, transparency, and long-term stability**.
 
-Unlike generic “all-in-one” bots, Ryvex focuses on **clear moderation workflows**, **case-based actions**, and **audit-friendly logging**, making it ideal for servers with multiple moderators and real governance needs.
+It is designed for **real moderation teams**, not just casual servers — with  
+a strong focus on **auditability**, **clean workflows**, and **zero ambiguity**.
 
-🌐 **Website:** https://ryvex.gr  
-🆘 **Support:** Use `/support` inside Discord  
-⚙️ **Setup:** Use `/setup` inside discord to configure the bot
-
----
-
-## 🌟 What Is Ryvex?
-
-Ryvex helps server owners and moderation teams:
-
-- 🛡️ Enforce rules **consistently and safely**
-- 🧾 Track **every moderation action** in a persistent case system
-- 🔍 Audit moderator behavior transparently
-- 👋 Onboard new members with configurable welcome tools
-- ⚙️ Configure everything per-server with zero clutter
-
-**No prefixes. No legacy commands.**  
-Everything runs through modern **Discord slash commands**.
+🌐 Website: https://ryvex.gr  
+🆘 Support: `/support` inside Discord  
+⚙️ Setup: `/setup` (guided, safe, read-only)
 
 ---
 
-## 🎯 Who Ryvex Is Built For
+## 🚀 Why Ryvex?
 
-Ryvex is designed for:
+Most moderation bots try to do *everything*.  
+Ryvex does **moderation properly**.
 
-- Medium to large Discord servers  
-- Servers with **multiple moderators**
-- Owners who want **visibility into staff actions**
-- Communities where **trust and accountability matter**
-
-If you want a “set-and-forget” casual bot, Ryvex is probably not for you — and that’s intentional.
+### Ryvex is built around:
+- 🧾 **Case-based moderation** (every action is recorded)
+- 🛡️ **AutoMod you can actually control**
+- 🔍 **Transparent staff activity**
+- ⚙️ **Per-server, per-channel, per-role configuration**
+- 🧠 **Predictable behavior — no hidden automations**
 
 ---
 
-## 🧾 Core Systems
+## 🧾 Case-Based Moderation System
 
-### 🧾 Case-Based Moderation System
+Every moderation action creates a **persistent case** stored in MongoDB.
 
-Every moderation action creates a **persistent case** stored in the database.
-
-**Supported actions:**
-- Ban / Unban
+### Supported actions
+- Warn / Clear / Remove warnings
+- Timeout / Untimeout
 - Kick
-- Timeout / Unmute
+- Ban / Unban
 - Lock / Unlock channels
-- Add / Remove roles
-- Warnings (fully managed)
+- Role add / remove
+- AutoMod actions
 
 Each case includes:
 - Case ID
 - Action type
 - Target & moderator
-- Reason & duration (if applicable)
+- Reason & duration
 - Timestamp
 
-**Case management commands:**
-```
-/case view <id>
-/case edit <id> <reason>
-/case delete <id>
+---
+
+## 🤖 AutoMod System
+
+- Spam detection
+- Link blocking
+- Bad word filtering
+- Presets (Soft / Medium / Strict)
+- Channel & role bypasses
+- Sticky punishment escalation
+
+Commands:
+```bash
+/automod
+/automod-channel
+/automod-punishment
+/automod-roles
+/automod-badwords
 ```
 
 ---
 
-### 🧾 Advanced Logging System
+## 📜 Logging System
 
-Ryvex uses an **event-driven logging system** designed for real moderation workflows.
-
-**Logged events include:**
-- Member joins & leaves
-- Member updates (roles, nicknames)
-- Message edits & deletions (privacy-aware)
-- Channel, role, and server updates
-- All moderation actions (case-linked)
-
-**Safety & privacy first:**
-- Message content logging is optional
-- Audit logs are accessed only when permitted
-- Graceful fallbacks when permissions are missing
-- No crashes or log spam
-
-Logs are automatically separated into:
 - General logs
 - Moderation logs
+- Privacy-aware message logging
+- Audit log correlation
 
 ---
 
-### ⚠️ Warning System
+## ⚙️ Setup
 
+```bash
+/setup
+/settings view
 ```
-/warn add <member> [reason]
-/warn count <member>
-/warn remove <caseId>
-/warn clear <member>
-```
-
----
-
-### 👋 Welcome & Onboarding
-
-- Custom welcome messages
-- Optional automatic role assignment
-- Fully configurable per server
-
----
-
-## ⚙️ Configuration & Setup
-
-- `/setup` — Initial server setup
-- `/settings` — Modify server configuration
-
----
-
-## 📜 Command Categories
-
-### 🛡️ Moderation
-`/ban`, `/unban`, `/kick`, `/timeout`, `/unmute`, `/lock`, `/unlock`, `/add-role`, `/remove-role`, `/clear`
-
-### 🧾 Records
-`/case`, `/modlog`, `/warn`
-
-### ⚙️ Configuration
-`/setup`, `/settings`
-
-### 🎮 Fun (Optional)
-`/8ball`, `/rps`, `/meme`
 
 ---
 
 ## 🧩 Tech Stack
 
-- Node.js  
-- discord.js (API v10)  
-- MongoDB  
-
----
-
-## 📄 License
-
-MIT License
+- Node.js
+- discord.js (API v10)
+- MongoDB
 
 ---
 
