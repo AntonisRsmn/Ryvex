@@ -6,6 +6,7 @@ const {
 const {
   shouldSuppressDelete,
 } = require("../../Utils/messageDeleteSuppressor");
+const { isSuppressed } = require("../../Utils/automodChecks/suppressDelete");
 
 module.exports = {
   name: "messageDelete",
@@ -23,6 +24,8 @@ module.exports = {
 
     const enabled = settings.logging.events?.messageDelete ?? true;
     if (!enabled) return;
+
+    if (isSuppressed(message.id)) return;
 
     // Fetch partials safely
     if (message.partial) {

@@ -7,6 +7,7 @@ const {
 const { PermissionFlagsBits } = require("discord.js");
 const { logAction } = require("../logAction");
 const ModAction = require("../../Database/models/ModAction");
+const { suppress } = require("./suppressDelete");
 
 /* ───────── BUILD BAD WORD REGEX (JSON + CUSTOM) ───────── */
 function buildBadWordRegex(settings) {
@@ -40,16 +41,20 @@ function buildBadWordRegex(settings) {
   return new RegExp(`\\b(${escaped.join("|")})\\b`, "i");
 }
 
-/* ───────── LOG AUTOMOD WARN (NO COUNTING HERE) ───────── */
+/* ───────── LOG AUTOMOD WARN (NO MOD LOG) ───────── */
 async function addWarn({ guild, member, type, reason }) {
-  await logAction({
-    guild,
+  await ModAction.create({
+    guildId: guild.id,
+    caseId: 0, // optional or omit if schema allows
     action: type,
-    target: member.user,
-    moderator: guild.members.me.user,
+    targetId: member.id,
+    targetTag: member.user.tag,
+    moderatorId: guild.members.me.id,
+    moderatorTag: guild.members.me.user.tag,
     reason,
   });
 }
+
 
 /* ───────── TOTAL AUTOMOD WARNS (STICKY COUNTER) ───────── */
 async function getTotalAutoModWarns(guildId, memberId) {
@@ -110,13 +115,24 @@ module.exports = async function runAutoMod({ message, automod }) {
   /* ───────── SPAM ───────── */
   if (automod.spam && !automod.channels?.spamDisabled?.includes(channel.id)) {
     if (isSpamming(author.id, message)) {
-      const spamMessages = getSpamMessages(author.id);
+      const spamMessages = [...new Set(getSpamMessages(author.id))];
 
       await Promise.all(
-        spamMessages.map(m => m.delete().catch(() => {}))
+        spamMessages.map(m => {
+          suppress(m.id);
+          return m.delete().catch(() => {});
+        })
       );
 
       clearSpamMessages(author.id);
+
+      await logAction({
+        guild,
+        action: "AutoMod Spam Cleanup",
+        target: member.user,
+        moderator: guild.members.me.user,
+        reason: `Deleted ${spamMessages.length} spam messages`,
+      });
 
       await addWarn({
         guild,
