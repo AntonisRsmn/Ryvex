@@ -150,21 +150,21 @@ module.exports = {
           },
         },
         medium: {
+        enabled: true,
+        spam: true,
+        links: true,
+        badWords: true,
+        punishments: {
           enabled: true,
-          spam: true,
-          links: true,
-          badWords: true,
-          punishments: {
-            enabled: true,
-            warnOnly: false,
-            timeoutAfter: 3,
-            durations: new Map([
-              ["3", 10 * 60 * 1000],
-              ["4", 60 * 60 * 1000],
-              ["5", 24 * 60 * 60 * 1000],
-            ]),
-          },
+          warnOnly: false,
+          timeoutAfter: 2,
+          durations: new Map([
+            ["2", 10 * 60 * 1000],        // 10 minutes
+            ["3", 60 * 60 * 1000],        // 1 hour
+            ["4", 24 * 60 * 60 * 1000],   // 24 hours (sticky max)
+          ]),
         },
+      },
         strict: {
           enabled: true,
           spam: true,
@@ -173,11 +173,11 @@ module.exports = {
           punishments: {
             enabled: true,
             warnOnly: false,
-            timeoutAfter: 2,
+            timeoutAfter: 1,
             durations: new Map([
-              ["2", 10 * 60 * 1000],
-              ["3", 60 * 60 * 1000],
-              ["4", 24 * 60 * 60 * 1000],
+              ["1", 10 * 60 * 1000],        // 10 minutes
+              ["2", 60 * 60 * 1000],        // 1 hour
+              ["3", 24 * 60 * 60 * 1000],   // 24 hours (sticky max)
             ]),
           },
         },
