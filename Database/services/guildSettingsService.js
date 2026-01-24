@@ -42,6 +42,13 @@ async function getGuildSettings(guildId) {
     words: [],
   };
 
+  // 🔐 Appeals defaults (NEW)
+  settings.appeals ??= {
+    enabled: false,
+    channelId: null,
+    cooldownMs: 12 * 60 * 60 * 1000,
+  };
+
   if (save) await settings.save();
   return settings;
 }

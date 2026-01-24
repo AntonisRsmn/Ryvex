@@ -58,6 +58,13 @@ const GuildSettingsSchema = new mongoose.Schema(
       },
     },
 
+    // 🔐 Appeals system (NEW)
+    appeals: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      cooldownMs: { type: Number, default: 12 * 60 * 60 * 1000 }, // 12h
+    },
+
     meta: {
       setupCompleted: { type: Boolean, default: false },
       version: { type: String, default: "1.9.1" },

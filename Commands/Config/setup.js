@@ -39,6 +39,16 @@ module.exports = {
     const moderationReady =
       moderationEnabled && Boolean(moderationChannel);
 
+    /* ───────── APPEALS STATUS (NEW) ───────── */
+    const appeals = settings.appeals ?? {};
+    const appealsEnabled = appeals.enabled === true;
+    const appealsChannel = appeals.channelId;
+    const appealsCooldownHours = appeals.cooldownMs
+      ? Math.round(appeals.cooldownMs / (60 * 60 * 1000))
+      : "—";
+
+    const appealsReady = appealsEnabled;
+
     /* ───────── AUTOMOD STATUS ───────── */
     const automod = settings.automod ?? {};
     const automodEnabled = automod.enabled === true;
@@ -122,7 +132,35 @@ module.exports = {
           ].join("\n")
         ),
 
-      /* ───── PAGE 4: AUTOMOD CORE ───── */
+      /* ───── PAGE 4: APPEALS SYSTEM (NEW) ───── */
+      new EmbedBuilder()
+        .setTitle("📨 Appeals System")
+        .setColor(appealsReady ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Allows members to appeal moderation actions in a controlled, private way.",
+            "",
+            "**Current Settings**",
+            `• Appeals enabled: ${yesNo(appealsEnabled)}`,
+            `• Appeals channel: ${appealsChannel ? `<#${appealsChannel}>` : "🧠 Auto-create on first appeal"}`,
+            `• Cooldown: ${appealsCooldownHours} hour(s)`,
+            "",
+            appealsReady
+              ? "✅ **Appeals are available to members**"
+              : "⚠️ **Appeals are currently disabled**",
+            "",
+            "**Member Command**",
+            "`/appeal` — Open an appeal",
+            "",
+            "**Moderator Commands**",
+            "`/appeal-admin config`",
+            "`/appeal-admin close`",
+            "`/appeal-admin reopen`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 5: AUTOMOD CORE ───── */
       new EmbedBuilder()
         .setTitle("🤖 AutoMod — Core System")
         .setColor(
@@ -149,7 +187,7 @@ module.exports = {
           ].join("\n")
         ),
 
-      /* ───── PAGE 5: AUTOMOD FILTERS ───── */
+      /* ───── PAGE 6: AUTOMOD FILTERS ───── */
       new EmbedBuilder()
         .setTitle("🧹 AutoMod — Filters")
         .setColor(activeFiltersCount === 3 ? "Green" : "Orange")
@@ -175,7 +213,7 @@ module.exports = {
           ].join("\n")
         ),
 
-      /* ───── PAGE 6: AUTOMOD ADVANCED ───── */
+      /* ───── PAGE 7: AUTOMOD ADVANCED ───── */
       new EmbedBuilder()
         .setTitle("⚙ AutoMod — Advanced Controls")
         .setColor("Purple")
@@ -202,7 +240,7 @@ module.exports = {
           ].join("\n")
         ),
 
-      /* ───── PAGE 7: FINAL CHECK ───── */
+      /* ───── PAGE 8: FINAL CHECK ───── */
       new EmbedBuilder()
         .setTitle("✅ Setup Completion Checklist")
         .setColor("Green")
@@ -212,6 +250,7 @@ module.exports = {
             "",
             `☑ Logging ready: ${yesNo(loggingReady)}`,
             `☑ Moderation logs set: ${yesNo(moderationReady)}`,
+            `☑ Appeals enabled: ${yesNo(appealsReady)}`,
             `☑ AutoMod active: ${yesNo(automodReady)}`,
             "",
             "You can safely re-run `/setup` anytime.",

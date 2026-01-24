@@ -17,6 +17,25 @@
   // },
 
 module.exports = [
+
+  {
+    version: "1.9.5",
+    date: "2026-02-02",
+    changes: [
+      "📨 Introduced a full Appeals system with member and moderator separation",
+      "🙋 Members can now open private appeals using `/appeal`",
+      "🛠️ Added `/appeal-admin` for moderators with config, close, and reopen controls",
+      "🔒 Appeals use private threads with proper locking and archiving lifecycle",
+      "⏱️ Added configurable appeal cooldown to prevent abuse",
+      "📊 Added appeal visibility and guidance to the `/setup` command",
+      "📄 Introduced `/history` command for members to view their own moderation history",
+      "🎨 Standardized appeal and history messages using rich embeds",
+      "🧭 Improved moderation UX consistency across history, appeals, and setup",
+      "⚠️ Fixed deprecated Discord interaction options (`ephemeral`, `fetchReply`)",
+      "🧠 Internal stability and UX refinements across moderation-related commands"
+    ],
+  },
+
   {
     version: "1.9.4",
     date: "2026-01-23",
