@@ -12,7 +12,7 @@ const ModAction = require("../../Database/models/ModAction");
 
 const PAGE_SIZE = 5;
 
-/* ───────── ACTION META ───────── */
+/* ───────── ACTION ICONS ───────── */
 const ACTION_META = {
   Warn: "⚠️",
   Timeout: "⏳",
@@ -27,60 +27,58 @@ const ACTION_META = {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("modlog")
-    .setDescription("View moderation logs.")
+    .setName("history-staff")
+    .setDescription("View moderation history")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
-    .addSubcommand(sub =>
-      sub
-        .setName("user")
-        .setDescription("View moderation history for a user")
-        .addUserOption(opt =>
-          opt.setName("member").setDescription("Target member").setRequired(true)
-        )
+    .addUserOption(opt =>
+        opt
+        .setName("moderator")
+        .setDescription("Staff member")
+        .setRequired(true)
     ),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const guildId = interaction.guild.id;
-    const user = interaction.options.getUser("member");
+    const moderator = interaction.options.getUser("moderator");
 
-    const cases = await ModAction.find({
+    const actions = await ModAction.find({
       guildId,
-      targetId: user.id,
+      moderatorId: moderator.id,
     })
       .sort({ createdAt: -1 })
       .lean();
 
-    if (!cases.length) {
+    if (!actions.length) {
       return interaction.editReply(
-        `❌ No moderation history found for **${user.tag}**.`
+        `❌ No moderation actions found for **${moderator.tag}**.`
       );
     }
 
     let page = 0;
-    const totalPages = Math.ceil(cases.length / PAGE_SIZE);
+    const totalPages = Math.ceil(actions.length / PAGE_SIZE);
 
     const buildEmbed = () => {
-      const slice = cases.slice(
+      const slice = actions.slice(
         page * PAGE_SIZE,
         page * PAGE_SIZE + PAGE_SIZE
       );
 
       const description = slice
-        .map(c => {
-          const icon = ACTION_META[c.action] ?? "❓";
+        .map(a => {
+          const icon = ACTION_META[a.action] ?? "🛡️";
           return [
-            `**${icon} #${c.caseId} • ${c.action}**`,
-            `🛠 ${c.moderatorTag}`,
-            `🔎 \`/case view ${c.caseId}\``,
+            `**${icon} #${a.caseId} • ${a.action}**`,
+            `🎯 Target: ${a.targetTag}`,
+            `🔎 \`/case view ${a.caseId}\``,
           ].join("\n");
         })
         .join("\n\n");
 
       return new EmbedBuilder()
-        .setTitle(`🛡 Moderation History — ${user.tag}`)
-        .setColor("Red")
+        .setTitle(`🧑‍⚖️ Staff History — ${moderator.tag}`)
+        .setColor("Blue")
         .setDescription(description)
         .setFooter({ text: `Page ${page + 1} / ${totalPages}` })
         .setTimestamp();
@@ -116,9 +114,7 @@ module.exports = {
         });
       }
 
-      if (!i.deferred && !i.replied) {
-        await i.deferUpdate().catch(() => {});
-      }
+      await i.deferUpdate().catch(() => {});
 
       if (i.customId === "prev") page--;
       if (i.customId === "next") page++;
@@ -128,12 +124,10 @@ module.exports = {
       row.components[0].setDisabled(page === 0);
       row.components[1].setDisabled(page === totalPages - 1);
 
-      await interaction
-        .editReply({
-          embeds: [buildEmbed()],
-          components: [row],
-        })
-        .catch(() => {});
+      await interaction.editReply({
+        embeds: [buildEmbed()],
+        components: [row],
+      });
     });
 
     collector.on("end", async () => {

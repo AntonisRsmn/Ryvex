@@ -9,11 +9,7 @@ async function getGuildSettings(guildId) {
 
   let save = false;
 
-  if (!settings.automod) {
-    settings.automod = {};
-    save = true;
-  }
-
+  settings.automod ??= {};
   settings.automod.enabled ??= false;
   settings.automod.spam ??= false;
   settings.automod.links ??= false;
@@ -42,12 +38,23 @@ async function getGuildSettings(guildId) {
     words: [],
   };
 
-  // 🔐 Appeals defaults (NEW)
   settings.appeals ??= {
     enabled: false,
     channelId: null,
     cooldownMs: 12 * 60 * 60 * 1000,
   };
+
+  // 🚨 Staff monitoring defaults
+  settings.staffMonitoring ??= {
+    enabled: false,
+    alerts: [],
+    suppression: {},
+  };
+
+  settings.staffMonitoring.alerts ??= [];
+  settings.staffMonitoring.suppression ??= {};
+
+  save = true;
 
   if (save) await settings.save();
   return settings;

@@ -10,6 +10,9 @@ const {
 const ModAction = require("../../Database/models/ModAction");
 const { respond } = require("../../Utils/respond");
 
+const PAGE_SIZE = 5;
+
+/* ───────── ACTION ICONS ───────── */
 const ACTION_META = {
   Warn: "⚠️",
   Timeout: "⏳",
@@ -22,15 +25,10 @@ const ACTION_META = {
   AutoModBadWords: "🤬",
 };
 
-const PAGE_SIZE = 5;
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("history")
-    .setDescription("View your moderation history")
-    .addSubcommand(sub =>
-      sub.setName("me").setDescription("View your moderation history")
-    ),
+    .setDescription("View your moderation history"),
 
   async execute(interaction) {
     const actions = await ModAction.find({
@@ -57,15 +55,12 @@ module.exports = {
       );
 
       const embed = new EmbedBuilder()
-        .setTitle(`🛡️ Moderation History — ${interaction.user.tag}`)
+        .setTitle(`🛡️ Your Moderation History`)
         .setColor("DarkRed")
-        .setFooter({
-          text: `Page ${page + 1} / ${totalPages}`,
-        });
+        .setFooter({ text: `Page ${page + 1} / ${totalPages}` });
 
       for (const record of slice) {
         const icon = ACTION_META[record.action] ?? "🛡️";
-
         embed.addFields({
           name: `${icon} #${record.caseId} • ${record.action}`,
           value: `👮 **${record.moderatorTag || "AutoMod"}**`,
@@ -98,19 +93,21 @@ module.exports = {
     const message = response.resource.message;
 
     const collector = message.createMessageComponentCollector({
-      time: 2 * 60 * 1000,
+      time: 120_000,
     });
 
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({
-          content: "❌ This menu is not for you.",
+          content: "❌ This menu isn’t for you.",
           flags: MessageFlags.Ephemeral,
         });
       }
 
       if (i.customId === "history_next") page++;
       if (i.customId === "history_prev") page--;
+
+      page = Math.max(0, Math.min(page, totalPages - 1));
 
       row.components[0].setDisabled(page === 0);
       row.components[1].setDisabled(page === totalPages - 1);
@@ -122,7 +119,7 @@ module.exports = {
     });
 
     collector.on("end", () => {
-      row.components.forEach(btn => btn.setDisabled(true));
+      row.components.forEach(b => b.setDisabled(true));
       message.edit({ components: [row] }).catch(() => {});
     });
   },

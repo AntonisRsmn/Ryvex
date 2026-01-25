@@ -19,8 +19,27 @@
 module.exports = [
 
   {
+    version: "1.9.6",
+    date: "2026-01-25",
+    changes: [
+      "🧭 Expanded `/setup` into a full system overview with step-by-step status pages",
+      "📜 Added Rules system visibility to setup with clear configuration guidance",
+      "👋 Improved Welcome system integration and status reporting",
+      "🤖 Added detailed AutoMod overview pages (core + advanced configuration)",
+      "🧑‍⚖️ Introduced Staff Monitoring overview inside setup",
+      "📊 Added Staff Accountability Dashboard with activity summaries by time range",
+      "🚨 Implemented Staff Activity Monitoring with manual anomaly detection",
+      "⚙️ Added configurable staff monitoring thresholds with reset support",
+      "🧠 Added alert history and suppression to prevent repeated staff flags",
+      "🎨 Unified embed-based UX across staff, monitoring, and setup commands",
+      "🧹 Removed legacy setup/meta flags in favor of real-time system status",
+      "🔍 Improved clarity between member-facing and moderator-only systems"
+    ],
+  },
+
+  {
     version: "1.9.5",
-    date: "2026-02-02",
+    date: "2026-01-24",
     changes: [
       "📨 Introduced a full Appeals system with member and moderator separation",
       "🙋 Members can now open private appeals using `/appeal`",

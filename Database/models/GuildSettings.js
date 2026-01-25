@@ -25,7 +25,6 @@ const GuildSettingsSchema = new mongoose.Schema(
 
     automod: {
       enabled: { type: Boolean, default: false },
-
       spam: { type: Boolean, default: false },
       links: { type: Boolean, default: false },
       badWords: { type: Boolean, default: false },
@@ -58,16 +57,39 @@ const GuildSettingsSchema = new mongoose.Schema(
       },
     },
 
-    // 🔐 Appeals system (NEW)
+    // 🔐 Appeals system
     appeals: {
       enabled: { type: Boolean, default: false },
       channelId: { type: String, default: null },
-      cooldownMs: { type: Number, default: 12 * 60 * 60 * 1000 }, // 12h
+      cooldownMs: { type: Number, default: 12 * 60 * 60 * 1000 },
+    },
+
+    // 🚨 Staff monitoring
+    staffMonitoring: {
+      enabled: { type: Boolean, default: false },
+
+      alerts: {
+        type: [
+          {
+            moderatorId: String,
+            moderatorTag: String,
+            flag: String,
+            createdAt: Date,
+          },
+        ],
+        default: [],
+      },
+
+      suppression: {
+        type: Map,
+        of: Date,
+        default: {},
+      },
     },
 
     meta: {
       setupCompleted: { type: Boolean, default: false },
-      version: { type: String, default: "1.9.1" },
+      version: { type: String, default: "1.9.5" },
     },
   },
   { timestamps: true }

@@ -1,15 +1,10 @@
 const {
   SlashCommandBuilder,
   EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   MessageFlags,
 } = require("discord.js");
 
-const GuildSettings = require("../../Database/models/GuildSettings");
-
-const MAX_CHARS = 3500;
+const GuildRules = require("../../Database/models/GuildRules");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,76 +12,48 @@ module.exports = {
     .setDescription("View the server rules"),
 
   async execute(interaction) {
-    const settings = await GuildSettings.findOne({ guildId: interaction.guild.id });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    if (!settings || !settings.rules?.enabled || !settings.rules.text) {
-      return interaction.reply({
-        flags: MessageFlags.Ephemeral,
-        content: "📜 This server has not set up rules yet.",
+    const data = await GuildRules.findOne({
+      guildId: interaction.guild.id,
+    });
+
+    if (!data || !data.rules.length) {
+      return interaction.editReply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("📜 Server Rules")
+            .setColor("Red")
+            .setDescription(
+              "⚠️ **No rules have been configured yet.**\n\n" +
+              "Please contact a moderator if this seems incorrect."
+            )
+            .setTimestamp(),
+        ],
       });
     }
 
-    const chunks = settings.rules.text.match(
-      new RegExp(`(.|[\r\n]){1,${MAX_CHARS}}`, "g")
-    );
+    const embed = new EmbedBuilder()
+      .setTitle("📜 Server Rules")
+      .setColor("Blue")
+      .setDescription(
+        [
+          "Please read and follow all rules below.",
+          "Breaking rules may result in moderation actions.",
+          "",
+          ...data.rules
+            .sort((a, b) => a.id - b.id)
+            .map(
+              r =>
+                `**${r.id}. ${r.title}**\n${r.description}`
+            ),
+        ].join("\n\n")
+      )
+      .setFooter({
+        text: "Ryvex • Rules are enforced at moderator discretion",
+      })
+      .setTimestamp();
 
-    let page = 0;
-
-    const getEmbed = () =>
-      new EmbedBuilder()
-        .setTitle("📜 Server Rules")
-        .setDescription(chunks[page])
-        .setColor(0x2f3136)
-        .setFooter({
-          text: `Page ${page + 1} / ${chunks.length}`,
-        });
-
-    if (chunks.length === 1) {
-      return interaction.reply({ embeds: [getEmbed()] });
-    }
-
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("rules_prev")
-        .setLabel("Previous")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("rules_next")
-        .setLabel("Next")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    const message = await interaction.reply({
-      embeds: [getEmbed()],
-      components: [row],
-      fetchReply: true,
-    });
-
-    const collector = message.createMessageComponentCollector({
-      time: 5 * 60 * 1000,
-    });
-
-    collector.on("collect", async (i) => {
-      if (i.user.id !== interaction.user.id) {
-        return i.reply({ flags: MessageFlags.Ephemeral, content: "This menu isn't for you." });
-      }
-
-      if (i.customId === "rules_next") page++;
-      if (i.customId === "rules_prev") page--;
-
-      row.components[0].setDisabled(page === 0);
-      row.components[1].setDisabled(page === chunks.length - 1);
-
-      await i.update({
-        embeds: [getEmbed()],
-        components: [row],
-      });
-    });
-
-    collector.on("end", () => {
-      row.components.forEach((btn) => btn.setDisabled(true));
-      message.edit({ components: [row] }).catch(() => {});
-    });
+    return interaction.editReply({ embeds: [embed] });
   },
 };

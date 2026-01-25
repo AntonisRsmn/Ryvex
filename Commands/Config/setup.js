@@ -39,7 +39,15 @@ module.exports = {
     const moderationReady =
       moderationEnabled && Boolean(moderationChannel);
 
-    /* ───────── APPEALS STATUS (NEW) ───────── */
+    /* ───────── WELCOME STATUS ───────── */
+    const welcomeEnabled = settings.welcome?.enabled === true;
+    const welcomeChannel = settings.welcome?.channelId;
+    const autoRoleId = settings.welcome?.autoRoleId;
+
+    /* ───────── RULES STATUS (NEW) ───────── */
+    const rulesConfigured = Array.isArray(settings.rules) && settings.rules.length > 0;
+
+    /* ───────── APPEALS STATUS ───────── */
     const appeals = settings.appeals ?? {};
     const appealsEnabled = appeals.enabled === true;
     const appealsChannel = appeals.channelId;
@@ -59,10 +67,18 @@ module.exports = {
       badWords: automod.badWords === true,
     };
 
-    const activeFiltersCount = Object.values(filtersEnabled).filter(Boolean).length;
+    const activeFiltersCount =
+      Object.values(filtersEnabled).filter(Boolean).length;
 
     const automodReady =
       automodEnabled && activeFiltersCount > 0;
+
+    /* ───────── STAFF MONITORING STATUS ───────── */
+    const staffMonitoringEnabled =
+      settings.staffMonitoring?.enabled === true;
+
+    const staffAlertsCount =
+      settings.staffMonitoring?.alerts?.length ?? 0;
 
     /* ───────── PAGES ───────── */
     const pages = [
@@ -95,9 +111,13 @@ module.exports = {
             "",
             "**Current Settings**",
             `• Enabled: ${yesNo(loggingEnabled)}`,
-            `• Log channel: ${loggingChannel ? `<#${loggingChannel}>` : "❌ Not set"}`,
+            `• Log channel: ${
+              loggingChannel ? `<#${loggingChannel}>` : "❌ Not set"
+            }`,
             `• Message content logging: ${
-              settings.logging?.messageContent ? "🔓 OFF" : "🔒 ON (privacy)"
+              settings.logging?.messageContent
+                ? "🔓 OFF"
+                : "🔒 ON (privacy)"
             }`,
             "",
             loggingReady
@@ -105,8 +125,8 @@ module.exports = {
               : "❌ **Logging is required for Ryvex to function properly**",
             "",
             "**Commands**",
-            "`/settings logging enable`",
-            "`/settings logging channel <channel>`",
+            "`/logging enable`",
+            "`/logging channel <channel>`",
           ].join("\n")
         ),
 
@@ -121,46 +141,99 @@ module.exports = {
             "",
             "**Current Settings**",
             `• Enabled: ${yesNo(moderationEnabled)}`,
-            `• Channel: ${moderationChannel ? `<#${moderationChannel}>` : "❌ Not set"}`,
+            `• Channel: ${
+              moderationChannel ? `<#${moderationChannel}>` : "❌ Not set"
+            }`,
             "",
             moderationReady
               ? "✅ **Moderation logs are configured**"
               : "⚠️ **Strongly recommended**",
             "",
             "**Command**",
-            "`/settings moderation channel <channel>`",
+            "`/moderation channel <channel>`",
           ].join("\n")
         ),
 
-      /* ───── PAGE 4: APPEALS SYSTEM (NEW) ───── */
+      /* ───── PAGE 4: WELCOME SYSTEM ───── */
+      new EmbedBuilder()
+        .setTitle("👋 Welcome System")
+        .setColor(welcomeEnabled ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Welcomes new members and optionally assigns a role.",
+            "",
+            "**Current Settings**",
+            `• Enabled: ${yesNo(welcomeEnabled)}`,
+            `• Channel: ${
+              welcomeChannel ? `<#${welcomeChannel}>` : "❌ Not set"
+            }`,
+            `• Auto-role: ${autoRoleId ? `<@&${autoRoleId}>` : "Not set"}`,
+            "",
+            welcomeEnabled
+              ? "✅ **Welcome system is active**"
+              : "⚠️ **Welcome system is disabled**",
+            "",
+            "**Commands**",
+            "`/welcome enable`",
+            "`/welcome channel <channel>`",
+            "`/welcome autorole <role>`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 5: RULES (NEW) ───── */
+      new EmbedBuilder()
+        .setTitle("📜 Server Rules")
+        .setColor(rulesConfigured ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Defines server rules used for moderation clarity, AutoMod context, and appeals.",
+            "",
+            "**Current Status**",
+            `• Rules configured: ${yesNo(rulesConfigured)}`,
+            "",
+            rulesConfigured
+              ? "✅ **Rules are set and visible to members**"
+              : "⚠️ **No rules configured yet**",
+            "",
+            "**Commands**",
+            "`/rules` — View server rules",
+            "`/rules-admin add`",
+            "`/rules-admin edit`",
+            "`/rules-admin remove`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 6: APPEALS ───── */
       new EmbedBuilder()
         .setTitle("📨 Appeals System")
         .setColor(appealsReady ? "Green" : "Orange")
         .setDescription(
           [
             "**Purpose**",
-            "Allows members to appeal moderation actions in a controlled, private way.",
+            "Allows members to appeal moderation actions privately.",
             "",
             "**Current Settings**",
-            `• Appeals enabled: ${yesNo(appealsEnabled)}`,
-            `• Appeals channel: ${appealsChannel ? `<#${appealsChannel}>` : "🧠 Auto-create on first appeal"}`,
+            `• Enabled: ${yesNo(appealsEnabled)}`,
+            `• Channel: ${
+              appealsChannel ? `<#${appealsChannel}>` : "Auto-created"
+            }`,
             `• Cooldown: ${appealsCooldownHours} hour(s)`,
             "",
             appealsReady
               ? "✅ **Appeals are available to members**"
               : "⚠️ **Appeals are currently disabled**",
             "",
-            "**Member Command**",
-            "`/appeal` — Open an appeal",
-            "",
-            "**Moderator Commands**",
+            "**Commands**",
+            "`/appeal`",
             "`/appeal-admin config`",
             "`/appeal-admin close`",
             "`/appeal-admin reopen`",
           ].join("\n")
         ),
 
-      /* ───── PAGE 5: AUTOMOD CORE ───── */
+      /* ───── PAGE 7: AUTOMOD CORE ───── */
       new EmbedBuilder()
         .setTitle("🤖 AutoMod — Core System")
         .setColor(
@@ -187,41 +260,20 @@ module.exports = {
           ].join("\n")
         ),
 
-      /* ───── PAGE 6: AUTOMOD FILTERS ───── */
+      /* ───── PAGE 8: AUTOMOD DETAILS ───── */
       new EmbedBuilder()
-        .setTitle("🧹 AutoMod — Filters")
-        .setColor(activeFiltersCount === 3 ? "Green" : "Orange")
-        .setDescription(
-          [
-            "**Filters Control WHAT AutoMod detects**",
-            "",
-            `🚫 **Spam Protection**`,
-            `Status: ${onOff(filtersEnabled.spam)}`,
-            "Detects message flooding in short time windows.",
-            "",
-            `🔗 **Link Protection**`,
-            `Status: ${onOff(filtersEnabled.links)}`,
-            "Blocks unsolicited links (scams, ads, phishing).",
-            "",
-            `🤬 **Bad Language Filter**`,
-            `Status: ${onOff(filtersEnabled.badWords)}`,
-            "Detects offensive words (JSON + custom list).",
-            "",
-            "**Control Commands**",
-            "`/automod filters`",
-            "`/automod preset <soft | medium | strict>`",
-          ].join("\n")
-        ),
-
-      /* ───── PAGE 7: AUTOMOD ADVANCED ───── */
-      new EmbedBuilder()
-        .setTitle("⚙ AutoMod — Advanced Controls")
+        .setTitle("⚙️ AutoMod — Detailed Configuration")
         .setColor("Purple")
         .setDescription(
           [
+            "**Filters**",
+            `🚫 Spam: ${onOff(filtersEnabled.spam)}`,
+            `🔗 Links: ${onOff(filtersEnabled.links)}`,
+            `🤬 Bad Words: ${onOff(filtersEnabled.badWords)}`,
+            "",
             "**Punishments**",
             `• Enabled: ${yesNo(automod.punishments?.enabled)}`,
-            `• Warn-only mode: ${yesNo(automod.punishments?.warnOnly)}`,
+            `• Warn-only: ${yesNo(automod.punishments?.warnOnly)}`,
             `• Timeout after: ${automod.punishments?.timeoutAfter ?? "—"} warns`,
             "",
             "**Bypasses**",
@@ -229,18 +281,35 @@ module.exports = {
             `• Spam-disabled channels: ${count(automod.channels?.spamDisabled)}`,
             `• Link-allowed channels: ${count(automod.channels?.linksAllowed)}`,
             `• Bad-word-disabled channels: ${count(automod.channels?.badWordsDisabled)}`,
-            `• Role bypasses: ${count(automod.rolesBypass)}`,
             "",
-            "**Management Commands**",
-            "`/automod status`",
-            "`/automod-channel view`",
+            "**Commands**",
+            "`/automod filters`",
             "`/automod-punishment view`",
             "`/automod-roles view`",
-            "`/automod-badwords view`",
           ].join("\n")
         ),
 
-      /* ───── PAGE 8: FINAL CHECK ───── */
+      /* ───── PAGE 9: STAFF MONITORING ───── */
+      new EmbedBuilder()
+        .setTitle("🧑‍⚖️ Staff Monitoring")
+        .setColor(staffMonitoringEnabled ? "Green" : "Orange")
+        .setDescription(
+          [
+            "**Purpose**",
+            "Provides accountability and detects unusual staff behavior.",
+            "",
+            "**Current Status**",
+            `• Enabled: ${yesNo(staffMonitoringEnabled)}`,
+            `• Alerts recorded: **${staffAlertsCount}**`,
+            "",
+            "**Commands**",
+            "`/staff dashboard`",
+            "`/staff-flags enable`",
+            "`/staff-flags check`",
+          ].join("\n")
+        ),
+
+      /* ───── PAGE 10: FINAL CHECK ───── */
       new EmbedBuilder()
         .setTitle("✅ Setup Completion Checklist")
         .setColor("Green")
@@ -250,15 +319,18 @@ module.exports = {
             "",
             `☑ Logging ready: ${yesNo(loggingReady)}`,
             `☑ Moderation logs set: ${yesNo(moderationReady)}`,
+            `☑ Welcome system enabled: ${yesNo(welcomeEnabled)}`,
+            `☑ Rules configured: ${yesNo(rulesConfigured)}`,
             `☑ Appeals enabled: ${yesNo(appealsReady)}`,
             `☑ AutoMod active: ${yesNo(automodReady)}`,
+            `☑ Staff monitoring enabled: ${yesNo(staffMonitoringEnabled)}`,
             "",
             "You can safely re-run `/setup` anytime.",
           ].join("\n")
         ),
     ];
 
-    /* ───────── NAVIGATION ───────── */
+    /* ───────── NAVIGATION (UNCHANGED) ───────── */
     let page = 0;
 
     const buildRow = () =>
@@ -304,6 +376,7 @@ module.exports = {
       }
 
       await i.deferUpdate().catch(() => {});
+
       if (i.customId === "close") return collector.stop();
       if (i.customId === "prev" && page > 0) page--;
       if (i.customId === "next" && page < pages.length - 1) page++;
