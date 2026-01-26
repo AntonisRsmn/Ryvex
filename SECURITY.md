@@ -94,6 +94,21 @@ By reporting responsibly, you help keep Ryvex and its users safe.
 
 ---
 
+## 📦 Scope
+
+This security policy applies to:
+
+- The official **Ryvex Discord bot**
+- Public releases of Ryvex hosted by the Ryvex team
+- Source code published in this GitHub repository
+
+The following are **out of scope**:
+- Self-hosted forks
+- Modified or unofficial builds
+- Third-party plugins or integrations
+
+---
+
 ## 🤝 Thank You
 
 Thank you for helping make **Ryvex** safer and more trustworthy for everyone.
