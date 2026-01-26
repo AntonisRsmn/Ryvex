@@ -1,12 +1,18 @@
 # 🤖 **Ryvex** — Moderation You Can Audit, Trust, and Scale
 
-**Ryvex** is a **moderation-first Discord bot** built for servers that take **staff accountability, transparency, and stability** seriously.
+**Ryvex** is a **moderation-first Discord bot** built for servers that care about **staff accountability, transparency, and long-term stability**.
 
-Unlike generic “all-in-one” bots, Ryvex focuses on **clear moderation workflows**, **case-based actions**, and **audit-friendly logging**, making it ideal for servers with multiple moderators and real governance needs.
+Instead of being a generic “do-everything” bot, Ryvex focuses on:
+- **Clear moderation workflows**
+- **Case-based actions**
+- **Audit-friendly logging**
+- **Review-first staff monitoring**
+
+Ryvex is designed so **nothing important happens silently**.
 
 🌐 **Website:** https://ryvex.gr  
-🆘 **Support:** Use `/support` inside Discord  
-⚙️ **Setup:** Use `/setup` inside discord to configure the bot
+🆘 **Support:** `/support` inside Discord  
+⚙️ **Setup:** `/setup` (guided, read-only overview)
 
 ---
 
@@ -15,13 +21,14 @@ Unlike generic “all-in-one” bots, Ryvex focuses on **clear moderation workfl
 Ryvex helps server owners and moderation teams:
 
 - 🛡️ Enforce rules **consistently and safely**
-- 🧾 Track **every moderation action** in a persistent case system
-- 🔍 Audit moderator behavior transparently
-- 👋 Onboard new members with configurable welcome tools
-- ⚙️ Configure everything per-server with zero clutter
+- 🧾 Track **every moderation action** with persistent cases
+- 🔍 Audit moderator behavior **without spying or auto-punishment**
+- 🤖 Automate rule enforcement with **configurable AutoMod**
+- 👋 Onboard members cleanly with welcome tools
+- ⚙️ Configure everything per-server with **clear, dedicated commands**
 
 **No prefixes. No legacy commands.**  
-Everything runs through modern **Discord slash commands**.
+Everything uses modern **Discord slash commands**.
 
 ---
 
@@ -29,12 +36,12 @@ Everything runs through modern **Discord slash commands**.
 
 Ryvex is designed for:
 
-- Medium to large Discord servers  
+- Medium to large Discord servers
 - Servers with **multiple moderators**
 - Owners who want **visibility into staff actions**
 - Communities where **trust and accountability matter**
 
-If you want a “set-and-forget” casual bot, Ryvex is probably not for you — and that’s intentional.
+If you want a “set-and-forget casual bot”, Ryvex is probably **not** for you — by design.
 
 ---
 
@@ -44,25 +51,16 @@ If you want a “set-and-forget” casual bot, Ryvex is probably not for you —
 
 Every moderation action creates a **persistent case** stored in MongoDB.
 
-### Supported actions
-- Warn / Clear / Remove warnings
+**Supported actions**
+- Warn / Remove warnings / Clear warnings
 - Timeout / Untimeout
 - Kick
 - Ban / Unban
-- Kick
-- Timeout / Unmute
+- Clear messages
 - Lock / Unlock channels
 - Add / Remove roles
-- Warnings (fully managed)
 
-Each case includes:
-- Case ID
-- Action type
-- Target & moderator
-- Reason & duration
-- Timestamp
-
-**Case management commands:**
+**Case commands**
 ```
 /case view <id>
 /case edit <id> <reason>
@@ -71,33 +69,22 @@ Each case includes:
 
 ---
 
-### 🧾 Advanced Logging System
+### 📜 Advanced Logging System
 
-Ryvex uses an **event-driven logging system** designed for real moderation workflows.
-
-**Logged events include:**
 - Member joins & leaves
-- Member updates (roles, nicknames)
 - Message edits & deletions (privacy-aware)
-- Channel, role, and server updates
+- Channel, role, and server changes
 - All moderation actions (case-linked)
 
-**Safety & privacy first:**
-- Message content logging is optional
-- Audit logs are accessed only when permitted
-- Graceful fallbacks when permissions are missing
-- No crashes or log spam
-
-Logs are automatically separated into:
+Logs are separated into:
 - General logs
 - Moderation logs
 
 ---
 
 ### ⚠️ Warning System
-
 ```
-/warn add <member> [reason]
+/warn add <member>
 /warn count <member>
 /warn remove <caseId>
 /warn clear <member>
@@ -105,34 +92,60 @@ Logs are automatically separated into:
 
 ---
 
-### 👋 Welcome & Onboarding
+### 🤖 AutoMod System
 
-- Custom welcome messages
-- Optional automatic role assignment
-- Fully configurable per server
-
----
-
-## ⚙️ Configuration & Setup
-
-- `/setup` — Initial server setup
-- `/settings` — Modify server configuration
+- Spam detection
+- Link protection
+- Bad-word filtering
+- Presets & escalation
+- Channel & role bypasses
 
 ---
 
-## 📜 Command Categories
+### 📨 Appeals System
 
-### 🛡️ Moderation
-`/ban`, `/unban`, `/kick`, `/timeout`, `/unmute`, `/lock`, `/unlock`, `/add-role`, `/remove-role`, `/clear`
+```
+/appeal
+/appeal-admin config
+/appeal-admin close
+/appeal-admin reopen
+```
 
-### 🧾 Records
-`/case`, `/modlog`, `/warn`
+---
 
-### ⚙️ Configuration
-`/setup`, `/settings`
+### 👋 Welcome System
 
-### 🎮 Fun (Optional)
-`/8ball`, `/rps`, `/meme`
+```
+/welcome enable
+/welcome channel <channel>
+/welcome autorole <role>
+```
+
+---
+
+### 🧑‍⚖️ Staff Accountability
+
+```
+/staff dashboard
+/staff-flags enable
+/staff-flags check
+/staff-flags history
+```
+
+---
+
+### 📜 Rules System
+
+Structured, configurable rules integrated into setup & moderation.
+
+---
+
+## ⚙️ Setup & Configuration
+
+```
+/setup
+/settings view
+```
 
 ---
 
@@ -147,4 +160,4 @@ Logs are automatically separated into:
 ## 👤 Author
 
 **Antonis Rusman**  
-🌐 https://rusman.gr
+https://rusman.gr
