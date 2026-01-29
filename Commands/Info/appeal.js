@@ -7,6 +7,8 @@ const {
 } = require("discord.js");
 
 const ModAction = require("../../Database/models/ModAction");
+const Appeal = require("../../Database/models/Appeal");
+
 const {
   getGuildSettings,
   updateGuildSettings,
@@ -20,18 +22,63 @@ module.exports = {
     .setDescription("Open an appeal for a moderation action"),
 
   async execute(interaction) {
-    const settings = await getGuildSettings(interaction.guild.id);
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    if (!settings.appeals.enabled) {
+    const guildId = interaction.guild.id;
+    const userId = interaction.user.id;
+
+    const settings = await getGuildSettings(guildId);
+
+    /* ───────── APPEALS ENABLED CHECK ───────── */
+    if (!settings.appeals?.enabled) {
       return respond(interaction, {
         content: "❌ The appeal system is currently disabled on this server.",
         flags: MessageFlags.Ephemeral,
       });
     }
 
+    /* ───────── BLOCK MULTIPLE OPEN APPEALS ───────── */
+    const openAppeal = await Appeal.findOne({
+      guildId,
+      userId,
+      status: "open",
+    });
+
+    if (openAppeal) {
+      return respond(interaction, {
+        content:
+          "❌ You already have an **open appeal**.\nPlease wait for it to be reviewed before opening another.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    /* ───────── COOLDOWN CHECK ───────── */
+    const lastAppeal = await Appeal.findOne({
+      guildId,
+      userId,
+    }).sort({ openedAt: -1 });
+
+    if (lastAppeal) {
+      const cooldownMs =
+        settings.appeals.cooldownMs ?? 12 * 60 * 60 * 1000;
+
+      const elapsed = Date.now() - lastAppeal.openedAt.getTime();
+
+      if (elapsed < cooldownMs) {
+        const remainingMs = cooldownMs - elapsed;
+        const hours = Math.ceil(remainingMs / (60 * 60 * 1000));
+
+        return respond(interaction, {
+          content: `⏳ You must wait **${hours} more hour(s)** before opening another appeal.`,
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
+
+    /* ───────── FIND LAST MOD ACTION ───────── */
     const lastAction = await ModAction.findOne({
-      guildId: interaction.guild.id,
-      targetId: interaction.user.id,
+      guildId,
+      targetId: userId,
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -43,6 +90,7 @@ module.exports = {
       });
     }
 
+    /* ───────── GET / CREATE APPEALS CHANNEL ───────── */
     let channel =
       settings.appeals.channelId &&
       interaction.guild.channels.cache.get(settings.appeals.channelId);
@@ -59,20 +107,30 @@ module.exports = {
         ],
       });
 
-      await updateGuildSettings(interaction.guild.id, {
+      await updateGuildSettings(guildId, {
         "appeals.channelId": channel.id,
       });
     }
 
+    /* ───────── CREATE APPEAL THREAD ───────── */
     const thread = await channel.threads.create({
       name: `appeal-${interaction.user.username}`,
       type: ChannelType.PrivateThread,
       autoArchiveDuration: 1440,
     });
 
-    await thread.members.add(interaction.user.id).catch(() => {});
+    await thread.members.add(userId).catch(() => {});
     await thread.members.add(lastAction.moderatorId).catch(() => {});
 
+    /* ───────── SAVE APPEAL TO DB ───────── */
+    await Appeal.create({
+      guildId,
+      userId,
+      caseId: lastAction.caseId,
+      channelId: thread.id,
+    });
+
+    /* ───────── EMBED ───────── */
     const embed = new EmbedBuilder()
       .setTitle("📌 Appeal Opened")
       .setColor("DarkRed")
