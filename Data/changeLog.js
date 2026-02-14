@@ -19,6 +19,19 @@
 module.exports = [
 
   {
+  version: "1.9.7",
+  date: "2026-02-14",
+  changes: [
+    "🎉 Added automatic seasonal bot presence (New Year, Valentine’s, Halloween, Christmas)",
+    "🔄 Implemented smart activity rotation between event messages and server count",
+    "🎧 Added default presence rotation (Listening to Ryvex / Watching <server count>)",
+    "🗓️ Integrated automatic date-based event detection",
+    "⚙️ Refactored presence system for cleaner and more stable activity handling",
+    "✨ Improved overall bot personality and visual consistency across the year"
+  ],
+},
+
+  {
     version: "1.9.6",
     date: "2026-01-25",
     changes: [
