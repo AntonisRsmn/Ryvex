@@ -151,9 +151,9 @@ Structured, configurable rules integrated into setup & moderation.
 
 ## 🧩 Tech Stack
 
-- Node.js
-- discord.js (API v10)
-- MongoDB
+- Node.js 18+
+- discord.js v14 (API v10)
+- MongoDB + Mongoose v9
 
 ---
 

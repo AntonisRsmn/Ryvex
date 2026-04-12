@@ -68,7 +68,7 @@ async function getRedditMeme() {
       `https://www.reddit.com/r/${subreddit}/hot.json?limit=50`,
       {
         headers: {
-          "User-Agent": "RyvexBot/1.9.2 (by u/Ryvex)",
+          "User-Agent": "RyvexBot/1.9.8 (by u/Ryvex)",
         },
       }
     );

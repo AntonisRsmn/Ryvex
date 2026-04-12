@@ -19,6 +19,19 @@
 module.exports = [
 
   {
+    version: "1.9.8",
+    date: "2026-04-12",
+    changes: [
+      "🔒 Security update — upgraded all dependencies to latest versions",
+      "🛡️ Resolved 10 known vulnerabilities including high-severity undici CVEs",
+      "🛡️ Patched brace-expansion zero-step sequence DoS vulnerability (CVE-2024-4068)",
+      "⬆️ Upgraded Mongoose to v9 (fully compatible, no breaking changes in bot code)",
+      "⬆️ Upgraded discord.js, @discordjs/rest, ws, and 100+ other packages",
+      "📦 Cleaned up deprecated dependencies (read-package-json, semver-diff, global-dirs)",
+    ],
+  },
+
+  {
     version: "1.9.6",
     date: "2026-01-25",
     changes: [

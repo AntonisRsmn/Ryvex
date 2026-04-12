@@ -89,7 +89,7 @@ const GuildSettingsSchema = new mongoose.Schema(
 
     meta: {
       setupCompleted: { type: Boolean, default: false },
-      version: { type: String, default: "1.9.5" },
+      version: { type: String, default: "1.9.8" },
     },
   },
   { timestamps: true }
