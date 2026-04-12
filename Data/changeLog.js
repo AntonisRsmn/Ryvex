@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Ryvex Changelog
  * ----------------
  * IMPORTANT RULES:
@@ -19,7 +19,6 @@
 module.exports = [
 
   {
-<<<<<<< HEAD
     version: "1.9.8",
     date: "2026-04-12",
     changes: [
@@ -31,19 +30,19 @@ module.exports = [
       "📦 Cleaned up deprecated dependencies (read-package-json, semver-diff, global-dirs)",
     ],
   },
-=======
-  version: "1.9.7",
-  date: "2026-02-14",
-  changes: [
-    "🎉 Added automatic seasonal bot presence (New Year, Valentine’s, Halloween, Christmas)",
-    "🔄 Implemented smart activity rotation between event messages and server count",
-    "🎧 Added default presence rotation (Listening to Ryvex / Watching <server count>)",
-    "🗓️ Integrated automatic date-based event detection",
-    "⚙️ Refactored presence system for cleaner and more stable activity handling",
-    "✨ Improved overall bot personality and visual consistency across the year"
-  ],
-},
->>>>>>> be6a60b8863b227880131dd212712737c831a30d
+
+  {
+    version: "1.9.7",
+    date: "2026-02-14",
+    changes: [
+      "🎉 Added automatic seasonal bot presence (New Year, Valentine's, Halloween, Christmas)",
+      "🔄 Implemented smart activity rotation between event messages and server count",
+      "🎧 Added default presence rotation (Listening to Ryvex / Watching <server count>)",
+      "🗓️ Integrated automatic date-based event detection",
+      "⚙️ Refactored presence system for cleaner and more stable activity handling",
+      "✨ Improved overall bot personality and visual consistency across the year",
+    ],
+  },
 
   {
     version: "1.9.6",
@@ -127,7 +126,7 @@ module.exports = [
     changes: [
       "🐛 Fixed duplicate logs when using `/clear` (general + moderation logs firing together)",
       "🗑️ Fixed missing General Logs for messages deleted manually from Discord",
-      "🧠 Improved suppression logic so moderation commands don’t trigger General Logs",
+      "🧠 Improved suppression logic so moderation commands don't trigger General Logs",
       "🕵️ Improved audit log detection for identifying who deleted a message",
       "📄 Corrected routing between General Logs and Moderation Logs",
       "🔒 Made message logging fully privacy-aware (respects privacy mode reliably)",
