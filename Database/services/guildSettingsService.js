@@ -4,7 +4,7 @@ async function getGuildSettings(guildId) {
   const settings = await GuildSettings.findOneAndUpdate(
     { guildId },
     { $setOnInsert: { guildId } },
-    { new: true, upsert: true }
+    { returnDocument: 'after', upsert: true }
   );
 
   let save = false;
@@ -64,7 +64,7 @@ async function updateGuildSettings(guildId, updates) {
   return GuildSettings.findOneAndUpdate(
     { guildId },
     { $set: updates },
-    { new: true, upsert: true }
+    { returnDocument: 'after', upsert: true }
   );
 }
 
