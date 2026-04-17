@@ -3,6 +3,16 @@ const spamMap = new Map();
 const WINDOW_MS = 5000;
 const THRESHOLD = 5;
 
+/* ───────── PERIODIC CLEANUP (every 60s) ───────── */
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, data] of spamMap) {
+    if (now - data.first > WINDOW_MS) {
+      spamMap.delete(userId);
+    }
+  }
+}, 60_000);
+
 function isSpamming(userId, message) {
   const now = Date.now();
 

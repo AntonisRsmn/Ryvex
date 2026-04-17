@@ -8,6 +8,7 @@ module.exports = {
   name: "channelCreate",
 
   async execute(channel) {
+    try {
     const guild = channel.guild;
     if (!guild) return;
 
@@ -78,5 +79,8 @@ module.exports = {
       ].join("\n"),
       color: "Blue",
     });
+    } catch (err) {
+      console.error("[channelCreate]", err);
+    }
   },
 };

@@ -21,6 +21,7 @@ async function logAction({
   duration,
   extra = {},
 }) {
+  try {
   if (!guild || !action || !target || !moderator) return;
 
   const caseId = await getNextCaseId(guild.id);
@@ -76,6 +77,9 @@ async function logAction({
     description: lines.join("\n"),
     color: embedColor,
   });
+  } catch (err) {
+    console.error("[logAction]", err);
+  }
 }
 
 module.exports = { logAction };

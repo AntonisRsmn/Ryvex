@@ -4,6 +4,7 @@ module.exports = {
   name: "messageReactionAdd",
 
   async execute(reaction, user) {
+    try {
     if (user.bot) return;
 
     if (reaction.partial) await reaction.fetch();
@@ -18,6 +19,9 @@ module.exports = {
     const otherReaction = reaction.message.reactions.cache.get(other);
     if (otherReaction?.users.cache.has(user.id)) {
       await otherReaction.users.remove(user.id).catch(() => {});
+    }
+    } catch (err) {
+      console.error("[messageReactionAdd]", err);
     }
   },
 };

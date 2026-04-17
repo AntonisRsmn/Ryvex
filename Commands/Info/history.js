@@ -45,6 +45,22 @@ module.exports = {
       });
     }
 
+    /* ───────── SUMMARY STATS ───────── */
+    const counts = {};
+    for (const a of actions) {
+      counts[a.action] = (counts[a.action] || 0) + 1;
+    }
+
+    const summaryLines = [
+      `📋 **Total:** ${actions.length} action${actions.length !== 1 ? "s" : ""}`,
+    ];
+    if (counts["Warn"]) summaryLines.push(`> ⚠️ Warns: ${counts["Warn"]}`);
+    if (counts["Timeout"] || counts["Auto Timeout"])
+      summaryLines.push(`> ⏳ Timeouts: ${(counts["Timeout"] ?? 0) + (counts["Auto Timeout"] ?? 0)}`);
+    if (counts["Kick"]) summaryLines.push(`> 👢 Kicks: ${counts["Kick"]}`);
+    if (counts["Ban"]) summaryLines.push(`> 🔨 Bans: ${counts["Ban"]}`);
+    if (counts["Unban"]) summaryLines.push(`> ♻️ Unbans: ${counts["Unban"]}`);
+
     let page = 0;
     const totalPages = Math.ceil(actions.length / PAGE_SIZE);
 
@@ -54,38 +70,49 @@ module.exports = {
         page * PAGE_SIZE + PAGE_SIZE
       );
 
-      const embed = new EmbedBuilder()
-        .setTitle(`🛡️ Your Moderation History`)
-        .setColor("DarkRed")
-        .setFooter({ text: `Page ${page + 1} / ${totalPages}` });
-
-      for (const record of slice) {
+      const entries = slice.map(record => {
         const icon = ACTION_META[record.action] ?? "🛡️";
-        embed.addFields({
-          name: `${icon} #${record.caseId} • ${record.action}`,
-          value: `👮 **${record.moderatorTag || "AutoMod"}**`,
-        });
-      }
+        const ts = Math.floor(new Date(record.createdAt).getTime() / 1000);
+        const reason = (record.reason ?? "No reason provided").slice(0, 100);
+        const duration = record.extra?.duration
+          ? ` • Duration: **${record.extra.duration}**`
+          : "";
+        return [
+          `${icon} **#${record.caseId} • ${record.action}**${duration}`,
+          `> 👮 ${record.moderatorTag || "AutoMod"} • <t:${ts}:R>`,
+          `> 📝 ${reason}`,
+        ].join("\n");
+      });
 
-      return embed;
+      const description = page === 0
+        ? [summaryLines.join("\n"), "", ...entries].join("\n\n")
+        : entries.join("\n\n");
+
+      return new EmbedBuilder()
+        .setTitle("🛡️ Your Moderation History")
+        .setColor("DarkRed")
+        .setDescription(description)
+        .setFooter({ text: `Ryvex • Page ${page + 1} / ${totalPages}` })
+        .setTimestamp();
     };
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("history_prev")
-        .setLabel("◀")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("history_next")
-        .setLabel("▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(totalPages === 1)
-    );
+    const buildRow = () =>
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("history_prev")
+          .setLabel("◀ Previous")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === 0),
+        new ButtonBuilder()
+          .setCustomId("history_next")
+          .setLabel("Next ▶")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === totalPages - 1),
+      );
 
     const response = await interaction.reply({
       embeds: [buildEmbed()],
-      components: [row],
+      components: [buildRow()],
       flags: MessageFlags.Ephemeral,
       withResponse: true,
     });
@@ -99,28 +126,28 @@ module.exports = {
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({
-          content: "❌ This menu isn’t for you.",
+          content: "❌ This menu isn't for you.",
           flags: MessageFlags.Ephemeral,
         });
       }
 
+      await i.deferUpdate().catch(() => {});
+
       if (i.customId === "history_next") page++;
       if (i.customId === "history_prev") page--;
-
       page = Math.max(0, Math.min(page, totalPages - 1));
 
-      row.components[0].setDisabled(page === 0);
-      row.components[1].setDisabled(page === totalPages - 1);
-
-      await i.update({
+      await interaction.editReply({
         embeds: [buildEmbed()],
-        components: [row],
+        components: [buildRow()],
       });
     });
 
     collector.on("end", () => {
-      row.components.forEach(b => b.setDisabled(true));
-      message.edit({ components: [row] }).catch(() => {});
+      const disabledRow = new ActionRowBuilder().addComponents(
+        ...buildRow().components.map(b => b.setDisabled(true))
+      );
+      message.edit({ components: [disabledRow] }).catch(() => {});
     });
   },
 };

@@ -31,7 +31,7 @@ module.exports = {
     .setDescription("View moderation history")
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addUserOption(opt =>
-        opt
+      opt
         .setName("moderator")
         .setDescription("Staff member")
         .setRequired(true)
@@ -52,9 +52,34 @@ module.exports = {
 
     if (!actions.length) {
       return interaction.editReply(
-        `❌ No moderation actions found for **${moderator.tag}**.`
+        `✅ No moderation actions found for **${moderator.tag}**.`
       );
     }
+
+    /* ───────── SUMMARY STATS ───────── */
+    const counts = {};
+    const uniqueTargets = new Set();
+    for (const a of actions) {
+      counts[a.action] = (counts[a.action] || 0) + 1;
+      uniqueTargets.add(a.targetId);
+    }
+
+    const firstAction = actions[actions.length - 1];
+    const lastAction = actions[0];
+    const firstTs = Math.floor(new Date(firstAction.createdAt).getTime() / 1000);
+    const lastTs = Math.floor(new Date(lastAction.createdAt).getTime() / 1000);
+
+    const summaryLines = [
+      `📋 **Total:** ${actions.length} action${actions.length !== 1 ? "s" : ""} against **${uniqueTargets.size}** unique member${uniqueTargets.size !== 1 ? "s" : ""}`,
+    ];
+    if (counts["Warn"]) summaryLines.push(`> ⚠️ Warns: ${counts["Warn"]}`);
+    if (counts["Timeout"] || counts["Auto Timeout"])
+      summaryLines.push(`> ⏳ Timeouts: ${(counts["Timeout"] ?? 0) + (counts["Auto Timeout"] ?? 0)}`);
+    if (counts["Kick"]) summaryLines.push(`> 👢 Kicks: ${counts["Kick"]}`);
+    if (counts["Ban"]) summaryLines.push(`> 🔨 Bans: ${counts["Ban"]}`);
+    if (counts["Unban"]) summaryLines.push(`> ♻️ Unbans: ${counts["Unban"]}`);
+    summaryLines.push("");
+    summaryLines.push(`> First action: <t:${firstTs}:R> • Last: <t:${lastTs}:R>`);
 
     let page = 0;
     const totalPages = Math.ceil(actions.length / PAGE_SIZE);
@@ -65,74 +90,81 @@ module.exports = {
         page * PAGE_SIZE + PAGE_SIZE
       );
 
-      const description = slice
-        .map(a => {
-          const icon = ACTION_META[a.action] ?? "🛡️";
-          return [
-            `**${icon} #${a.caseId} • ${a.action}**`,
-            `🎯 Target: ${a.targetTag}`,
-            `🔎 \`/case view ${a.caseId}\``,
-          ].join("\n");
-        })
-        .join("\n\n");
+      const entries = slice.map(a => {
+        const icon = ACTION_META[a.action] ?? "🛡️";
+        const ts = Math.floor(new Date(a.createdAt).getTime() / 1000);
+        const reason = (a.reason ?? "No reason provided").slice(0, 100);
+        const duration = a.extra?.duration
+          ? ` • Duration: **${a.extra.duration}**`
+          : "";
+        return [
+          `${icon} **#${a.caseId} • ${a.action}**${duration}`,
+          `> 🎯 ${a.targetTag} • <t:${ts}:R>`,
+          `> 📝 ${reason}`,
+        ].join("\n");
+      });
+
+      const description = page === 0
+        ? [summaryLines.join("\n"), "", ...entries].join("\n\n")
+        : entries.join("\n\n");
 
       return new EmbedBuilder()
         .setTitle(`🧑‍⚖️ Staff History — ${moderator.tag}`)
         .setColor("Blue")
+        .setThumbnail(moderator.displayAvatarURL({ size: 128 }))
         .setDescription(description)
-        .setFooter({ text: `Page ${page + 1} / ${totalPages}` })
+        .setFooter({ text: `Ryvex • Page ${page + 1} / ${totalPages}` })
         .setTimestamp();
     };
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("prev")
-        .setLabel("◀")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("next")
-        .setLabel("▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(totalPages === 1)
-    );
+    const buildRow = () =>
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("hstaff_prev")
+          .setLabel("◀ Previous")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === 0),
+        new ButtonBuilder()
+          .setCustomId("hstaff_next")
+          .setLabel("Next ▶")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === totalPages - 1),
+      );
 
     const message = await interaction.editReply({
       embeds: [buildEmbed()],
-      components: [row],
+      components: [buildRow()],
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 60_000,
+      time: 120_000,
     });
 
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({
-          content: "❌ This menu isn’t for you.",
+          content: "❌ This menu isn't for you.",
           ephemeral: true,
         });
       }
 
       await i.deferUpdate().catch(() => {});
 
-      if (i.customId === "prev") page--;
-      if (i.customId === "next") page++;
-
+      if (i.customId === "hstaff_prev") page--;
+      if (i.customId === "hstaff_next") page++;
       page = Math.max(0, Math.min(page, totalPages - 1));
-
-      row.components[0].setDisabled(page === 0);
-      row.components[1].setDisabled(page === totalPages - 1);
 
       await interaction.editReply({
         embeds: [buildEmbed()],
-        components: [row],
+        components: [buildRow()],
       });
     });
 
     collector.on("end", async () => {
-      row.components.forEach(b => b.setDisabled(true));
-      await interaction.editReply({ components: [row] }).catch(() => {});
+      const disabledRow = new ActionRowBuilder().addComponents(
+        ...buildRow().components.map(b => b.setDisabled(true))
+      );
+      await interaction.editReply({ components: [disabledRow] }).catch(() => {});
     });
   },
 };

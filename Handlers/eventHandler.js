@@ -1,12 +1,24 @@
-const ascii = require("ascii-table");
 const fs = require("fs");
 const path = require("path");
 
-function loadEvents(client) {
-  const table = new ascii().setHeading("Event", "Status");
+/* ───────── ANSI COLORS ───────── */
+const c = {
+  reset: "\x1b[0m",
+  dim: "\x1b[2m",
+  green: "\x1b[32m",
+  red: "\x1b[31m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  bold: "\x1b[1m",
+  yellow: "\x1b[33m",
+};
 
+function loadEvents(client) {
   const eventsPath = path.join(__dirname, "../Events");
   const eventFolders = fs.readdirSync(eventsPath);
+
+  const loaded = [];
+  const failed = [];
 
   for (const folder of eventFolders) {
     const folderPath = path.join(eventsPath, folder);
@@ -18,9 +30,8 @@ function loadEvents(client) {
       const filePath = path.join(folderPath, file);
       const event = require(filePath);
 
-      // Validation
       if (!event.name || typeof event.execute !== "function") {
-        table.addRow(file, "❌ Invalid");
+        failed.push(file);
         console.warn(`Event ${file} is missing name or execute().`);
         continue;
       }
@@ -41,12 +52,17 @@ function loadEvents(client) {
         }
       }
 
-      table.addRow(event.name, "✅ Loaded");
+      loaded.push(event.name);
     }
   }
 
-  console.log(table.toString());
-  console.log("Events loaded.");
+  console.log(`  ${c.cyan}📡 Events${c.reset}    ${c.green}${c.bold}${loaded.length} loaded${c.reset}${failed.length ? `  ${c.red}${failed.length} failed${c.reset}` : ""}`);
+
+  if (failed.length) {
+    for (const f of failed) {
+      console.log(`    ${c.red}✗${c.reset} ${c.dim}${f}${c.reset}`);
+    }
+  }
 }
 
 module.exports = { loadEvents };

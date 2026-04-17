@@ -12,6 +12,7 @@ module.exports = {
   name: "channelDelete",
 
   async execute(channel) {
+    try {
     const guild = channel.guild;
     if (!guild) return;
 
@@ -82,5 +83,8 @@ module.exports = {
       ].join("\n"),
       color: "Red",
     });
+    } catch (err) {
+      console.error("[channelDelete]", err);
+    }
   },
 };

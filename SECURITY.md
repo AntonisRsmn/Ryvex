@@ -98,14 +98,25 @@ By reporting responsibly, you help keep Ryvex and its users safe.
 
 This security policy applies to:
 
-- The official **Ryvex Discord bot**
+- The official **Ryvex Discord bot** (v1.10.0+)
 - Public releases of Ryvex hosted by the Ryvex team
 - Source code published in this GitHub repository
+- All 54 slash commands and their associated event handlers
 
 The following are **out of scope**:
 - Self-hosted forks
 - Modified or unofficial builds
 - Third-party plugins or integrations
+
+---
+
+## 📋 Supported Versions
+
+| Version | Supported |
+|---------|-----------|
+| 1.10.x  | ✅ Active  |
+| 1.9.x   | ⚠️ Security fixes only |
+| < 1.9   | ❌ Unsupported |
 
 ---
 

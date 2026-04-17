@@ -8,6 +8,7 @@ module.exports = {
   name: "guildUpdate",
 
   async execute(oldGuild, newGuild) {
+    try {
     const settings = await getGuildSettings(newGuild.id);
 
     const enabled = settings.logging?.events?.guildUpdate ?? true;
@@ -104,5 +105,8 @@ module.exports = {
       color: "Blue",
       type: "general",
     });
+    } catch (err) {
+      console.error("[guildUpdate]", err);
+    }
   },
 };

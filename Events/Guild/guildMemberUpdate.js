@@ -11,6 +11,7 @@ module.exports = {
   name: "guildMemberUpdate",
 
   async execute(oldMember, newMember) {
+    try {
     const guild = newMember.guild;
     if (!guild) return;
 
@@ -105,5 +106,8 @@ module.exports = {
       color: "Blue",
       type: "general",
     });
+    } catch (err) {
+      console.error("[guildMemberUpdate]", err);
+    }
   },
 };

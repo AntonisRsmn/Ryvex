@@ -5,22 +5,43 @@ module.exports = {
   once: true,
 
   async execute(client) {
-    console.log(`${client.user.username} is now online.`);
-
     // ✅ Register slash commands
     try {
       await client.application.commands.set(client._slashCommands);
-      console.log("Slash commands registered.");
     } catch (err) {
       console.error("Failed to register slash commands:", err);
+    }
+
+    /* ───────── EASTER CALCULATOR (Anonymous Gregorian) ───────── */
+    function getEasterDate(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const eMonth = Math.floor((h + l - 7 * m + 114) / 31) - 1; // 0-indexed
+      const eDay = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, eMonth, eDay);
     }
 
     /* ───────── SEASON CHECK ───────── */
     const now = new Date();
     const month = now.getMonth(); // 0 = January
     const day = now.getDate();
-
+    const year = now.getFullYear();
     const dayOfWeek = now.getDay(); // 0 = Sunday, 5 = Friday
+
+    // Easter window: Good Friday (−2) through Easter Monday (+1)
+    const easter = getEasterDate(year);
+    const easterStart = new Date(year, easter.getMonth(), easter.getDate() - 2);
+    const easterEnd = new Date(year, easter.getMonth(), easter.getDate() + 1, 23, 59, 59);
 
     let seasonalActivity = null;
 
@@ -35,10 +56,11 @@ module.exports = {
     // 💘 Valentine (Feb 10–16)
     else if (month === 1 && day >= 10 && day <= 16) {
       seasonalActivity = {
-        name: "💘 Happy Valentine’s Day!",
+        name: "💘 Happy Valentine's Day!",
         type: ActivityType.Watching,
       };
     }
+
     // 🤡 April Fools (Apr 1)
     else if (month === 3 && day === 1) {
       seasonalActivity = {
@@ -47,8 +69,8 @@ module.exports = {
       };
     }
 
-    // 🐣 Easter (Apr 18–21)
-    else if (month === 3 && day >= 18 && day <= 21) {
+    // 🐣 Easter (Good Friday → Easter Monday, auto-calculated yearly)
+    else if (now >= easterStart && now <= easterEnd) {
       seasonalActivity = {
         name: "🐣 Happy Easter!",
         type: ActivityType.Watching,

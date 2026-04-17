@@ -7,6 +7,7 @@ module.exports = {
   name: "messageBulkDelete",
 
   async execute(messages) {
+    try {
     if (!messages.size) return;
 
     const channel = messages.first().channel;
@@ -41,5 +42,8 @@ module.exports = {
         .join("\n"),
       color: "Red",
     });
+    } catch (err) {
+      console.error("[messageBulkDelete]", err);
+    }
   },
 };

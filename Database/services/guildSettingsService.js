@@ -1,6 +1,7 @@
 const GuildSettings = require("../models/GuildSettings");
 
 async function getGuildSettings(guildId) {
+  try {
   const settings = await GuildSettings.findOneAndUpdate(
     { guildId },
     { $setOnInsert: { guildId } },
@@ -44,6 +45,17 @@ async function getGuildSettings(guildId) {
     cooldownMs: 12 * 60 * 60 * 1000,
   };
 
+  settings.leveling ??= {
+    enabled: false,
+    channelId: null,
+    xpMin: 15,
+    xpMax: 25,
+    cooldown: 60_000,
+    ignoredChannels: [],
+    ignoredRoles: [],
+    roleRewards: [],
+  };
+
   // 🚨 Staff monitoring defaults
   settings.staffMonitoring ??= {
     enabled: false,
@@ -54,18 +66,36 @@ async function getGuildSettings(guildId) {
   settings.staffMonitoring.alerts ??= [];
   settings.staffMonitoring.suppression ??= {};
 
+  // 🛡️ Anti-raid defaults
+  settings.antiRaid ??= {
+    enabled: false,
+    threshold: 10,
+    window: 30,
+    action: "lock",
+    alertChannelId: null,
+  };
+
   save = true;
 
   if (save) await settings.save();
   return settings;
+  } catch (err) {
+    console.error("[getGuildSettings]", err);
+    return null;
+  }
 }
 
 async function updateGuildSettings(guildId, updates) {
+  try {
   return GuildSettings.findOneAndUpdate(
     { guildId },
     { $set: updates },
     { returnDocument: 'after', upsert: true }
   );
+  } catch (err) {
+    console.error("[updateGuildSettings]", err);
+    return null;
+  }
 }
 
 module.exports = { getGuildSettings, updateGuildSettings };

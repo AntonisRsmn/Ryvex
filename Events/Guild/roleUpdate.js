@@ -8,6 +8,7 @@ module.exports = {
   name: "roleUpdate",
 
   async execute(oldRole, newRole) {
+    try {
     const guild = newRole.guild;
     if (!guild) return;
 
@@ -78,5 +79,8 @@ module.exports = {
       color: "Yellow",
       type: "general",
     });
+    } catch (err) {
+      console.error("[roleUpdate]", err);
+    }
   },
 };

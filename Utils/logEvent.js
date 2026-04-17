@@ -12,6 +12,7 @@ async function logEvent({
   type = "general",
   components = [],
 }) {
+  try {
   const settings = await getGuildSettings(guild.id);
 
   // Safety backfill
@@ -60,6 +61,9 @@ async function logEvent({
     embeds: [embed],
     components,
   }).catch(() => {});
+  } catch (err) {
+    console.error("[logEvent]", err);
+  }
 }
 
 module.exports = { logEvent };

@@ -52,9 +52,32 @@ module.exports = {
 
     if (!cases.length) {
       return interaction.editReply(
-        `❌ No moderation history found for **${user.tag}**.`
+        `✅ No moderation history found for **${user.tag}**.`
       );
     }
+
+    /* ───────── SUMMARY STATS ───────── */
+    const counts = {};
+    for (const c of cases) {
+      counts[c.action] = (counts[c.action] || 0) + 1;
+    }
+
+    const firstAction = cases[cases.length - 1];
+    const lastAction = cases[0];
+    const firstTs = Math.floor(new Date(firstAction.createdAt).getTime() / 1000);
+    const lastTs = Math.floor(new Date(lastAction.createdAt).getTime() / 1000);
+
+    const summaryLines = [
+      `📋 **Total:** ${cases.length} action${cases.length !== 1 ? "s" : ""}`,
+    ];
+    if (counts["Warn"]) summaryLines.push(`> ⚠️ Warns: ${counts["Warn"]}`);
+    if (counts["Timeout"] || counts["Auto Timeout"])
+      summaryLines.push(`> ⏳ Timeouts: ${(counts["Timeout"] ?? 0) + (counts["Auto Timeout"] ?? 0)}`);
+    if (counts["Kick"]) summaryLines.push(`> 👢 Kicks: ${counts["Kick"]}`);
+    if (counts["Ban"]) summaryLines.push(`> 🔨 Bans: ${counts["Ban"]}`);
+    if (counts["Unban"]) summaryLines.push(`> ♻️ Unbans: ${counts["Unban"]}`);
+    summaryLines.push("");
+    summaryLines.push(`> First action: <t:${firstTs}:R> • Last: <t:${lastTs}:R>`);
 
     let page = 0;
     const totalPages = Math.ceil(cases.length / PAGE_SIZE);
@@ -65,74 +88,81 @@ module.exports = {
         page * PAGE_SIZE + PAGE_SIZE
       );
 
-      const description = slice
-        .map(c => {
-          const icon = ACTION_META[c.action] ?? "❓";
-          return [
-            `**${icon} #${c.caseId} • ${c.action}**`,
-            `🛠 ${c.moderatorTag}`,
-            `🔎 \`/case view ${c.caseId}\``,
-          ].join("\n");
-        })
-        .join("\n\n");
+      const entries = slice.map(c => {
+        const icon = ACTION_META[c.action] ?? "❓";
+        const ts = Math.floor(new Date(c.createdAt).getTime() / 1000);
+        const reason = (c.reason ?? "No reason provided").slice(0, 100);
+        const duration = c.extra?.duration
+          ? ` • Duration: **${c.extra.duration}**`
+          : "";
+        return [
+          `${icon} **#${c.caseId} • ${c.action}**${duration}`,
+          `> 🛠 ${c.moderatorTag} • <t:${ts}:R>`,
+          `> 📝 ${reason}`,
+        ].join("\n");
+      });
+
+      const description = page === 0
+        ? [summaryLines.join("\n"), "", ...entries].join("\n\n")
+        : entries.join("\n\n");
 
       return new EmbedBuilder()
         .setTitle(`📜 Moderation History — ${user.tag}`)
         .setColor("Red")
+        .setThumbnail(user.displayAvatarURL({ size: 128 }))
         .setDescription(description)
-        .setFooter({ text: `Page ${page + 1} / ${totalPages}` })
+        .setFooter({ text: `Ryvex • Page ${page + 1} / ${totalPages}` })
         .setTimestamp();
     };
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("prev")
-        .setLabel("◀")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("next")
-        .setLabel("▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(totalPages === 1)
-    );
+    const buildRow = () =>
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("huser_prev")
+          .setLabel("◀ Previous")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === 0),
+        new ButtonBuilder()
+          .setCustomId("huser_next")
+          .setLabel("Next ▶")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === totalPages - 1),
+      );
 
     const message = await interaction.editReply({
       embeds: [buildEmbed()],
-      components: [row],
+      components: [buildRow()],
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 60_000,
+      time: 120_000,
     });
 
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({
-          content: "❌ This menu isn’t for you.",
+          content: "❌ This menu isn't for you.",
           ephemeral: true,
         });
       }
 
       await i.deferUpdate().catch(() => {});
 
-      if (i.customId === "prev") page--;
-      if (i.customId === "next") page++;
-
+      if (i.customId === "huser_prev") page--;
+      if (i.customId === "huser_next") page++;
       page = Math.max(0, Math.min(page, totalPages - 1));
-
-      row.components[0].setDisabled(page === 0);
-      row.components[1].setDisabled(page === totalPages - 1);
 
       await interaction.editReply({
         embeds: [buildEmbed()],
-        components: [row],
+        components: [buildRow()],
       });
     });
 
     collector.on("end", async () => {
-      row.components.forEach(b => b.setDisabled(true));
-      await interaction.editReply({ components: [row] }).catch(() => {});
+      const disabledRow = new ActionRowBuilder().addComponents(
+        ...buildRow().components.map(b => b.setDisabled(true))
+      );
+      await interaction.editReply({ components: [disabledRow] }).catch(() => {});
     });
   },
 };

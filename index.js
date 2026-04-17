@@ -15,6 +15,15 @@ const { loadEvents } = require("./Handlers/eventHandler");
 const { loadCommands } = require("./Handlers/commandHandler");
 const config = require("./config.json");
 
+/* ───────── GLOBAL CRASH PROTECTION ───────── */
+process.on("unhandledRejection", (reason) => {
+  console.error("[UNHANDLED REJECTION]", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("[UNCAUGHT EXCEPTION]", error);
+});
+
 /* ───────── CLIENT ───────── */
 const client = new Client({
   intents: [
@@ -31,6 +40,12 @@ const client = new Client({
     Partials.Channel,
     Partials.Reaction,
   ],
+  sweepers: {
+    messages: { interval: 300, lifetime: 600 },
+    users: { interval: 3600, filter: () => (user) => !user.bot },
+    guildMembers: { interval: 3600, filter: () => (member) => !member.user?.bot },
+    reactions: { interval: 300, filter: () => () => true },
+  },
 });
 
 client.commands = new Collection();
@@ -124,9 +139,28 @@ client.on("messageCreate", async (message) => {
   }, 30_000);
 });
 
+/* ───────── ANSI COLORS ───────── */
+const c = {
+  reset: "\x1b[0m",
+  dim: "\x1b[2m",
+  green: "\x1b[32m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  bold: "\x1b[1m",
+  magenta: "\x1b[35m",
+};
+
+const version = require("./package.json").version;
+
 /* ───────── STARTUP ───────── */
 (async () => {
   try {
+    console.log();
+    console.log(`${c.cyan}${c.bold}  ╔══════════════════════╗${c.reset}`);
+    console.log(`${c.cyan}${c.bold}  ║      R Y V E X       ║${c.reset}`);
+    console.log(`${c.cyan}${c.bold}  ╚══════════════════════╝${c.reset}`);
+    console.log();
+
     loadEvents(client);
     loadCommands(client);
 
@@ -134,9 +168,17 @@ client.on("messageCreate", async (message) => {
       serverSelectionTimeoutMS: 5000,
     });
 
-    console.log("MongoDB connected.");
+    console.log(`  ${c.green}🗄  Database${c.reset}   ${c.green}${c.bold}Connected${c.reset}`);
 
     await client.login(config.token);
+
+    console.log(`  ${c.magenta}🤖 Bot${c.reset}        ${c.green}${c.bold}Online${c.reset} ${c.dim}as ${client.user.tag}${c.reset}`);
+    console.log(`  ${c.cyan}🌐 Guilds${c.reset}      ${c.bold}${client.guilds.cache.size}${c.reset}`);
+    console.log();
+    console.log(`${c.dim}  ─────────────────────────────────────${c.reset}`);
+    console.log(`${c.green}${c.bold}  ✓ Ready${c.reset} ${c.dim}— Ryvex is fully operational${c.reset}`);
+    console.log(`${c.dim}  ─────────────────────────────────────${c.reset}`);
+    console.log();
   } catch (error) {
     console.error("Failed to start bot:", error);
     process.exit(1);

@@ -8,6 +8,7 @@ module.exports = {
   name: "roleCreate",
 
   async execute(role) {
+    try {
     const guild = role.guild;
     if (!guild) return;
 
@@ -59,5 +60,8 @@ module.exports = {
       color: "Green",
       type: "general",
     });
+    } catch (err) {
+      console.error("[roleCreate]", err);
+    }
   },
 };

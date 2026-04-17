@@ -19,6 +19,43 @@
 module.exports = [
 
   {
+    version: "1.10.0",
+    date: "2026-04-18",
+    changes: [
+      "🎨 Rewrote `/botinfo` — 3-page interactive embed (Overview, Live Stats, Links & Info)",
+      "🎨 Rewrote `/userinfo` — 3-page interactive embed (Identity, Moderation Snapshot, Leveling)",
+      "🎨 Rewrote `/staff` — 3-page dashboard (Overview, Leaderboard, Recent Activity)",
+      "🎨 Rewrote `/changelog` — overview timeline page + per-release pages with stats",
+      "📋 Enriched `/history` — entries now show reason, timestamp, duration + summary header",
+      "📋 Enriched `/history-user` — enriched entries + user thumbnail + action breakdown",
+      "📋 Enriched `/history-staff` — enriched entries + target info + action breakdown",
+      "📜 Paginated `/rules` — 3 rules per page with navigation (skips buttons for single page)",
+      "📖 Rewrote `/setup` — expanded to 17-page interactive guide covering all systems",
+      "📖 Rewrote `/settings view` — expanded to 10-page interactive dashboard",
+      "🛡️ Added `/antiraid` — configurable anti-raid protection with join-rate thresholds",
+      "⏱️ Added `/slowmode` — set channel slowmode with duration option",
+      "💤 Added AFK system — set AFK with `/afk`, auto-remove on message, notify on mention",
+      "🎭 Added Reaction Roles — create button-based role panels with `/reactionrole`",
+      "✏️ Reaction role panels support custom title and description",
+      "📊 Added Leveling/XP system with per-server configuration",
+      "🏆 Added `/rank` command to view your level, XP, and server rank",
+      "📋 Added `/leaderboard` command with paginated top-5 display",
+      "⚙️ Added `/xp` admin command with enable, disable, channel, role rewards, amount, cooldown, set, reset, and settings",
+      "🎉 Level-up announcements with optional dedicated channel",
+      "🎁 Automatic role rewards on level-up",
+      "🔒 XP settings restricted to Administrator permission",
+      "⭐ Added `/review` command — leave a review on Top.gg",
+      "🛡️ Added crash protection — all event handlers, DB services, and utilities wrapped in try/catch",
+      "🧠 Added global unhandled rejection and uncaught exception handlers",
+      "♻️ Added automatic cache sweepers to prevent memory leaks over long uptime",
+      "🧹 Added periodic spam tracker cleanup to prevent memory buildup",
+      "🔧 All interactive embeds now use unique button IDs to prevent cross-command conflicts",
+      "⏳ Increased all embed collector timeouts to 120 seconds",
+      "🐣 Easter presence now auto-calculated yearly (Gregorian algorithm) — no more hard-coded dates",
+    ],
+  },
+
+  {
     version: "1.9.9",
     date: "2026-04-17",
     changes: [

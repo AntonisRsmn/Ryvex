@@ -64,7 +64,27 @@ const GuildSettingsSchema = new mongoose.Schema(
       cooldownMs: { type: Number, default: 12 * 60 * 60 * 1000 },
     },
 
-    // 🚨 Staff monitoring
+    // � Leveling system
+    leveling: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null }, // level-up announcement channel (null = same channel)
+      xpMin: { type: Number, default: 15 },
+      xpMax: { type: Number, default: 25 },
+      cooldown: { type: Number, default: 60_000 }, // ms between XP gains
+      ignoredChannels: { type: [String], default: [] },
+      ignoredRoles: { type: [String], default: [] },
+      roleRewards: {
+        type: [
+          {
+            level: Number,
+            roleId: String,
+          },
+        ],
+        default: [],
+      },
+    },
+
+    // �🚨 Staff monitoring
     staffMonitoring: {
       enabled: { type: Boolean, default: false },
 
@@ -85,6 +105,15 @@ const GuildSettingsSchema = new mongoose.Schema(
         of: Date,
         default: {},
       },
+    },
+
+    // 🛡️ Anti-raid system
+    antiRaid: {
+      enabled: { type: Boolean, default: false },
+      threshold: { type: Number, default: 10 },
+      window: { type: Number, default: 30 },
+      action: { type: String, default: "lock", enum: ["lock", "kick", "alert"] },
+      alertChannelId: { type: String, default: null },
     },
 
     meta: {

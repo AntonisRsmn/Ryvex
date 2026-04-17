@@ -12,6 +12,7 @@ module.exports = {
   name: "messageDelete",
 
   async execute(message) {
+    try {
     if (!message.guild) return;
 
     // 🔕 Suppress deletes caused by /clear (count-based)
@@ -84,5 +85,8 @@ module.exports = {
       color: "Red",
       type: "general",
     });
+    } catch (err) {
+      console.error("[messageDelete]", err);
+    }
   },
 };

@@ -12,6 +12,7 @@ module.exports = {
   name: "channelUpdate",
 
   async execute(oldChannel, newChannel) {
+    try {
     const guild = newChannel.guild;
     if (!guild) return;
 
@@ -125,5 +126,8 @@ module.exports = {
       color: "Yellow",
       type: "general",
     });
+    } catch (err) {
+      console.error("[channelUpdate]", err);
+    }
   },
 };

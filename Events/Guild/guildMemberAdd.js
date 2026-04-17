@@ -1,13 +1,76 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 const { logEvent } = require("../../Utils/logEvent");
+const { trackJoin, isRaidActive, setRaidActive } = require("../../Utils/raidTracker");
 
 module.exports = {
   name: "guildMemberAdd",
 
   async execute(member) {
+    try {
     const { guild, user } = member;
     const settings = await getGuildSettings(guild.id);
+
+    /* ───────── ANTI-RAID CHECK ───────── */
+    const antiRaid = settings.antiRaid ?? {};
+    if (antiRaid.enabled && !isRaidActive(guild.id)) {
+      const threshold = antiRaid.threshold ?? 10;
+      const window = antiRaid.window ?? 30;
+      const triggered = trackJoin(guild.id, threshold, window);
+
+      if (triggered) {
+        setRaidActive(guild.id);
+        console.warn(`[ANTI-RAID] Raid detected in ${guild.name} (${guild.id})`);
+
+        // Determine alert channel
+        const alertChannel = antiRaid.alertChannelId
+          ? guild.channels.cache.get(antiRaid.alertChannelId)
+          : settings.logging?.channelId
+            ? guild.channels.cache.get(settings.logging.channelId)
+            : null;
+
+        const alertEmbed = new EmbedBuilder()
+          .setTitle("🚨 Raid Detected!")
+          .setColor("Red")
+          .setDescription(
+            [
+              `**${threshold}+ members** joined within **${window}s**.`,
+              "",
+              `Action taken: **${antiRaid.action ?? "lock"}**`,
+              "",
+              "Anti-raid cooldown active for **5 minutes** — duplicate triggers are suppressed.",
+            ].join("\n")
+          )
+          .setTimestamp();
+
+        // Execute action
+        if (antiRaid.action === "kick") {
+          if (member.kickable) {
+            await member.kick("Anti-raid: mass join detected").catch(() => {});
+          }
+        } else if (antiRaid.action === "lock") {
+          // Set verification to highest level
+          try {
+            await guild.setVerificationLevel(4, "Anti-raid: mass join detected");
+          } catch (err) {
+            console.error("[ANTI-RAID] Failed to set verification level:", err.message);
+          }
+        }
+        // "alert" action = just send the embed, no other action
+
+        if (alertChannel) {
+          alertChannel.send({ embeds: [alertEmbed] }).catch(() => {});
+        }
+      }
+    } else if (antiRaid.enabled) {
+      // Still track joins even during active raid
+      trackJoin(guild.id, antiRaid.threshold ?? 10, antiRaid.window ?? 30);
+
+      // Kick during active raid if action is kick
+      if (antiRaid.action === "kick" && member.kickable) {
+        await member.kick("Anti-raid: active raid lockdown").catch(() => {});
+      }
+    }
 
     /* ───────── GENERAL LOGGING ───────── */
     const memberJoinEnabled =
@@ -54,5 +117,8 @@ module.exports = {
     welcomeChannel.send({ embeds: [embed] }).catch(err =>
       console.error("Failed to send welcome message:", err.message)
     );
+    } catch (err) {
+      console.error("[guildMemberAdd]", err);
+    }
   },
 };

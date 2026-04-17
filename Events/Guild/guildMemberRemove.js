@@ -9,6 +9,7 @@ module.exports = {
   name: "guildMemberRemove",
 
   async execute(member) {
+    try {
     const { guild, user } = member;
     if (!guild) return;
 
@@ -76,5 +77,8 @@ module.exports = {
       color,
       type: "general",
     });
+    } catch (err) {
+      console.error("[guildMemberRemove]", err);
+    }
   },
 };

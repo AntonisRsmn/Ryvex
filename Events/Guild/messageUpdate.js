@@ -7,6 +7,7 @@ module.exports = {
   name: "messageUpdate",
 
   async execute(oldMessage, newMessage) {
+    try {
     if (!oldMessage.guild) return;
 
     // ───────── FETCH PARTIALS ─────────
@@ -72,5 +73,8 @@ module.exports = {
       ].join("\n"),
       color: "Yellow",
     });
+    } catch (err) {
+      console.error("[messageUpdate]", err);
+    }
   },
 };

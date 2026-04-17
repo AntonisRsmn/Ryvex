@@ -1,6 +1,6 @@
 {
   "name": "Ryvex",
-  "version": "1.9.8",
+  "version": "1.10.0",
   "description": "Ryvex™ — Moderation Built for Accountability",
   "main": "index.js",
   "dependencies": {

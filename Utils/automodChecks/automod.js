@@ -103,6 +103,7 @@ async function punish(member, totalWarns, punishments, reason) {
 
 /* ───────── MAIN AUTOMOD ───────── */
 module.exports = async function runAutoMod({ message, automod }) {
+  try {
   const { member, author, guild, channel } = message;
   if (!member || author.bot) return;
 
@@ -210,5 +211,8 @@ module.exports = async function runAutoMod({ message, automod }) {
     channel.send(
       `🤬 ${author}, watch your language (**${totalWarns} warns**)`
     ).then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+  }
+  } catch (err) {
+    console.error("[automod]", err);
   }
 };
