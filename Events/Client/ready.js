@@ -20,6 +20,8 @@ module.exports = {
     const month = now.getMonth(); // 0 = January
     const day = now.getDate();
 
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 5 = Friday
+
     let seasonalActivity = null;
 
     // 🎆 New Year (Jan 1–5)
@@ -34,6 +36,37 @@ module.exports = {
     else if (month === 1 && day >= 10 && day <= 16) {
       seasonalActivity = {
         name: "💘 Happy Valentine’s Day!",
+        type: ActivityType.Watching,
+      };
+    }
+    // 🤡 April Fools (Apr 1)
+    else if (month === 3 && day === 1) {
+      seasonalActivity = {
+        name: "🤡 April Fools' Day!",
+        type: ActivityType.Watching,
+      };
+    }
+
+    // 🐣 Easter (Apr 18–21)
+    else if (month === 3 && day >= 18 && day <= 21) {
+      seasonalActivity = {
+        name: "🐣 Happy Easter!",
+        type: ActivityType.Watching,
+      };
+    }
+
+    // ☀️ Summer Vibes (Jul 1 – Aug 31)
+    else if (month === 6 || month === 7) {
+      seasonalActivity = {
+        name: "☀️ Summer Vibes!",
+        type: ActivityType.Watching,
+      };
+    }
+
+    // 🎂 Bot Birthday (Sep 1)
+    else if (month === 8 && day === 1) {
+      seasonalActivity = {
+        name: "🎂 It's my birthday!",
         type: ActivityType.Watching,
       };
     }
@@ -54,14 +87,30 @@ module.exports = {
       };
     }
 
+    // 🥂 New Year's Eve (Dec 31)
+    else if (month === 11 && day === 31) {
+      seasonalActivity = {
+        name: "🥂 Happy New Year's Eve!",
+        type: ActivityType.Watching,
+      };
+    }
+
+    // 👻 Friday the 13th (any month)
+    else if (dayOfWeek === 5 && day === 13) {
+      seasonalActivity = {
+        name: "👻 Friday the 13th!",
+        type: ActivityType.Watching,
+      };
+    }
+
     /* ───────── DEFAULT (NON-SEASONAL) ───────── */
     const normalActivities = [
       {
-        name: "Ryvex",
+        name: "Listening: @Ryvex",
         type: ActivityType.Listening,
       },
       {
-        name: `${client.guilds.cache.size} servers`,
+        name: `Watching: ${client.guilds.cache.size} servers`,
         type: ActivityType.Watching,
       },
     ];
@@ -71,14 +120,8 @@ module.exports = {
       let activity;
 
       if (seasonalActivity) {
-        // During event → rotate between event + server count
-        activity =
-          Math.random() < 0.6
-            ? seasonalActivity
-            : {
-                name: `${client.guilds.cache.size} servers`,
-                type: ActivityType.Watching,
-              };
+        // During event → show only the seasonal activity
+        activity = seasonalActivity;
       } else {
         // Normal rotation
         activity =
