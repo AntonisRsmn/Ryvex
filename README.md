@@ -140,6 +140,25 @@ Structured, configurable rules integrated into setup & moderation.
 
 ---
 
+### 🎉 Seasonal Presence System
+
+Ryvex automatically updates its status based on the time of year:
+
+- 🎆 New Year (Jan 1–5)
+- 💘 Valentine's Day (Feb 10–16)
+- 🤡 April Fools (Apr 1)
+- 🐣 Easter (Apr 18–21)
+- ☀️ Summer Vibes (Jul–Aug)
+- 🎂 Bot Birthday (Sep 1)
+- 🎃 Halloween (Oct 25–31)
+- 🎄 Christmas (Dec 20–26)
+- 🥂 New Year's Eve (Dec 31)
+- 👻 Friday the 13th (any occurrence)
+
+On normal days, the bot rotates between `@Ryvex` and server count.
+
+---
+
 ## ⚙️ Setup & Configuration
 
 ```

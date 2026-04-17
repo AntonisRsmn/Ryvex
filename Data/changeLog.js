@@ -19,6 +19,22 @@
 module.exports = [
 
   {
+    version: "1.9.9",
+    date: "2026-04-17",
+    changes: [
+      "🎉 Expanded seasonal presence system with 10 events throughout the year",
+      "🤡 Added April Fools' Day activity (Apr 1)",
+      "🐣 Added Easter activity (Apr 18–21)",
+      "☀️ Added Summer Vibes activity (Jul–Aug)",
+      "🎂 Added Bot Birthday activity (Sep 1)",
+      "👻 Added Friday the 13th activity (any Friday the 13th)",
+      "🥂 Added New Year's Eve activity (Dec 31)",
+      "🔄 Seasonal events now show exclusively (no server count rotation during events)",
+      "🌐 Added server count to `/botinfo` command",
+    ],
+  },
+
+  {
     version: "1.9.8",
     date: "2026-04-12",
     changes: [
