@@ -8,9 +8,11 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+
 const {
   getGuildSettings,
 } = require("../../Database/services/guildSettingsService");
+const GuildRules = require("../../Database/models/GuildRules");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -18,10 +20,15 @@ module.exports = {
     .setDescription("Complete setup & configuration guide for Ryvex")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
+
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const settings = await getGuildSettings(interaction.guild.id);
+
+    // Fetch rules from GuildRules collection
+    const rulesDoc = await GuildRules.findOne({ guildId: interaction.guild.id });
+    const rulesConfigured = rulesDoc && Array.isArray(rulesDoc.rules) && rulesDoc.rules.length > 0;
 
     /* ───────── HELPERS ───────── */
     const yesNo = v => (v ? "✅ Yes" : "❌ No");
@@ -43,9 +50,6 @@ module.exports = {
     const welcomeEnabled = settings.welcome?.enabled === true;
     const welcomeChannel = settings.welcome?.channelId;
     const autoRoleId = settings.welcome?.autoRoleId;
-
-    /* ───────── RULES STATUS (NEW) ───────── */
-    const rulesConfigured = Array.isArray(settings.rules) && settings.rules.length > 0;
 
     /* ───────── APPEALS STATUS ───────── */
     const appeals = settings.appeals ?? {};

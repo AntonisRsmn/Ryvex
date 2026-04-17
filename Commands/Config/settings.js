@@ -10,6 +10,7 @@ const {
 
 const { respond } = require("../../Utils/respond");
 const { getGuildSettings } = require("../../Database/services/guildSettingsService");
+const GuildRules = require("../../Database/models/GuildRules");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,6 +27,10 @@ module.exports = {
     try {
       const guild = interaction.guild;
       const settings = await getGuildSettings(guild.id);
+
+      // Fetch rules from GuildRules collection
+      const rulesDoc = await GuildRules.findOne({ guildId: guild.id });
+      const rulesCount = rulesDoc && Array.isArray(rulesDoc.rules) ? rulesDoc.rules.length : 0;
 
       /* ───────── HELPERS ───────── */
       const yn = v => (v ? "✅" : "❌");
@@ -50,7 +55,7 @@ module.exports = {
       const autoRoleId = settings.welcome?.autoRoleId;
 
       /* ───────── RULES ───────── */
-      const rulesCount = Array.isArray(settings.rules) ? settings.rules.length : 0;
+      // rulesCount is now set above from GuildRules
 
       /* ───────── AUTOMOD ───────── */
       const automod = settings.automod ?? {};
