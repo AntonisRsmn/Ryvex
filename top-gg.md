@@ -162,9 +162,12 @@ No clutter. No walls of text. Clean, navigable information.
 
 ## 🛡️ Built for Stability
 
-- All systems wrapped in crash protection
+- All systems wrapped in crash protection with null-safe database calls
 - Global error handlers prevent unexpected downtime
 - Automatic memory management for long uptime
+- AutoMod runs before XP — deleted messages never earn rewards
+- Anti-raid kick targets all joiners, lock auto-restores after cooldown
+- Slow commands use deferred replies — no silent timeouts
 - No crashes, no silent failures
 
 ---

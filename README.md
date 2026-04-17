@@ -281,11 +281,14 @@ On normal days, the bot rotates between `@Ryvex` and server count.
 Ryvex is built to **never crash** in production:
 
 - All event handlers wrapped in try/catch
-- All database services wrapped with safe fallbacks
+- All database services wrapped with safe fallbacks — null-safe callers throughout
 - All utilities (logging, automod) wrapped with error isolation
 - Global `unhandledRejection` and `uncaughtException` handlers
 - Automatic cache sweepers prevent memory leaks over long uptime
 - Periodic spam tracker cleanup prevents memory buildup
+- AutoMod runs before XP — deleted messages never earn XP
+- Anti-raid kick targets all recent joiners, lock auto-restores after cooldown
+- Slow commands (`/rank`, `/leaderboard`, `/antiraid`) use deferred replies to prevent timeouts
 
 ---
 

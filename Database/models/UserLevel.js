@@ -12,7 +12,7 @@ const UserLevelSchema = new mongoose.Schema(
 );
 
 UserLevelSchema.index({ guildId: 1, userId: 1 }, { unique: true });
-UserLevelSchema.index({ guildId: 1, xp: -1 });
+UserLevelSchema.index({ guildId: 1, level: -1, xp: -1 });
 
 /**
  * Calculate the XP required for a given level.

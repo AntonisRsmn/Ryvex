@@ -20,6 +20,7 @@ module.exports = {
 
   async execute(interaction) {
     try {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const user = interaction.options.getUser("user") || interaction.user;
       const { guild } = interaction;
 
@@ -37,7 +38,10 @@ module.exports = {
       const rank = data
         ? (await UserLevel.countDocuments({
             guildId: guild.id,
-            xp: { $gt: xp },
+            $or: [
+              { level: { $gt: level } },
+              { level: level, xp: { $gt: xp } },
+            ],
           })) + 1
         : "Unranked";
 

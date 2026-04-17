@@ -10,6 +10,7 @@ module.exports = {
     try {
     const { guild, user } = member;
     const settings = await getGuildSettings(guild.id);
+    if (!settings) return;
 
     /* ───────── ANTI-RAID CHECK ───────── */
     const antiRaid = settings.antiRaid ?? {};
@@ -45,13 +46,27 @@ module.exports = {
 
         // Execute action
         if (antiRaid.action === "kick") {
-          if (member.kickable) {
-            await member.kick("Anti-raid: mass join detected").catch(() => {});
-          }
+          // Kick all recent joiners from the raid window
+          const windowMs = (antiRaid.window ?? 30) * 1000;
+          const cutoff = Date.now() - windowMs;
+          const recentMembers = guild.members.cache.filter(
+            m => !m.user.bot && m.joinedTimestamp && m.joinedTimestamp >= cutoff && m.kickable
+          );
+          await Promise.all(
+            recentMembers.map(m => m.kick("Anti-raid: mass join detected").catch(() => {}))
+          );
         } else if (antiRaid.action === "lock") {
-          // Set verification to highest level
+          // Set verification to highest level, auto-restore after 5 minutes
           try {
+            const previousLevel = guild.verificationLevel;
             await guild.setVerificationLevel(4, "Anti-raid: mass join detected");
+            setTimeout(async () => {
+              try {
+                await guild.setVerificationLevel(previousLevel, "Anti-raid: auto-restore after cooldown");
+              } catch (err) {
+                console.error("[ANTI-RAID] Failed to restore verification level:", err.message);
+              }
+            }, 5 * 60 * 1000);
           } catch (err) {
             console.error("[ANTI-RAID] Failed to set verification level:", err.message);
           }
@@ -86,7 +101,7 @@ module.exports = {
     }
 
     /* ───────── WELCOME SYSTEM ───────── */
-    if (!settings.welcome.enabled) return;
+    if (!settings.welcome?.enabled) return;
 
     const welcomeChannel = settings.welcome.channelId
       ? guild.channels.cache.get(settings.welcome.channelId)

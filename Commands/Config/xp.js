@@ -192,6 +192,7 @@ module.exports = {
         const role = interaction.options.getRole("role");
 
         const settings = await getGuildSettings(guild.id);
+        if (!settings) return respond(interaction, { content: "❌ Failed to load settings." });
         const rewards = settings.leveling?.roleRewards ?? [];
 
         // Replace existing reward at same level
@@ -210,6 +211,7 @@ module.exports = {
         const level = interaction.options.getInteger("level");
 
         const settings = await getGuildSettings(guild.id);
+        if (!settings) return respond(interaction, { content: "❌ Failed to load settings." });
         const rewards = settings.leveling?.roleRewards ?? [];
         const filtered = rewards.filter(r => r.level !== level);
 

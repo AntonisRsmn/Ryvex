@@ -104,9 +104,16 @@ module.exports = {
 
   async execute(interaction) {
     try {
+      await interaction.deferReply();
       const { guild, options } = interaction;
       const sub = options.getSubcommand();
       const settings = await getGuildSettings(guild.id);
+      if (!settings) {
+        return respond(interaction, {
+          content: "❌ Failed to load settings. Please try again.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       const antiRaid = settings.antiRaid ?? {};
 
       /* ═══════ ENABLE ═══════ */

@@ -60,6 +60,15 @@ module.exports = {
 
     /* ───────── AUTOMOD ───────── */
     const settings = await getGuildSettings(message.guild.id);
+    if (!settings) return;
+
+    if (settings.automod?.enabled) {
+      const deleted = await runAutoMod({
+        message,
+        automod: settings.automod,
+      });
+      if (deleted) return; // Message was removed by automod — skip XP
+    }
 
     /* ───────── LEVELING / XP ───────── */
     if (settings.leveling?.enabled) {
@@ -127,13 +136,6 @@ module.exports = {
         }
       }
     }
-
-    if (!settings?.automod?.enabled) return;
-
-    await runAutoMod({
-      message,
-      automod: settings.automod,
-    });
     } catch (err) {
       console.error("[messageCreate]", err);
     }

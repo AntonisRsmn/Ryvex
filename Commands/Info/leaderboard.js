@@ -21,6 +21,7 @@ module.exports = {
 
   async execute(interaction) {
     try {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const { guild } = interaction;
       const page = interaction.options.getInteger("page") || 1;
       const perPage = 5;
@@ -38,7 +39,7 @@ module.exports = {
       const safePage = Math.min(page, maxPage);
 
       const entries = await UserLevel.find({ guildId: guild.id })
-        .sort({ xp: -1 })
+        .sort({ level: -1, xp: -1 })
         .skip((safePage - 1) * perPage)
         .limit(perPage);
 
@@ -62,7 +63,6 @@ module.exports = {
 
       return respond(interaction, {
         embeds: [embed],
-        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error("Leaderboard command failed:", error);

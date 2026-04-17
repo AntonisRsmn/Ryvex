@@ -160,7 +160,7 @@ module.exports = async function runAutoMod({ message, automod }) {
         `🚫 ${author}, stop spamming (**${totalWarns} warns**)`
       ).then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
 
-      return;
+      return true;
     }
   }
 
@@ -186,7 +186,7 @@ module.exports = async function runAutoMod({ message, automod }) {
       `🔗 ${author}, links are not allowed (**${totalWarns} warns**)`
     ).then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
 
-    return;
+    return true;
   }
 
   /* ───────── BAD WORDS ───────── */
@@ -211,6 +211,8 @@ module.exports = async function runAutoMod({ message, automod }) {
     channel.send(
       `🤬 ${author}, watch your language (**${totalWarns} warns**)`
     ).then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+
+    return true;
   }
   } catch (err) {
     console.error("[automod]", err);

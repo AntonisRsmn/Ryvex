@@ -75,8 +75,6 @@ async function getGuildSettings(guildId) {
     alertChannelId: null,
   };
 
-  save = true;
-
   if (save) await settings.save();
   return settings;
   } catch (err) {
@@ -87,7 +85,7 @@ async function getGuildSettings(guildId) {
 
 async function updateGuildSettings(guildId, updates) {
   try {
-  return GuildSettings.findOneAndUpdate(
+  return await GuildSettings.findOneAndUpdate(
     { guildId },
     { $set: updates },
     { returnDocument: 'after', upsert: true }

@@ -50,6 +50,15 @@ All info commands rewritten with **multi-page embeds** (◀ ▶):
 
 ---
 
+### 🐛 Bug Fixes
+- Fixed leaderboard/rank sorting (now by level + XP, not XP alone)
+- Fixed XP awarded on AutoMod-deleted messages
+- Anti-raid kick now targets all joiners, lock auto-restores
+- Added deferred replies to prevent interaction timeouts
+- Fixed null-safety across all database calls
+
+---
+
 ⭐ Love Ryvex? Leave us a review with `/review`!
 
 ❤️ Thanks for using **Ryvex**!  

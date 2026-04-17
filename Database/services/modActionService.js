@@ -32,7 +32,7 @@ async function createModAction(data) {
 
 async function getUserModLogs(guildId, targetId, limit = 10) {
   try {
-  return ModAction.find({ guildId, targetId })
+  return await ModAction.find({ guildId, targetId })
     .sort({ createdAt: -1 })
     .limit(limit);
   } catch (err) {
