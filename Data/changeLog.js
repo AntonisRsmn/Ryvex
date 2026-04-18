@@ -21,7 +21,9 @@ module.exports = [
     version: "1.10.1",
     date: "2026-04-18",
     changes: [
+      "✨ Added `/welcome` command: fully customizable welcome system (set channel, custom message, auto-role, random messages)",
       "✨ 50+ unique random welcome messages for new members",
+      "✨ Added `/embed` command: create custom embeds with title, description, color, images, and more (admin/mod only)",
       "🎮 New rare, dynamic Discord status activities",
       "🛡️ Improved anti-raid and logging reliability",
       "🐞 Minor bug fixes and performance improvements",
