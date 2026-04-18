@@ -1,19 +1,6 @@
 
 # 🛡️ Ryvex — Moderation You Can Audit, Trust, and Control
 
-## 🆕 Version 1.10.1 — April 2026
-
-
-**What’s new:**
-- Added `/welcome` command: fully customizable welcome system (set channel, custom message, auto-role, random messages)
-- Added `/embed` command: create custom embeds with title, description, color, images, and more (admin/mod only)
-- 50+ unique random welcome messages for new members
-- New rare, dynamic Discord status activities
-- Improved anti-raid and logging reliability
-- Minor bug fixes and performance improvements
-
-Try the new features and let us know what you think!
-
 **Ryvex** is a **moderation-first Discord bot** built for servers that take  
 **staff accountability, transparency, and long-term stability** seriously.
 
