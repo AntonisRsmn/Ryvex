@@ -17,6 +17,16 @@
   // },
 
 module.exports = [
+  {
+    version: "1.10.1",
+    date: "2026-04-18",
+    changes: [
+      "✨ 50+ unique random welcome messages for new members",
+      "🎮 New rare, dynamic Discord status activities",
+      "🛡️ Improved anti-raid and logging reliability",
+      "🐞 Minor bug fixes and performance improvements",
+    ],
+  },
 
   {
     version: "1.10.0",

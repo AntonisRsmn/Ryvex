@@ -1,5 +1,7 @@
 # 🔐 Security Policy
 
+_This policy applies to Ryvex v1.10.1 (April 2026)_
+
 ## 📢 Reporting Security Vulnerabilities
 
 The security of **Ryvex** is a top priority.

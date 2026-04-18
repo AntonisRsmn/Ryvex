@@ -126,6 +126,7 @@ module.exports = {
               .setDescription("✅ Anti-raid protection has been **enabled**.")
               .setColor("Green"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -139,6 +140,7 @@ module.exports = {
               .setDescription("❌ Anti-raid protection has been **disabled**.")
               .setColor("Red"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -153,6 +155,7 @@ module.exports = {
               .setDescription(`✅ Raid threshold set to **${count} joins**.`)
               .setColor("Green"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -167,6 +170,7 @@ module.exports = {
               .setDescription(`✅ Time window set to **${seconds} seconds**.`)
               .setColor("Green"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -183,6 +187,7 @@ module.exports = {
               .setDescription(`✅ Raid action set to **${labels[type]}**.`)
               .setColor("Green"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -197,6 +202,7 @@ module.exports = {
               .setDescription(`✅ Raid alerts will be sent to ${channel}.`)
               .setColor("Green"),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -225,6 +231,7 @@ module.exports = {
                 { name: "Alert Channel", value: alertCh, inline: true }
               ),
           ],
+          flags: MessageFlags.Ephemeral,
         });
       }
     } catch (error) {

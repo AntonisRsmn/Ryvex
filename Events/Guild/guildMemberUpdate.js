@@ -12,31 +12,32 @@ module.exports = {
 
   async execute(oldMember, newMember) {
     try {
-    const guild = newMember.guild;
-    if (!guild) return;
+      const guild = newMember.guild;
+      if (!guild) return;
 
-    // 🔒 HARD STOP — already logged by command
-    if (isSuppressed(guild.id, newMember.id)) return;
+      // 🔒 HARD STOP — already logged by command
+      if (isSuppressed(guild.id, newMember.id)) return;
 
-    const settings = await getGuildSettings(guild.id);
-    const enabled = settings.logging?.events?.memberUpdate ?? true;
+      const settings = await getGuildSettings(guild.id);
+      if (!settings) return; // Prevents TypeError if settings is null
+      const enabled = settings.logging?.events?.memberUpdate ?? true;
 
-    if (!settings.logging?.enabled || !enabled) return;
+      if (!settings.logging?.enabled || !enabled) return;
 
-    const changes = [];
+      const changes = [];
 
-    /* ───────── ROLE CHANGES ───────── */
-    const oldRoles = oldMember.roles.cache;
-    const newRoles = newMember.roles.cache;
+      /* ───────── ROLE CHANGES ───────── */
+      const oldRoles = oldMember.roles.cache;
+      const newRoles = newMember.roles.cache;
 
-    const addedRoles = newRoles.filter(r => !oldRoles.has(r.id));
-    const removedRoles = oldRoles.filter(r => !newRoles.has(r.id));
+      const addedRoles = newRoles.filter(r => !oldRoles.has(r.id));
+      const removedRoles = oldRoles.filter(r => !newRoles.has(r.id));
 
-    if (addedRoles.size) {
-      changes.push(
-        `**Roles Added:** ${addedRoles.map(r => r.name).join(", ")}`
-      );
-    }
+      if (addedRoles.size) {
+        changes.push(
+          `**Roles Added:** ${addedRoles.map(r => r.name).join(", ")}`
+        );
+      }
 
     if (removedRoles.size) {
       changes.push(

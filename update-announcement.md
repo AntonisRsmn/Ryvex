@@ -1,68 +1,37 @@
-# 🚀 Ryvex Update — v1.10.0
+
+# 🚀 Ryvex Update — v1.10.1
 
 Hello everyone! 👋  
-We've released **Ryvex v1.10.0**, our biggest update yet — **30 changes** with new systems, interactive dashboards, and crash protection.
+We've released **Ryvex v1.10.1**, a **community engagement & reliability update** packed with new features for your server.
 
 ---
 
 ## 🎉 What's New
 
-### 💤 AFK System
-- Set yourself AFK with `/afk [reason]`
-- Auto-removed when you send a message
-- Mentions notify others with your reason & timestamp
+### 👋 Expanded Welcome System
+- Added `/welcome` command: fully customizable welcome system (set channel, custom message, auto-role, random messages)
+- 50+ unique random welcome messages for new members
 
 ---
 
-### 🎭 Reaction Roles
-- Button-based role panels with `/reactionrole`
-- Custom emoji & labels — no emoji reactions needed
-- Add, remove, delete, and list panels
+### 📝 Custom Embed Command
+- Added `/embed` command: create custom embeds with title, description, color, images, and more (admin/mod only)
 
 ---
 
-### 📊 Leveling / XP System
-- Earn XP per message with configurable range & cooldown
-- Level-up announcements with optional dedicated channel
-- Automatic role rewards on level-up
-- `/rank`, `/leaderboard`, and full `/xp` admin controls
+### 🎮 Rare Dynamic Status Activities
+- New rare, dynamic Discord status activities
 
 ---
 
-### 🛡️ Anti-Raid & Slowmode
-- `/antiraid` — configurable join-rate thresholds with auto-response
-- `/slowmode` — case-logged moderation action
+### 🛡️ Reliability & Polish
+- Improved anti-raid and logging reliability
+- Minor bug fixes and performance improvements
 
 ---
-
-### 🎨 Interactive Dashboards
-All info commands rewritten with **multi-page embeds** (◀ ▶):
-- `/botinfo` `/userinfo` `/staff` — 3 rich pages each
-- `/setup` — 17 pages · `/settings view` — 10 pages
-- `/changelog` `/history` `/rules` — enriched & paginated
-
----
-
-### 🔒 Stability & Performance
-- Full crash protection — all handlers wrapped with global error catchers
-- Auto cache sweeping & memory management — built for months of uptime
-- 🐣 Easter presence auto-calculated yearly
-
----
-
-### 🐛 Bug Fixes
-- Fixed leaderboard/rank sorting (now by level + XP, not XP alone)
-- Fixed XP awarded on AutoMod-deleted messages
-- Anti-raid kick now targets all joiners, lock auto-restores
-- Added deferred replies to prevent interaction timeouts
-- Fixed null-safety across all database calls
-
----
-
-⭐ Love Ryvex? Leave us a review with `/review`!
 
 ❤️ Thanks for using **Ryvex**!  
-Enjoy the new features! 🎉  
+Enjoy the new features and let us know your feedback. 🎉  
 — **Ryvex Team**
 
 <@&1153591929930518530>

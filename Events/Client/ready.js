@@ -5,12 +5,14 @@ module.exports = {
   once: true,
 
   async execute(client) {
+
     // ✅ Register slash commands
     try {
       await client.application.commands.set(client._slashCommands);
     } catch (err) {
       console.error("Failed to register slash commands:", err);
     }
+
 
     /* ───────── EASTER CALCULATOR (Anonymous Gregorian) ───────── */
     function getEasterDate(year) {
@@ -126,6 +128,22 @@ module.exports = {
     }
 
     /* ───────── DEFAULT (NON-SEASONAL) ───────── */
+    // Add rare game-inspired hints as secret activities
+    const secretActivities = [
+      {
+        name: "Lost in the Dark Place, searching for the right words.", // Alan Wake 2
+        type: ActivityType.Watching,
+      },
+      {
+        name: "Restless dreams await in the fog.", // Silent Hill 2 Remake
+        type: ActivityType.Watching,
+      },
+      {
+        name: "A requiem for the lost. Beware the bioweapon.", // Resident Evil Requiem
+        type: ActivityType.Playing,
+      },
+    ];
+
     const normalActivities = [
       {
         name: "Listening: @Ryvex",
@@ -145,11 +163,12 @@ module.exports = {
         // During event → show only the seasonal activity
         activity = seasonalActivity;
       } else {
-        // Normal rotation
-        activity =
-          normalActivities[
-            Math.floor(Math.random() * normalActivities.length)
-          ];
+        // 1% chance to show a secret game hint (very rare)
+        if (Math.random() < 0.01) {
+          activity = secretActivities[Math.floor(Math.random() * secretActivities.length)];
+        } else {
+          activity = normalActivities[Math.floor(Math.random() * normalActivities.length)];
+        }
       }
 
       client.user.setPresence({
