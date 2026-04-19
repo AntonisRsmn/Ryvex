@@ -2,13 +2,10 @@ const GuildSettings = require("../models/GuildSettings");
 
 async function getGuildSettings(guildId) {
   try {
-  const settings = await GuildSettings.findOneAndUpdate(
-    { guildId },
-    { $setOnInsert: { guildId } },
-    { returnDocument: 'after', upsert: true }
-  );
-
-  let save = false;
+  let settings = await GuildSettings.findOne({ guildId });
+  if (!settings) {
+    settings = await GuildSettings.create({ guildId });
+  }
 
   settings.automod ??= {};
   settings.automod.enabled ??= false;
@@ -75,7 +72,7 @@ async function getGuildSettings(guildId) {
     alertChannelId: null,
   };
 
-  if (save) await settings.save();
+  await settings.save();
   return settings;
   } catch (err) {
     console.error("[getGuildSettings]", err);

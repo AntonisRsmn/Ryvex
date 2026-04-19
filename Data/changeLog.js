@@ -18,6 +18,18 @@
 
 module.exports = [
   {
+    version: "1.10.2",
+    date: "2026-04-20",
+    changes: [
+      "🎂 Added Birthday & Anniversary system: `/birthday` (user), `/admin-birthday` (admin), daily announcements, random/custom messages, per-guild config, enable/disable, reset, and more.",
+      "🖌️ All embeds restyled for a modern, branded look across all commands.",
+      "🛡️ Fixed all ephemeral: true deprecation warnings (now uses MessageFlags.Ephemeral).",
+      "🛡️ Fixed JSON parse errors for empty/corrupt files in birthday system.",
+      "🛡️ Fixed double reply/deferReply issues in `/botinfo`.",
+      "🛡️ General polish and error-proofing throughout the bot.",
+    ],
+  },
+  {
     version: "1.10.1",
     date: "2026-04-18",
     changes: [

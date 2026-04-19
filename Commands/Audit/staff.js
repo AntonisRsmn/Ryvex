@@ -250,7 +250,7 @@ module.exports = {
 
     collector.on("collect", async i => {
       if (i.user.id !== interaction.user.id) {
-        return i.reply({ content: "❌ This menu isn't for you.", ephemeral: true });
+        return i.reply({ content: "❌ This menu isn't for you.", flags: 1 << 6 });
       }
 
       await i.deferUpdate().catch(() => {});

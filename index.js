@@ -11,6 +11,9 @@ const {
 } = require("discord.js");
 
 const mongoose = require("mongoose");
+
+// Suppress AsyncEventEmitter memory leak warning for Discord.js sharding
+require('events').defaultMaxListeners = 30;
 const { loadEvents } = require("./Handlers/eventHandler");
 const { loadCommands } = require("./Handlers/commandHandler");
 const config = require("./config.json");

@@ -1,6 +1,6 @@
 # Contributor Covenant Code of Conduct
 
-_This code applies to Ryvex v1.10.1 (April 2026)_
+_This code applies to Ryvex v1.10.2 (April 2026)_
 
 ## Our Pledge
 

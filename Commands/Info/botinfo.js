@@ -40,6 +40,9 @@ module.exports = {
     try {
       const { client } = interaction;
 
+      // Defer reply immediately to avoid interaction timeout
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
       /* ───────── DATA ───────── */
       const version = changeLog[0]?.version ?? "Unknown";
       const uptimeFormatted = formatUptime(client.uptime);
@@ -170,11 +173,10 @@ module.exports = {
 
       applyFooter();
 
-      const msg = await interaction.reply({
+      // Edit the deferred reply with the first page
+      const msg = await interaction.editReply({
         embeds: [pages[page]],
         components: [buildRow()],
-        flags: MessageFlags.Ephemeral,
-        withResponse: true,
       });
 
       const message = msg?.resource?.message ?? msg;
@@ -186,7 +188,7 @@ module.exports = {
 
       collector.on("collect", async i => {
         if (i.user.id !== interaction.user.id) {
-          return i.reply({ content: "❌ This menu isn't for you.", ephemeral: true });
+          return i.reply({ content: "❌ This menu isn't for you.", flags: MessageFlags.Ephemeral });
         }
 
         await i.deferUpdate().catch(() => {});

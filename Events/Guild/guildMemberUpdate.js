@@ -19,10 +19,10 @@ module.exports = {
       if (isSuppressed(guild.id, newMember.id)) return;
 
       const settings = await getGuildSettings(guild.id);
-      if (!settings) return; // Prevents TypeError if settings is null
-      const enabled = settings.logging?.events?.memberUpdate ?? true;
+      if (!settings || !settings.logging) return; // Prevents TypeError if settings or logging is null
+      const enabled = settings.logging.events?.memberUpdate ?? true;
 
-      if (!settings.logging?.enabled || !enabled) return;
+      if (!settings.logging.enabled || !enabled) return;
 
       const changes = [];
 

@@ -5,6 +5,13 @@ module.exports = {
   once: true,
 
   async execute(client) {
+    // Start birthday announcement interval
+    try {
+      const birthdayAnnounce = require('./birthdayAnnounce');
+      birthdayAnnounce.execute(client);
+    } catch (err) {
+      console.error('Failed to start birthdayAnnounce:', err);
+    }
 
     // ✅ Register slash commands
     try {
@@ -146,11 +153,11 @@ module.exports = {
 
     const normalActivities = [
       {
-        name: "Listening: @Ryvex",
+        name: "@Ryvex",
         type: ActivityType.Listening,
       },
       {
-        name: `Watching: ${client.guilds.cache.size} servers`,
+        name: `${client.guilds.cache.size} servers`,
         type: ActivityType.Watching,
       },
     ];

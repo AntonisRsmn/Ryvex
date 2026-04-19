@@ -1,6 +1,6 @@
 # 🔐 Security Policy
 
-_This policy applies to Ryvex v1.10.1 (April 2026)_
+_This policy applies to Ryvex v1.10.2 (April 2026)_
 
 ## 📢 Reporting Security Vulnerabilities
 
@@ -116,7 +116,8 @@ The following are **out of scope**:
 
 | Version | Supported |
 |---------|-----------|
-| 1.10.x  | ✅ Active  |
+ | 1.10.x  | ✅ Active  |
+ | 1.10.2  | ✅ Latest  |
 | 1.9.x   | ⚠️ Security fixes only |
 | < 1.9   | ❌ Unsupported |
 

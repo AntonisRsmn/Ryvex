@@ -234,6 +234,25 @@ Protect your server from mass join attacks:
 
 ---
 
+
+### 🎂 Birthday & Anniversary System (NEW in v1.10.2)
+
+```
+/birthday set <MM-DD>      — Set your birthday (user)
+/birthday me               — View your saved birthday
+/birthday today            — See today's birthdays & anniversaries
+/admin-birthday enable     — Enable birthday announcements (admin)
+/admin-birthday disable    — Disable birthday announcements (admin)
+/admin-birthday channel    — Set announcement channel (admin)
+/admin-birthday message    — Set custom birthday message (admin)
+/admin-birthday config     — View config (admin)
+```
+- Daily birthday announcements with random or custom messages
+- Per-guild config: enable/disable, channel, message, reset
+- Modern, branded embeds for all birthday features
+
+---
+
 ### 🎉 Seasonal Presence System
 
 Ryvex automatically updates its status based on the time of year:
@@ -276,19 +295,23 @@ On normal days, the bot rotates between `@Ryvex` and server count.
 
 ---
 
-### 🛡️ Crash Protection & Stability
+### 🛡️ Crash Protection, Stability & Reliability
 
 Ryvex is built to **never crash** in production:
 
 - All event handlers wrapped in try/catch
 - All database services wrapped with safe fallbacks — null-safe callers throughout
-- All utilities (logging, automod) wrapped with error isolation
+- All utilities (logging, automod, birthday) wrapped with error isolation
 - Global `unhandledRejection` and `uncaughtException` handlers
 - Automatic cache sweepers prevent memory leaks over long uptime
 - Periodic spam tracker cleanup prevents memory buildup
 - AutoMod runs before XP — deleted messages never earn XP
 - Anti-raid kick targets all recent joiners, lock auto-restores after cooldown
 - Slow commands (`/rank`, `/leaderboard`, `/antiraid`) use deferred replies to prevent timeouts
+- **All embeds restyled for modern, branded look (v1.10.2)**
+- **Fixed all ephemeral: true deprecation warnings (now uses MessageFlags.Ephemeral)**
+- **Fixed JSON parse errors for empty/corrupt files**
+- **Fixed double reply/deferReply issues in `/botinfo`**
 
 ---
 

@@ -459,7 +459,7 @@ module.exports = {
         if (i.user.id !== interaction.user.id) {
           return i.reply({
             content: "❌ This settings menu isn't for you.",
-            ephemeral: true,
+            flags: 1 << 6,
           });
         }
 

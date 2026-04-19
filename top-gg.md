@@ -138,6 +138,17 @@ Create clean, button-based role panels — no emoji reactions needed.
 
 ---
 
+
+## 🎂 Birthday & Anniversary System (NEW in v1.10.2)
+
+- User command: `/birthday set`, `/birthday me`, `/birthday today`
+- Admin command: `/admin-birthday enable`, `/admin-birthday disable`, `/admin-birthday channel`, `/admin-birthday message`, `/admin-birthday config`
+- Daily birthday announcements with random or custom messages
+- Per-guild config: enable/disable, channel, message, reset
+- Modern, branded embeds for all birthday features
+
+---
+
 ## 🎨 Rich Interactive Dashboards
 
 Every informational command uses **multi-page interactive embeds** with ◀ ▶ navigation:
@@ -161,7 +172,7 @@ No clutter. No walls of text. Clean, navigable information.
 
 ---
 
-## 🛡️ Built for Stability
+## 🛡️ Built for Stability & Reliability
 
 - All systems wrapped in crash protection with null-safe database calls
 - Global error handlers prevent unexpected downtime
@@ -170,6 +181,10 @@ No clutter. No walls of text. Clean, navigable information.
 - Anti-raid kick targets all joiners, lock auto-restores after cooldown
 - Slow commands use deferred replies — no silent timeouts
 - No crashes, no silent failures
+- **All embeds restyled for modern, branded look (v1.10.2)**
+- **Fixed all ephemeral: true deprecation warnings (now uses MessageFlags.Ephemeral)**
+- **Fixed JSON parse errors for empty/corrupt files**
+- **Fixed double reply/deferReply issues in `/botinfo`**
 
 ---
 
