@@ -32,7 +32,7 @@ module.exports = {
               .setDescription(msg)
               .setColor(0xF5B041)
               .setThumbnail(member?.user.displayAvatarURL?.() || null)
-              .setFooter({ text: 'Ryvex' })
+              .setFooter({ text: 'Ryvex • Birthday' })
               .setTimestamp();
             await channel.send({ embeds: [embed] });
           }

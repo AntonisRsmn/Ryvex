@@ -166,8 +166,9 @@ module.exports = {
         }
       )
       .setFooter({
-        text: "Abuse of the appeal system may result in further action.",
-      });
+        text: "Abuse of the appeal system may result in further action. | Ryvex • Appeals"
+      })
+      .setTimestamp();
 
     const message = await thread.send({ embeds: [embed] });
     await message.pin();

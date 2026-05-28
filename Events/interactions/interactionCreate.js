@@ -152,6 +152,7 @@ module.exports = {
         .setTitle("Ryvex™")
         .setDescription("❌ Commands can only be used inside servers.")
         .setColor("White")
+        .setFooter({ text: "Ryvex • Error" })
         .setTimestamp();
 
       return interaction.reply({

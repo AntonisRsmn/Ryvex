@@ -42,6 +42,7 @@ module.exports = {
               "Anti-raid cooldown active for **5 minutes** — duplicate triggers are suppressed.",
             ].join("\n")
           )
+          .setFooter({ text: "Ryvex • Security" })
           .setTimestamp();
 
         // Execute action
@@ -226,6 +227,7 @@ module.exports = {
       .setDescription(welcomeMsg)
       .setThumbnail(user.displayAvatarURL())
       .setColor("White")
+      .setFooter({ text: "Ryvex • Welcome" })
       .setTimestamp();
 
     welcomeChannel.send({ embeds: [embed] }).catch(err =>
