@@ -61,6 +61,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle("📄 Logging Settings")
       .setColor("White")
+      .setFooter({ text: "Ryvex • Logging" })
       .setTimestamp();
 
     if (sub === "enable") {

@@ -223,7 +223,9 @@ module.exports = {
                 badWords && `🤬 Bad Words: ${badWords.toUpperCase()}`,
               ].filter(Boolean).join("\n")
             )
-            .setColor("Blue"),
+            .setColor("Blue")
+            .setFooter({ text: "Ryvex • AutoMod" })
+            .setTimestamp(),
         ],
       });
     }
@@ -244,7 +246,6 @@ module.exports = {
           new EmbedBuilder()
             .setTitle("🛡 AutoMod Configuration Overview")
             .setColor(a.enabled ? "Green" : "Red")
-
             /* CORE */
             .addFields({
               name: "⚙ Core",
@@ -254,7 +255,6 @@ module.exports = {
                 `Timeout After: ${p.timeoutAfter ?? "—"} warns`,
               ].join("\n"),
             })
-
             /* FILTERS */
             .addFields({
               name: "🧰 Filters",
@@ -277,47 +277,23 @@ module.exports = {
               ].join("\n"),
               inline: true,
             })
-
-            /* ROLES */
-            .addFields({
-              name: "🧩 Role Bypass",
-              value: `Bypassing Roles: ${a.rolesBypass?.length ?? 0}`,
-              inline: true,
-            })
-
-            /* PUNISHMENTS */
-            .addFields({
-              name: "⚖ Punishments",
-              value: p.enabled
-                ? [
-                    `Enabled: ✅`,
-                    `Warn Only: ${p.warnOnly ? "Yes" : "No"}`,
-                    `Timeout After: ${p.timeoutAfter} warns`,
-                    "",
-                    durations.length
-                      ? durations
-                          .map(
-                            ([w, ms]) =>
-                              `• ${w} warns → ${formatDuration(ms)}`
-                          )
-                          .join("\n")
-                      : "No timeouts configured",
-                  ].join("\n")
-                : "❌ Disabled",
-            })
-
             /* BAD WORDS */
             .addFields({
               name: "🤬 Custom Bad Words",
+              value: bw.words?.join(", ") || "None",
+            })
+            /* PUNISHMENTS */
+            .addFields({
+              name: "🛠 Punishments",
               value: [
-                `Enabled: ${bw.enabled ? "✅" : "❌"}`,
-                `Words: ${bw.words?.length ?? 0}`,
+                `Warn: ${p.warn ?? "—"}`,
+                `Timeout: ${p.timeout ?? "—"}`,
+                `Kick: ${p.kick ?? "—"}`,
+                `Ban: ${p.ban ?? "—"}`,
+                `Durations: ${durations.map(([k, v]) => `${k}: ${v}`).join(", ") || "—"}`,
               ].join("\n"),
             })
-
-            .setFooter({
-              text: "Ryvex • AutoMod Status Overview",
-            })
+            .setFooter({ text: "Ryvex • AutoMod" })
             .setTimestamp(),
         ],
       });
