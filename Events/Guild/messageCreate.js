@@ -15,6 +15,14 @@ module.exports = {
     if (!message.guild) return;
     if (message.author.bot) return;
 
+    // 🛡️ ENSURE GUILD DATA EXISTS (handles offline rejoin scenarios)
+    try {
+      await getGuildSettings(message.guild.id);
+    } catch (err) {
+      console.error(`[CRITICAL] Failed to initialize guild data for ${message.guild.id}:`, err);
+      return;
+    }
+
     /* ───────── AFK SYSTEM ───────── */
 
     // If the author is AFK, remove their status

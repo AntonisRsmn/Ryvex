@@ -6,6 +6,7 @@ const {
 
 const Afk = require("../../Database/models/Afk");
 const ReactionRole = require("../../Database/models/ReactionRole");
+const { getGuildSettings } = require("../../Database/services/guildSettingsService");
 
 module.exports = {
   name: "interactionCreate",
@@ -163,6 +164,20 @@ module.exports = {
 
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
+
+    // 🛡️ ENSURE GUILD DATA EXISTS before command execution
+    // This handles: new servers, bot rejoining after offline, database corruption
+    if (interaction.guild) {
+      try {
+        await getGuildSettings(interaction.guild.id);
+      } catch (err) {
+        console.error(`[CRITICAL] Failed to initialize guild data for ${interaction.guild.id}:`, err);
+        return interaction.reply({
+          content: "❌ Database initialization failed. Please try again.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => {});
+      }
+    }
 
     // Clear AFK status when user runs any command (except /afk itself)
     if (interaction.commandName !== "afk" && interaction.guild) {
