@@ -116,7 +116,7 @@
     "minipass-sized": "^2.0.0",
     "mongodb": "^7.2.0",
     "mongodb-connection-string-url": "^7.0.1",
-    "mongoose": "^9.6.2",
+    "mongoose": "^9.7.2",
     "mpath": "^0.9.0",
     "mquery": "^6.0.0",
     "ms": "^2.1.3",
